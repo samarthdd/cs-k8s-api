@@ -31,7 +31,7 @@ spec:
             claimName: pvc-transaction-query-service
       containers:
       - name: proxy-rest-api
-        image: <REPLACE_IMAGE_ID>
+        image: ggrig/cs-k8s-api:0.01
         ports:
         - containerPort: 80
         resources:
