@@ -1,0 +1,108 @@
+{
+	"info": {
+		"_postman_id": "cc1db3b3-dc60-494b-9f33-69cb42b9598d",
+		"name": "Glasswall-adaptation",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "rebuild/base64",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"base64\" : \"\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://91.109.25.70:8080/api/rebuild/base64",
+					"protocol": "http",
+					"host": [
+						"91",
+						"109",
+						"25",
+						"70"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"rebuild",
+						"base64"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "analyse/base64",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"base64\" : \"\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://91.109.25.70:8080/api/analyse/base64",
+					"protocol": "http",
+					"host": [
+						"91",
+						"109",
+						"25",
+						"70"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"analyse",
+						"base64"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "FileTypeDetection/base64",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"base64\" : \"\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://91.109.25.70:8080/api/FileTypeDetection/base64",
+					"protocol": "http",
+					"host": [
+						"91",
+						"109",
+						"25",
+						"70"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"FileTypeDetection",
+						"base64"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
