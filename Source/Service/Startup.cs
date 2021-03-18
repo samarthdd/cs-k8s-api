@@ -65,6 +65,7 @@ namespace Glasswall.CloudProxy.Api
                 context.Response.Headers["Access-Control-Expose-Headers"] = "*";
                 context.Response.Headers["Access-Control-Allow-Headers"] = "*";
                 context.Response.Headers["Access-Control-Allow-Origin"] = "*";
+                context.Response.Headers["Via"] = System.Environment.MachineName;
                 return next.Invoke();
             });
 

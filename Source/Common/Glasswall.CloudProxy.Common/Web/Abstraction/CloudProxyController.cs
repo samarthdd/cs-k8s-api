@@ -44,5 +44,13 @@ namespace Glasswall.CloudProxy.Common.Web.Abstraction
                 return (null, ex.Message);
             }
         }
+
+        protected void AddHeaderToResponse(string key, string value)
+        {
+            if (!string.IsNullOrWhiteSpace(key) && !string.IsNullOrWhiteSpace(value) && !Response.Headers.ContainsKey(key))
+            {
+                Response.Headers.Add(key, value);
+            }
+        }
     }
 }

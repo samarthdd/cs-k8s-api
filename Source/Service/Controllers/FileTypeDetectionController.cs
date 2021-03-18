@@ -123,6 +123,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                         }
 
                         int.TryParse(result.DocumentStatistics.DocumentSummary.TotalSizeInBytes, out int fileSize);
+                        AddHeaderToResponse(Constants.Header.FILE_ID, fileIdString);
                         return Ok(new
                         {
                             FileTypeName = result.DocumentStatistics.DocumentSummary.FileType,

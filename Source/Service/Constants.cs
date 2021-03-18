@@ -5,6 +5,11 @@
         public const string REPORT_XML_FILE_NAME = "report.xml";
         public const string TRANSACTION_STORE_PATH = "/mnt/stores/transactions";
 
+        public static class Header
+        {
+            public const string FILE_ID = "X-Adaptation-File-Id";
+        }
+
         public static class EnvironmentVariables
         {
             public const string AWS_ACCESS_KEY_ID = "AwsAccessKeyId";
