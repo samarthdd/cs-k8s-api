@@ -81,6 +81,11 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 originalStoreFilePath = Path.Combine(OriginalStorePath, fileId.ToString());
                 rebuiltStoreFilePath = Path.Combine(RebuiltStorePath, fileId.ToString());
 
+                if (ReturnOutcome.GW_REBUILT != descriptor.Outcome)
+                {
+
+                }
+
                 _logger.LogInformation($"Updating 'Original' store for {fileId}");
                 using (Stream fileStream = new FileStream(originalStoreFilePath, FileMode.Create))
                 {
@@ -89,6 +94,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
 
                 _adaptationServiceClient.Connect();
                 ReturnOutcome outcome = _adaptationServiceClient.AdaptationRequest(fileId, originalStoreFilePath, rebuiltStoreFilePath, processingCancellationToken);
+                descriptor.Update(outcome, originalStoreFilePath, rebuiltStoreFilePath);
 
                 _logger.LogInformation($"Returning '{outcome}' Outcome for {fileId}");
 
@@ -96,7 +102,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 {
                     case ReturnOutcome.GW_REBUILT:
                         string reportFolderPath = Directory.GetDirectories(Constants.TRANSACTION_STORE_PATH, $"{ fileId}", SearchOption.AllDirectories).FirstOrDefault();
-                        if (string.IsNullOrEmpty(rebuiltStoreFilePath))
+                        if (string.IsNullOrEmpty(descriptor.RebuiltStoreFilePath))
                         {
                             _logger.LogWarning($"Report folder not exist for file {fileId}");
                             cloudProxyResponseModel.Errors.Add($"Report folder not exist for file {fileId}");

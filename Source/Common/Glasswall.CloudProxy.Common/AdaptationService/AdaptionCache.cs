@@ -10,22 +10,33 @@ namespace Glasswall.CloudProxy.Common.AdaptationService
     public class AdaptionDescriptor
     {
         private Guid uuid; // field
+        ReturnOutcome outcome;
+        string originalStoreFilePath;
+        string rebuiltStoreFilePath;
+        DateTime accessTime;
         public AdaptionDescriptor()
         {
             uuid = Guid.NewGuid();
+            outcome = ReturnOutcome.GW_UNPROCESSED;
+            accessTime = DateTime.Now;
         }
 
-        //private string name; // field
-        //public string Name   // property
-        //{
-        //    get { return name; }   // get method
-        //    set { name = value; }  // set method
-        //}
-
-        public Guid UUID   // property
+        public void Update(ReturnOutcome Outcome,
+            string OriginalStoreFilePath,
+            string RebuiltStoreFilePath)
         {
-            get { return uuid; }   // get method
+            accessTime = DateTime.Now;
+            outcome = Outcome;
+            originalStoreFilePath = OriginalStoreFilePath;
+            rebuiltStoreFilePath = RebuiltStoreFilePath;
         }
+
+        public Guid UUID  { get { return uuid; } }
+        public ReturnOutcome Outcome { get { return outcome; } }
+        public string OriginalStoreFilePath { get { return originalStoreFilePath; } }
+        public string RebuiltStoreFilePath { get { return rebuiltStoreFilePath; } }
+        public DateTime AccessTime { get { return accessTime; } set { accessTime = value; } }
+
     }
 
     public sealed class AdaptionCache
