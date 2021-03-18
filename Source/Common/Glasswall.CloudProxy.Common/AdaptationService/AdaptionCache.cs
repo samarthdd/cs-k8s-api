@@ -9,6 +9,12 @@ namespace Glasswall.CloudProxy.Common.AdaptationService
 {
     public class AdaptionDescriptor
     {
+        private Guid uuid; // field
+        public AdaptionDescriptor()
+        {
+            uuid = Guid.NewGuid();
+        }
+
         //private string name; // field
         //public string Name   // property
         //{
@@ -16,17 +22,15 @@ namespace Glasswall.CloudProxy.Common.AdaptationService
         //    set { name = value; }  // set method
         //}
 
-        private Guid uuid; // field
         public Guid UUID   // property
         {
             get { return uuid; }   // get method
-            set { uuid = value; }  // set method
         }
     }
 
     public sealed class AdaptionCache
     {
-        ConcurrentDictionary<String, AdaptionDescriptor> CacheMap;
+        static ConcurrentDictionary<String, AdaptionDescriptor> CacheMap;
 
         private AdaptionCache()
         {
@@ -45,7 +49,7 @@ namespace Glasswall.CloudProxy.Common.AdaptationService
             return result;
         }
 
-        private String GetFileHash(byte[] file)
+        private static String GetFileHash(byte[] file)
         {
             SHA256 Sha256 = SHA256.Create();
             return BytesToString(Sha256.ComputeHash(file));
@@ -59,7 +63,6 @@ namespace Glasswall.CloudProxy.Common.AdaptationService
             if (!CacheMap.TryGetValue(fileHash, out descriptor))
             {
                 descriptor = new AdaptionDescriptor();
-                descriptor.UUID = Guid.NewGuid();
                 if (!CacheMap.TryAdd(fileHash, descriptor))
                 {
                     //descriptor = null;
