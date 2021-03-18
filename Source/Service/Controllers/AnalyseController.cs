@@ -46,7 +46,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
             _logger.LogInformation("'{0}' method invoked", nameof(AnalyseFromBase64));
             string originalStoreFilePath = string.Empty;
             string rebuiltStoreFilePath = string.Empty;
-            Guid fileId = Guid.NewGuid();
+            String fileIdString = "";
             CloudProxyResponseModel cloudProxyResponseModel = new CloudProxyResponseModel();
 
             try
@@ -63,6 +63,16 @@ namespace Glasswall.CloudProxy.Api.Controllers
                     return BadRequest(cloudProxyResponseModel);
                 }
 
+                AdaptionDescriptor descriptor = AdaptionCache.Instance.GetDescriptor(file);
+                if (null == descriptor)
+                {
+                    cloudProxyResponseModel.Errors.Add("Cannot create a cache entry for the file.");
+                    return BadRequest(cloudProxyResponseModel);
+                }
+
+                Guid fileId = descriptor.UUID;
+                fileIdString = fileId.ToString();
+
                 CancellationToken processingCancellationToken = _processingCancellationTokenSource.Token;
 
                 _logger.LogInformation($"Using store locations '{OriginalStorePath}' and '{RebuiltStorePath}' for {fileId}");
@@ -70,22 +80,27 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 originalStoreFilePath = Path.Combine(OriginalStorePath, fileId.ToString());
                 rebuiltStoreFilePath = Path.Combine(RebuiltStorePath, fileId.ToString());
 
-                _logger.LogInformation($"Updating 'Original' store for {fileId}");
-                using (Stream fileStream = new FileStream(originalStoreFilePath, FileMode.Create))
+
+                if (ReturnOutcome.GW_REBUILT != descriptor.Outcome)
                 {
-                    await fileStream.WriteAsync(file, 0, file.Length);
+                    _logger.LogInformation($"Updating 'Original' store for {fileId}");
+                    using (Stream fileStream = new FileStream(originalStoreFilePath, FileMode.Create))
+                    {
+                        await fileStream.WriteAsync(file, 0, file.Length);
+                    }
+
+                    _adaptationServiceClient.Connect();
+                    ReturnOutcome outcome = _adaptationServiceClient.AdaptationRequest(fileId, originalStoreFilePath, rebuiltStoreFilePath, processingCancellationToken);
+                    descriptor.Update(outcome, originalStoreFilePath, rebuiltStoreFilePath);
+
+                    _logger.LogInformation($"Returning '{descriptor.Outcome}' Outcome for {fileId}");
                 }
 
-                _adaptationServiceClient.Connect();
-                ReturnOutcome outcome = _adaptationServiceClient.AdaptationRequest(fileId, originalStoreFilePath, rebuiltStoreFilePath, processingCancellationToken);
-
-                _logger.LogInformation($"Returning '{outcome}' Outcome for {fileId}");
-
-                switch (outcome)
+                switch (descriptor.Outcome)
                 {
                     case ReturnOutcome.GW_REBUILT:
                         string reportFolderPath = Directory.GetDirectories(Constants.TRANSACTION_STORE_PATH, $"{ fileId}", SearchOption.AllDirectories).FirstOrDefault();
-                        if (string.IsNullOrEmpty(rebuiltStoreFilePath))
+                        if (string.IsNullOrEmpty(descriptor.RebuiltStoreFilePath))
                         {
                             _logger.LogWarning($"Report folder not exist for file {fileId}");
                             cloudProxyResponseModel.Errors.Add($"Report folder not exist for file {fileId}");
@@ -103,25 +118,25 @@ namespace Glasswall.CloudProxy.Api.Controllers
                         return new FileContentResult(System.IO.File.ReadAllBytes(reportPath), "application/octet-stream") { FileDownloadName = Constants.REPORT_XML_FILE_NAME };
                     case ReturnOutcome.GW_FAILED:
                     default:
-                        if (System.IO.File.Exists(rebuiltStoreFilePath))
+                        if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
                         {
-                            cloudProxyResponseModel.Errors.Add(System.IO.File.ReadAllText(rebuiltStoreFilePath));
+                            cloudProxyResponseModel.Errors.Add(System.IO.File.ReadAllText(descriptor.RebuiltStoreFilePath));
                         }
-                        cloudProxyResponseModel.Status = outcome;
+                        cloudProxyResponseModel.Status = descriptor.Outcome;
                         return BadRequest(cloudProxyResponseModel);
                 }
             }
             catch (OperationCanceledException oce)
             {
-                _logger.LogError(oce, $"Error Processing Timeout 'input' {fileId} exceeded {_processingTimeoutDuration.TotalSeconds}s");
-                cloudProxyResponseModel.Errors.Add($"Error Processing Timeout 'input' {fileId} exceeded {_processingTimeoutDuration.TotalSeconds}s");
+                _logger.LogError(oce, $"Error Processing Timeout 'input' {fileIdString} exceeded {_processingTimeoutDuration.TotalSeconds}s");
+                cloudProxyResponseModel.Errors.Add($"Error Processing Timeout 'input' {fileIdString} exceeded {_processingTimeoutDuration.TotalSeconds}s");
                 cloudProxyResponseModel.Status = ReturnOutcome.GW_ERROR;
                 return StatusCode(StatusCodes.Status500InternalServerError, cloudProxyResponseModel);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error Processing 'input' {fileId} and error detail is {ex.Message}");
-                cloudProxyResponseModel.Errors.Add($"Error Processing 'input' {fileId} and error detail is {ex.Message}");
+                _logger.LogError(ex, $"Error Processing 'input' {fileIdString} and error detail is {ex.Message}");
+                cloudProxyResponseModel.Errors.Add($"Error Processing 'input' {fileIdString} and error detail is {ex.Message}");
                 cloudProxyResponseModel.Status = ReturnOutcome.GW_ERROR;
                 return StatusCode(StatusCodes.Status500InternalServerError, cloudProxyResponseModel);
             }
