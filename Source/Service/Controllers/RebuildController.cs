@@ -81,20 +81,18 @@ namespace Glasswall.CloudProxy.Api.Controllers
 
                 if (ReturnOutcome.GW_REBUILT != descriptor.Outcome)
                 {
+                    _logger.LogInformation($"Updating 'Original' store for {fileId}");
+                    using (Stream fileStream = new FileStream(originalStoreFilePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(fileStream);
+                    }
 
+                    _adaptationServiceClient.Connect();
+                    ReturnOutcome outcome = _adaptationServiceClient.AdaptationRequest(fileId, originalStoreFilePath, rebuiltStoreFilePath, processingCancellationToken);
+                    descriptor.Update(outcome, originalStoreFilePath, rebuiltStoreFilePath);
+
+                    _logger.LogInformation($"Returning '{descriptor.Outcome}' Outcome for {fileId}");
                 }
-
-                _logger.LogInformation($"Updating 'Original' store for {fileId}");
-                using (Stream fileStream = new FileStream(originalStoreFilePath, FileMode.Create))
-                {
-                    await file.CopyToAsync(fileStream);
-                }
-
-                _adaptationServiceClient.Connect();
-                ReturnOutcome outcome = _adaptationServiceClient.AdaptationRequest(fileId, originalStoreFilePath, rebuiltStoreFilePath, processingCancellationToken);
-                descriptor.Update(outcome, originalStoreFilePath, rebuiltStoreFilePath);
-
-                _logger.LogInformation($"Returning '{descriptor.Outcome}' Outcome for {fileId}");
 
                 switch (descriptor.Outcome)
                 {
@@ -106,7 +104,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                         {
                             cloudProxyResponseModel.Errors.Add(System.IO.File.ReadAllText(descriptor.RebuiltStoreFilePath));
                         }
-                        cloudProxyResponseModel.Status = outcome;
+                        cloudProxyResponseModel.Status = descriptor.Outcome;
                         return BadRequest(cloudProxyResponseModel);
                 }
             }
@@ -172,20 +170,18 @@ namespace Glasswall.CloudProxy.Api.Controllers
 
                 if (ReturnOutcome.GW_REBUILT != descriptor.Outcome)
                 {
+                    _logger.LogInformation($"Updating 'Original' store for {fileId}");
+                    using (Stream fileStream = new FileStream(originalStoreFilePath, FileMode.Create))
+                    {
+                        await fileStream.WriteAsync(file, 0, file.Length);
+                    }
 
+                    _adaptationServiceClient.Connect();
+                    ReturnOutcome outcome = _adaptationServiceClient.AdaptationRequest(fileId, originalStoreFilePath, rebuiltStoreFilePath, processingCancellationToken);
+                    descriptor.Update(outcome, originalStoreFilePath, rebuiltStoreFilePath);
+
+                    _logger.LogInformation($"Returning '{outcome}' Outcome for {fileId}");
                 }
-
-                _logger.LogInformation($"Updating 'Original' store for {fileId}");
-                using (Stream fileStream = new FileStream(originalStoreFilePath, FileMode.Create))
-                {
-                    await fileStream.WriteAsync(file, 0, file.Length);
-                }
-
-                _adaptationServiceClient.Connect();
-                ReturnOutcome outcome = _adaptationServiceClient.AdaptationRequest(fileId, originalStoreFilePath, rebuiltStoreFilePath, processingCancellationToken);
-                descriptor.Update(outcome, originalStoreFilePath, rebuiltStoreFilePath);
-
-                _logger.LogInformation($"Returning '{outcome}' Outcome for {fileId}");
 
                 switch (descriptor.Outcome)
                 {
@@ -197,7 +193,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                         {
                             cloudProxyResponseModel.Errors.Add(System.IO.File.ReadAllText(descriptor.RebuiltStoreFilePath));
                         }
-                        cloudProxyResponseModel.Status = outcome;
+                        cloudProxyResponseModel.Status = descriptor.Outcome;
                         return BadRequest(cloudProxyResponseModel);
                 }
             }
