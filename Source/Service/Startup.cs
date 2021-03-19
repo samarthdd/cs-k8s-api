@@ -24,7 +24,7 @@ namespace Glasswall.CloudProxy.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
+            services.AddCors(o => o.AddPolicy(Constants.CORS_POLICY, builder =>
             {
                 builder.AllowAnyOrigin()
                        .AllowAnyMethod()
@@ -48,7 +48,7 @@ namespace Glasswall.CloudProxy.Api
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            app.UseCors("MyPolicy");
+            app.UseCors(Constants.CORS_POLICY);
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -62,9 +62,10 @@ namespace Glasswall.CloudProxy.Api
 
             app.Use((context, next) =>
             {
-                context.Response.Headers["Access-Control-Expose-Headers"] = "*";
-                context.Response.Headers["Access-Control-Allow-Headers"] = "*";
-                context.Response.Headers["Access-Control-Allow-Origin"] = "*";
+                context.Response.Headers[Constants.Header.ACCESS_CONTROL_EXPOSE_HEADERS] = Constants.STAR;
+                context.Response.Headers[Constants.Header.ACCESS_CONTROL_ALLOW_HEADERS] = Constants.STAR;
+                context.Response.Headers[Constants.Header.ACCESS_CONTROL_ALLOW_ORIGIN] = Constants.STAR;
+                context.Response.Headers[Constants.Header.VIA] = System.Environment.MachineName;
                 return next.Invoke();
             });
 

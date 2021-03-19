@@ -97,6 +97,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 switch (descriptor.Outcome)
                 {
                     case ReturnOutcome.GW_REBUILT:
+                        AddHeaderToResponse(Constants.Header.FILE_ID, fileIdString);
                         return new FileContentResult(System.IO.File.ReadAllBytes(descriptor.RebuiltStoreFilePath), "application/octet-stream") { FileDownloadName = file.FileName ?? "Unknown" };
                     case ReturnOutcome.GW_FAILED:
                     default:
@@ -186,6 +187,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 switch (descriptor.Outcome)
                 {
                     case ReturnOutcome.GW_REBUILT:
+                        AddHeaderToResponse(Constants.Header.FILE_ID, fileIdString);
                         return Ok(Convert.ToBase64String(System.IO.File.ReadAllBytes(descriptor.RebuiltStoreFilePath)));
                     case ReturnOutcome.GW_FAILED:
                     default:

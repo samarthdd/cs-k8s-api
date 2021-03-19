@@ -115,6 +115,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                             return NotFound(cloudProxyResponseModel);
                         }
 
+                        AddHeaderToResponse(Constants.Header.FILE_ID, fileIdString);
                         return new FileContentResult(System.IO.File.ReadAllBytes(reportPath), "application/octet-stream") { FileDownloadName = Constants.REPORT_XML_FILE_NAME };
                     case ReturnOutcome.GW_FAILED:
                     default:
