@@ -2,19 +2,19 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: icap-adaptation
-  name: proxy-rest-api
+  name: rebuild-rest-api
   annotations:
     "sidecar.jaegertracing.io/inject": "true"
 spec:
   selector:
     matchLabels:
-      app: proxy-rest-api
+      app: rebuild-rest-api
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: proxy-rest-api
+        app: rebuild-rest-api
     spec:
       tolerations:
       - key: "key"
@@ -32,8 +32,8 @@ spec:
           persistentVolumeClaim:
             claimName: pvc-transaction-query-service
       containers:
-      - name: proxy-rest-api
-        image: <REPLACE_IMAGE_ID>
+      - name: rebuild-rest-api
+        image: ggrig/cs-k8s-api:0.09
         ports:
         - containerPort: 80
         resources:
@@ -52,7 +52,7 @@ spec:
             name: transaction-query-service-vol
         env:
         - name: ProcessingTimeoutDuration
-          value: "00:10:00"
+          value: "00:01:00"
         - name: OriginalStorePath
           value: "/var/source"
         - name: RebuiltStorePath
@@ -74,14 +74,14 @@ apiVersion: v1
 kind: Service
 metadata:
   namespace: icap-adaptation
-  name: proxy-rest-api
+  name: rebuild-rest-api
   labels:
-    service: proxy-rest-api
+    service: rebuild-rest-api
 spec:
   selector:
-    app: proxy-rest-api
+    app: rebuild-rest-api
   ports:
     - name: api-port
-      port:  8080
+      port:  8888
       targetPort: 80
   type: LoadBalancer

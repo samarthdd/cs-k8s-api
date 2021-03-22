@@ -54,9 +54,12 @@ namespace Glasswall.CloudProxy.Api.Controllers
             String fileIdString = "";
             CloudProxyResponseModel cloudProxyResponseModel = new CloudProxyResponseModel();
 
-            using (IScope scope = tracer.BuildSpan("AnalyseFromBase64").StartActive(finishSpanOnDispose: true))
-            {
-            }
+            var builder = tracer.BuildSpan("Get::Data");
+            var span = builder.Start();
+
+            // Set some context data
+            span.Log("File Analyse");
+            span.SetTag("Jaeger Testing Client", "Getting data request");
 
             try
             {
@@ -154,6 +157,9 @@ namespace Glasswall.CloudProxy.Api.Controllers
             {
                 ClearStores(originalStoreFilePath, rebuiltStoreFilePath);
             }
+
+            // Stop span
+            span.Finish();
         }
     }
 }

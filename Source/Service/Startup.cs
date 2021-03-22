@@ -13,6 +13,9 @@ using OpenTracing.Util;
 using Jaeger.Samplers;
 using Jaeger;
 using IHostingEnvironment = Microsoft.Extensions.Hosting.IHostingEnvironment;
+using System.Reflection;
+using Microsoft.Extensions.Logging;
+using System;
 
 namespace Glasswall.CloudProxy.Api
 {
@@ -55,15 +58,35 @@ namespace Glasswall.CloudProxy.Api
             // Adds the Jaeger Tracer.
             services.AddSingleton<ITracer>(serviceProvider =>
             {
-                string serviceName = serviceProvider.GetRequiredService<IHostingEnvironment>().ApplicationName;
+                //string serviceName = serviceProvider.GetRequiredService<IHostingEnvironment>().ApplicationName;
 
-                // This will log to a default localhost installation of Jaeger.
-                var tracer = new Tracer.Builder(serviceName)
-                    .WithSampler(new ConstSampler(true))
-                    .Build();
+                //string serviceName = Assembly.GetEntryAssembly().GetName().Name;
 
-                // Allows code that can't use DI to also access the tracer.
-                GlobalTracer.Register(tracer);
+                //ILoggerFactory loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+
+                //ISampler sampler = new ConstSampler(sample: true);
+
+                //// This will log to a default localhost installation of Jaeger.
+                //var tracer = new Tracer.Builder(serviceName)
+                //    .WithLoggerFactory(loggerFactory)
+                //    .WithSampler(new ConstSampler(true))
+                //    .Build();
+
+                Environment.SetEnvironmentVariable("JAEGER_SERVICE_NAME", "rebuild-rest-api");
+                Environment.SetEnvironmentVariable("JAEGER_AGENT_HOST", "simplest-agent.observability.svc.cluster.local");
+                Environment.SetEnvironmentVariable("JAEGER_AGENT_PORT", "6831");
+                Environment.SetEnvironmentVariable("JAEGER_SAMPLER_TYPE", "const");
+
+                var loggerFactory = new LoggerFactory();
+
+                var config = Jaeger.Configuration.FromEnv(loggerFactory);
+                var tracer = config.GetTracer();
+
+                if (!GlobalTracer.IsRegistered())
+                {
+                    // Allows code that can't use DI to also access the tracer.
+                    GlobalTracer.Register(tracer);
+                }
 
                 return tracer;
             });
