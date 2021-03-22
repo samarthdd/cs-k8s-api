@@ -26,7 +26,6 @@ namespace Glasswall.CloudProxy.Api.Controllers
         private readonly TimeSpan _processingTimeoutDuration;
         private readonly string OriginalStorePath;
         private readonly string RebuiltStorePath;
-
         private readonly ITracer tracer;
 
         public AnalyseController(IAdaptationServiceClient<AdaptationOutcomeProcessor> adaptationServiceClient, IStoreConfiguration storeConfiguration,
@@ -54,12 +53,12 @@ namespace Glasswall.CloudProxy.Api.Controllers
             String fileIdString = "";
             CloudProxyResponseModel cloudProxyResponseModel = new CloudProxyResponseModel();
 
-            var builder = tracer.BuildSpan("Get::Data");
+            var builder = tracer.BuildSpan("Post::Data");
             var span = builder.Start();
 
             // Set some context data
-            span.Log("File Analyse");
-            span.SetTag("Jaeger Testing Client", "Getting data request");
+            span.Log("Analyse base64");
+            span.SetTag("Jaeger Testing Client", "POST api/Analyse/base64 request");
 
             try
             {
@@ -156,10 +155,8 @@ namespace Glasswall.CloudProxy.Api.Controllers
             finally
             {
                 ClearStores(originalStoreFilePath, rebuiltStoreFilePath);
+                span.Finish();
             }
-
-            // Stop span
-            span.Finish();
         }
     }
 }
