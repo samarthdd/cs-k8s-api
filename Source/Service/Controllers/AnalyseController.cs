@@ -14,6 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
 using Glasswall.CloudProxy.Common.Web.Models;
+using OpenTracing;
 
 namespace Glasswall.CloudProxy.Api.Controllers
 {
@@ -26,8 +27,10 @@ namespace Glasswall.CloudProxy.Api.Controllers
         private readonly string OriginalStorePath;
         private readonly string RebuiltStorePath;
 
+        private readonly ITracer tracer;
+
         public AnalyseController(IAdaptationServiceClient<AdaptationOutcomeProcessor> adaptationServiceClient, IStoreConfiguration storeConfiguration,
-            IProcessingConfiguration processingConfiguration, ILogger<AnalyseController> logger, IFileUtility fileUtility) : base(logger)
+            IProcessingConfiguration processingConfiguration, ILogger<AnalyseController> logger, IFileUtility fileUtility, ITracer tracer) : base(logger)
         {
             _adaptationServiceClient = adaptationServiceClient ?? throw new ArgumentNullException(nameof(adaptationServiceClient));
             _fileUtility = fileUtility ?? throw new ArgumentNullException(nameof(fileUtility));
@@ -38,6 +41,8 @@ namespace Glasswall.CloudProxy.Api.Controllers
 
             OriginalStorePath = storeConfiguration.OriginalStorePath;
             RebuiltStorePath = storeConfiguration.RebuiltStorePath;
+
+            this.tracer = tracer;
         }
 
         [HttpPost("base64")]
@@ -48,6 +53,10 @@ namespace Glasswall.CloudProxy.Api.Controllers
             string rebuiltStoreFilePath = string.Empty;
             String fileIdString = "";
             CloudProxyResponseModel cloudProxyResponseModel = new CloudProxyResponseModel();
+
+            using (IScope scope = tracer.BuildSpan("AnalyseFromBase64").StartActive(finishSpanOnDispose: true))
+            {
+            }
 
             try
             {
