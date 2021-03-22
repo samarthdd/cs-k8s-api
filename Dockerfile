@@ -20,4 +20,10 @@ RUN dotnet publish "Glasswall.CloudProxy.Api.csproj" -c Release -o /app/publish
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+
+
+RUN apt-get update
+RUN apt-get install -y iputils-ping
+RUN apt-get install -y telnet
+
 ENTRYPOINT ["dotnet", "Glasswall.CloudProxy.Api.dll"]
