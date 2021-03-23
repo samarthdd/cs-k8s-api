@@ -2,9 +2,29 @@
 
 ## Archetecture
 
-## Docker build
+## The docker image
+
+Build the image with the following:  
+
+```
+docker build -t cs-k8s-api --file Dockerfile .
+```
+
+Tag the docker image:  
+
+```
+docker image tag cs-k8s-api <dockerhub_repo>/cs-k8s-api:<version>
+```
+
+Upload the tagged image to Docker Hub:  
+
+```
+docker image push <dockerhub_repo>/cs-k8s-api:<version>
+```
 
 ## Deployment within ICAP Service cluster
+
+
 
 ## Implemented endpoints
 
