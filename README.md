@@ -2,9 +2,11 @@
 
 ## Archetecture
 
+## Docker build
+
+## Deployment within ICAP Service cluster
+
 ## Implemented endpoints
-
-
 
 #### api/FileTypeDetection/base64
 
@@ -57,8 +59,14 @@ On success, the output is a base64 encoded cleaned up file
 
 ### api/Rebuld/file
 
+The endpoint rebuilds the file uploaded.
 
+It accepts HTTP POST requests with:  
 
-## Docker build
+Headers:  
+- Content-Type: multipart/form-data
 
-## Deployment within ICAP Service cluster
+Payload:  
+- form-data with `file` named field that contains the file binary
+  
+On success, the output is the cleaned up file binary
