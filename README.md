@@ -1,8 +1,18 @@
 # C# Rest API for ICAP Service Kubernetes cluster
 
+## The project overview
+
+The project is about a Kubernetes service that may be added to [ICAP infrastructure](https://github.com/k8-proxy/icap-infrastructure) to provide access to Glasswall Solutions file rebuild service through RESTful APIs
+
 ## Archetecture
 
 ![architecture](images/c-sharp-pod.png)
+
+- The C# service receives files for a rebuild on the REST API endpoints.  
+- After preliminary processing (at least must verify the file has been received) the request is passed to the `Adaption Service` with `adaption request` RabbitMQ message.  
+- The file to be rebuilt is uploaded to the `Original Store`.  
+- Once the processing is completed C# service gets informed with a RabbitMQ `adaption outcome' message.  
+- C# service get the rebuilt file from the `Rebuild Store` and passes it to the user.  
 
 ## The docker image
 
