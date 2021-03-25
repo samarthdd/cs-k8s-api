@@ -1,6 +1,6 @@
 # C# Rest API for ICAP Service Kubernetes cluster
 
-## The project overview
+## The Project Overview
 
 The project is about a Kubernetes service that can be added to [ICAP infrastructure](https://github.com/k8-proxy/icap-infrastructure) to provide access to Glasswall Solutions file rebuild service through RESTful APIs
 
