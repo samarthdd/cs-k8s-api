@@ -8,6 +8,14 @@ using Microsoft.Extensions.Hosting;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http.Features;
 using System.Diagnostics.CodeAnalysis;
+using OpenTracing;
+using OpenTracing.Util;
+using Jaeger.Samplers;
+using Jaeger;
+using IHostingEnvironment = Microsoft.Extensions.Hosting.IHostingEnvironment;
+using System.Reflection;
+using Microsoft.Extensions.Logging;
+using System;
 
 namespace Glasswall.CloudProxy.Api
 {
@@ -43,6 +51,46 @@ namespace Glasswall.CloudProxy.Api
             services.ConfigureServices(Configuration);
             services.AddTransient<IFileUtility, FileUtility>();
             services.AddControllers();
+
+            //services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddOpenTracing();
+
+            // Adds the Jaeger Tracer.
+            services.AddSingleton<ITracer>(serviceProvider =>
+            {
+                //string serviceName = serviceProvider.GetRequiredService<IHostingEnvironment>().ApplicationName;
+
+                //string serviceName = Assembly.GetEntryAssembly().GetName().Name;
+
+                //ILoggerFactory loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+
+                //ISampler sampler = new ConstSampler(sample: true);
+
+                //// This will log to a default localhost installation of Jaeger.
+                //var tracer = new Tracer.Builder(serviceName)
+                //    .WithLoggerFactory(loggerFactory)
+                //    .WithSampler(new ConstSampler(true))
+                //    .Build();
+
+                Environment.SetEnvironmentVariable("JAEGER_SERVICE_NAME", "rebuild-rest-api");
+                Environment.SetEnvironmentVariable("JAEGER_AGENT_HOST", "simplest-agent.observability.svc.cluster.local");
+                Environment.SetEnvironmentVariable("JAEGER_AGENT_PORT", "6831");
+                Environment.SetEnvironmentVariable("JAEGER_SAMPLER_TYPE", "const");
+
+                var loggerFactory = new LoggerFactory();
+
+                var config = Jaeger.Configuration.FromEnv(loggerFactory);
+                var tracer = config.GetTracer();
+
+                if (!GlobalTracer.IsRegistered())
+                {
+                    // Allows code that can't use DI to also access the tracer.
+                    GlobalTracer.Register(tracer);
+                }
+
+                return tracer;
+            });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -73,6 +121,9 @@ namespace Glasswall.CloudProxy.Api
             {
                 endpoints.MapControllers();
             });
+
+            //app.UseMvc();
+
         }
     }
 }

@@ -3,6 +3,8 @@ kind: Deployment
 metadata:
   namespace: icap-adaptation
   name: proxy-rest-api
+  annotations:
+    "sidecar.jaegertracing.io/inject": "true"
 spec:
   selector:
     matchLabels:

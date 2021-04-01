@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using Glasswall.CloudProxy.Common.Web.Models;
 using System.Xml.Serialization;
+using OpenTracing;
 
 namespace Glasswall.CloudProxy.Api.Controllers
 {
@@ -26,9 +27,10 @@ namespace Glasswall.CloudProxy.Api.Controllers
         private readonly TimeSpan _processingTimeoutDuration;
         private readonly string OriginalStorePath;
         private readonly string RebuiltStorePath;
+        private readonly ITracer tracer;
 
         public FileTypeDetectionController(IAdaptationServiceClient<AdaptationOutcomeProcessor> adaptationServiceClient, IStoreConfiguration storeConfiguration,
-            IProcessingConfiguration processingConfiguration, ILogger<FileTypeDetectionController> logger, IFileUtility fileUtility) : base(logger)
+            IProcessingConfiguration processingConfiguration, ILogger<FileTypeDetectionController> logger, IFileUtility fileUtility, ITracer tracer) : base(logger)
         {
             _adaptationServiceClient = adaptationServiceClient ?? throw new ArgumentNullException(nameof(adaptationServiceClient));
             _fileUtility = fileUtility ?? throw new ArgumentNullException(nameof(fileUtility));
@@ -39,6 +41,8 @@ namespace Glasswall.CloudProxy.Api.Controllers
 
             OriginalStorePath = storeConfiguration.OriginalStorePath;
             RebuiltStorePath = storeConfiguration.RebuiltStorePath;
+
+            this.tracer = tracer;
         }
 
         [HttpPost("base64")]
@@ -49,6 +53,13 @@ namespace Glasswall.CloudProxy.Api.Controllers
             string rebuiltStoreFilePath = string.Empty;
             String fileIdString = "";
             CloudProxyResponseModel cloudProxyResponseModel = new CloudProxyResponseModel();
+
+            var builder = tracer.BuildSpan("Post::Data");
+            var span = builder.Start();
+
+            // Set some context data
+            span.Log("File Type Detection base64");
+            span.SetTag("Jaeger Testing Client", "POST api/FileTypeDetection/base64 request");
 
             try
             {
@@ -156,6 +167,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
             finally
             {
                 ClearStores(originalStoreFilePath, rebuiltStoreFilePath);
+                span.Finish();
             }
         }
     }
