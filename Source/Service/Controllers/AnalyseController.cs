@@ -163,13 +163,11 @@ namespace Glasswall.CloudProxy.Api.Controllers
         public IActionResult GetXMLReportByFileId([Required] Guid fileId)
         {
             _logger.LogInformation("'{0}' method invoked", nameof(GetXMLReportByFileId));
-            string originalStoreFilePath = string.Empty;
-            string rebuiltStoreFilePath = string.Empty;
             string fileIdString = string.Empty;
             CloudProxyResponseModel cloudProxyResponseModel = new CloudProxyResponseModel();
 
-            var builder = tracer.BuildSpan("Get::api/Analyse/xmlreport");
-            var span = builder.Start();
+            ISpanBuilder builder = tracer.BuildSpan("Get::api/Analyse/xmlreport");
+            ISpan span = builder.Start();
 
             // Set some context data
             span.Log("Analyse xmlreport");
@@ -187,8 +185,6 @@ namespace Glasswall.CloudProxy.Api.Controllers
 
                 _logger.LogInformation($"Using store locations '{OriginalStorePath}' and '{RebuiltStorePath}' for {fileId}");
 
-                originalStoreFilePath = Path.Combine(OriginalStorePath, fileIdString);
-                rebuiltStoreFilePath = Path.Combine(RebuiltStorePath, fileIdString);
                 string reportFolderPath = Directory.GetDirectories(Constants.TRANSACTION_STORE_PATH, $"{ fileId}", SearchOption.AllDirectories).FirstOrDefault();
 
                 if (string.IsNullOrEmpty(reportFolderPath))
