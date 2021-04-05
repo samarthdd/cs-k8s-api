@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using Glasswall.CloudProxy.Common.Web.Models;
 using OpenTracing;
+using System.Xml.Serialization;
 
 namespace Glasswall.CloudProxy.Api.Controllers
 {
@@ -24,12 +25,14 @@ namespace Glasswall.CloudProxy.Api.Controllers
         private readonly IFileUtility _fileUtility;
         private readonly CancellationTokenSource _processingCancellationTokenSource;
         private readonly TimeSpan _processingTimeoutDuration;
-        private readonly string OriginalStorePath;
-        private readonly string RebuiltStorePath;
-        private readonly ITracer tracer;
+        private readonly string _originalStorePath;
+        private readonly string _rebuiltStorePath;
+        private readonly ITracer _tracer;
+        private readonly IZipUtility _zipUtility;
 
         public AnalyseController(IAdaptationServiceClient<AdaptationOutcomeProcessor> adaptationServiceClient, IStoreConfiguration storeConfiguration,
-            IProcessingConfiguration processingConfiguration, ILogger<AnalyseController> logger, IFileUtility fileUtility, ITracer tracer) : base(logger)
+            IProcessingConfiguration processingConfiguration, ILogger<AnalyseController> logger, IFileUtility fileUtility, ITracer tracer,
+            IZipUtility zipUtility) : base(logger)
         {
             _adaptationServiceClient = adaptationServiceClient ?? throw new ArgumentNullException(nameof(adaptationServiceClient));
             _fileUtility = fileUtility ?? throw new ArgumentNullException(nameof(fileUtility));
@@ -38,10 +41,11 @@ namespace Glasswall.CloudProxy.Api.Controllers
             _processingTimeoutDuration = processingConfiguration.ProcessingTimeoutDuration;
             _processingCancellationTokenSource = new CancellationTokenSource(_processingTimeoutDuration);
 
-            OriginalStorePath = storeConfiguration.OriginalStorePath;
-            RebuiltStorePath = storeConfiguration.RebuiltStorePath;
+            _originalStorePath = storeConfiguration.OriginalStorePath;
+            _rebuiltStorePath = storeConfiguration.RebuiltStorePath;
 
-            this.tracer = tracer;
+            _tracer = tracer;
+            _zipUtility = zipUtility ?? throw new ArgumentNullException(nameof(zipUtility));
         }
 
         [HttpPost("base64")]
@@ -53,7 +57,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
             String fileIdString = "";
             CloudProxyResponseModel cloudProxyResponseModel = new CloudProxyResponseModel();
 
-            var builder = tracer.BuildSpan("Post::Data");
+            var builder = _tracer.BuildSpan("Post::Data");
             var span = builder.Start();
 
             // Set some context data
@@ -86,10 +90,10 @@ namespace Glasswall.CloudProxy.Api.Controllers
 
                 CancellationToken processingCancellationToken = _processingCancellationTokenSource.Token;
 
-                _logger.LogInformation($"Using store locations '{OriginalStorePath}' and '{RebuiltStorePath}' for {fileId}");
+                _logger.LogInformation($"Using store locations '{_originalStorePath}' and '{_rebuiltStorePath}' for {fileId}");
 
-                originalStoreFilePath = Path.Combine(OriginalStorePath, fileId.ToString());
-                rebuiltStoreFilePath = Path.Combine(RebuiltStorePath, fileId.ToString());
+                originalStoreFilePath = Path.Combine(_originalStorePath, fileId.ToString());
+                rebuiltStoreFilePath = Path.Combine(_rebuiltStorePath, fileId.ToString());
 
 
                 if (ReturnOutcome.GW_REBUILT != descriptor.Outcome)
@@ -166,7 +170,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
             string fileIdString = string.Empty;
             CloudProxyResponseModel cloudProxyResponseModel = new CloudProxyResponseModel();
 
-            ISpanBuilder builder = tracer.BuildSpan("Get::api/Analyse/xmlreport");
+            ISpanBuilder builder = _tracer.BuildSpan("Get::api/Analyse/xmlreport");
             ISpan span = builder.Start();
 
             // Set some context data
@@ -183,7 +187,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
 
                 fileIdString = fileId.ToString();
 
-                _logger.LogInformation($"Using store locations '{OriginalStorePath}' and '{RebuiltStorePath}' for {fileId}");
+                _logger.LogInformation($"Using store locations '{_originalStorePath}' and '{_rebuiltStorePath}' for {fileId}");
 
                 string reportFolderPath = Directory.GetDirectories(Constants.TRANSACTION_STORE_PATH, $"{ fileId}", SearchOption.AllDirectories).FirstOrDefault();
 
@@ -215,6 +219,124 @@ namespace Glasswall.CloudProxy.Api.Controllers
             finally
             {
                 span.Finish();
+            }
+        }
+
+        [HttpGet("rebuildzip")]
+        public IActionResult GetZipByFileId([Required] Guid fileId)
+        {
+            _logger.LogInformation("'{0}' method invoked", nameof(GetZipByFileId));
+            string fileIdString = string.Empty;
+            string rebuiltStoreFilePath = string.Empty;
+            CloudProxyResponseModel cloudProxyResponseModel = new CloudProxyResponseModel();
+
+            ISpanBuilder builder = _tracer.BuildSpan("Get::api/Analyse/zip");
+            ISpan span = builder.Start();
+
+            // Set some context data
+            span.Log("Analyse zip");
+            span.SetTag("Jaeger Testing Client", "GET api/Analyse/zip request");
+
+            if (fileId == Guid.Empty)
+            {
+                cloudProxyResponseModel.Errors.Add($"The value {fileId} should not be empty.");
+                return BadRequest(cloudProxyResponseModel);
+            }
+
+            fileIdString = fileId.ToString();
+            string zipFileName = Path.Combine(Constants.VAR_PATH, $"{fileIdString}{Constants.ZIP_EXTENSION}");
+            string fileIdFolderPath = Path.Combine(Constants.VAR_PATH, fileIdString);
+            string tempFolderPath = Path.Combine(fileIdFolderPath, fileIdString);
+
+            try
+            {
+                _logger.LogInformation($"Using store locations '{_originalStorePath}' and '{_rebuiltStorePath}' for {fileId}");
+
+                string transactionFolderPath = Directory.GetDirectories(Constants.TRANSACTION_STORE_PATH, $"{ fileId}", SearchOption.AllDirectories).FirstOrDefault();
+
+                if (string.IsNullOrEmpty(transactionFolderPath))
+                {
+                    _logger.LogWarning($"Report folder not exist for file {fileId}");
+                    cloudProxyResponseModel.Errors.Add($"Report folder not exist for file {fileId}");
+                    return NotFound(cloudProxyResponseModel);
+                }
+
+                string reportPath = Path.Combine(transactionFolderPath, Constants.REPORT_XML_FILE_NAME);
+                if (!System.IO.File.Exists(reportPath))
+                {
+                    _logger.LogWarning($"Report xml not exist for file {fileId}");
+                    cloudProxyResponseModel.Errors.Add($"Report xml not exist for file {fileId}");
+                    return NotFound(cloudProxyResponseModel);
+                }
+
+                XmlSerializer serializer = new XmlSerializer(typeof(GWallInfo));
+                GWallInfo gwInfo = null;
+                using (FileStream fileStream = new FileStream(reportPath, FileMode.Open))
+                {
+                    gwInfo = (GWallInfo)serializer.Deserialize(fileStream);
+                }
+
+                string metaDataPath = Path.Combine(transactionFolderPath, Constants.METADATA_JSON_FILE_NAME);
+                if (!System.IO.File.Exists(metaDataPath))
+                {
+                    _logger.LogWarning($"Metadata json not exist for file {fileId}");
+                    cloudProxyResponseModel.Errors.Add($"Metadata json not exist for file {fileId}");
+                    return NotFound(cloudProxyResponseModel);
+                }
+
+                if (!Directory.Exists(tempFolderPath))
+                {
+                    Directory.CreateDirectory(tempFolderPath);
+                }
+
+                string reportFolderPath = Path.Combine(tempFolderPath, Constants.REPORT_FOLDER_NAME);
+                if (!Directory.Exists(reportFolderPath))
+                {
+                    Directory.CreateDirectory(reportFolderPath);
+                }
+
+                string cleanFolderPath = Path.Combine(tempFolderPath, Constants.CLEAN_FOLDER_NAME);
+                if (!Directory.Exists(cleanFolderPath))
+                {
+                    Directory.CreateDirectory(cleanFolderPath);
+                }
+
+                rebuiltStoreFilePath = Path.Combine(_rebuiltStorePath, fileIdString);
+                if (!System.IO.File.Exists(rebuiltStoreFilePath))
+                {
+                    _logger.LogWarning($"Rebuild file not exist for file {fileId}");
+                    cloudProxyResponseModel.Errors.Add($"Rebuild file not exist for file {fileId}");
+                    return NotFound(cloudProxyResponseModel);
+                }
+
+                System.IO.File.WriteAllBytes(Path.Combine(tempFolderPath, Constants.METADATA_JSON_FILE_NAME), System.IO.File.ReadAllBytes(metaDataPath));
+                System.IO.File.WriteAllBytes(Path.Combine(reportFolderPath, Constants.REPORT_XML_FILE_NAME), System.IO.File.ReadAllBytes(reportPath));
+                System.IO.File.WriteAllBytes(Path.Combine(cleanFolderPath, $"{Path.GetFileName(rebuiltStoreFilePath)}.{gwInfo.DocumentStatistics.DocumentSummary.FileType}"), System.IO.File.ReadAllBytes(rebuiltStoreFilePath));
+
+                _zipUtility.CreateZipFile(zipFileName, null, fileIdFolderPath);
+                AddHeaderToResponse(Constants.Header.FILE_ID, fileIdString);
+                return new FileContentResult(System.IO.File.ReadAllBytes(zipFileName), Constants.OCTET_STREAM_CONTENT_TYPE) { FileDownloadName = Path.GetFileName(zipFileName) };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error Processing 'input' {fileIdString} and error detail is {ex.Message}");
+                cloudProxyResponseModel.Errors.Add($"Error Processing 'input' {fileIdString} and error detail is {ex.Message}");
+                cloudProxyResponseModel.Status = ReturnOutcome.GW_ERROR;
+                return StatusCode(StatusCodes.Status500InternalServerError, cloudProxyResponseModel);
+            }
+            finally
+            {
+                span.Finish();
+
+                if (Directory.Exists(fileIdFolderPath))
+                {
+                    Directory.Delete(fileIdFolderPath, true);
+                }
+
+                if (System.IO.File.Exists(zipFileName))
+                {
+                    System.IO.File.Delete(zipFileName);
+                }
             }
         }
     }

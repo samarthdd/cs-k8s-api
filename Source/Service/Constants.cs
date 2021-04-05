@@ -3,7 +3,12 @@
     public static class Constants
     {
         public const string REPORT_XML_FILE_NAME = "report.xml";
+        public const string METADATA_JSON_FILE_NAME = "metadata.json";
+        public const string REPORT_FOLDER_NAME = "report";
+        public const string CLEAN_FOLDER_NAME = "clean";
         public const string TRANSACTION_STORE_PATH = "/mnt/stores/transactions";
+        public const string VAR_PATH = "/var";
+        public const string ZIP_EXTENSION = ".zip";
         public const string STAR = "*";
         public const string CORS_POLICY = "GWApiPolicy";
         public const string OCTET_STREAM_CONTENT_TYPE = "application/octet-stream";
