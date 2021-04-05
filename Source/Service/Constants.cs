@@ -6,6 +6,7 @@
         public const string TRANSACTION_STORE_PATH = "/mnt/stores/transactions";
         public const string STAR = "*";
         public const string CORS_POLICY = "GWApiPolicy";
+        public const string OCTET_STREAM_CONTENT_TYPE = "application/octet-stream";
 
         public static class Header
         {

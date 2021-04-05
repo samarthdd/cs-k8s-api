@@ -109,7 +109,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 {
                     case ReturnOutcome.GW_REBUILT:
                         AddHeaderToResponse(Constants.Header.FILE_ID, fileIdString);
-                        return new FileContentResult(System.IO.File.ReadAllBytes(descriptor.RebuiltStoreFilePath), "application/octet-stream") { FileDownloadName = file.FileName ?? "Unknown" };
+                        return new FileContentResult(System.IO.File.ReadAllBytes(descriptor.RebuiltStoreFilePath), Constants.OCTET_STREAM_CONTENT_TYPE) { FileDownloadName = file.FileName ?? "Unknown" };
                     case ReturnOutcome.GW_FAILED:
                     default:
                         if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))

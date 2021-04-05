@@ -127,7 +127,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                         }
 
                         AddHeaderToResponse(Constants.Header.FILE_ID, fileIdString);
-                        return new FileContentResult(System.IO.File.ReadAllBytes(reportPath), "application/octet-stream") { FileDownloadName = Constants.REPORT_XML_FILE_NAME };
+                        return new FileContentResult(System.IO.File.ReadAllBytes(reportPath), Constants.OCTET_STREAM_CONTENT_TYPE) { FileDownloadName = Constants.REPORT_XML_FILE_NAME };
                     case ReturnOutcome.GW_FAILED:
                     default:
                         if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
@@ -155,6 +155,65 @@ namespace Glasswall.CloudProxy.Api.Controllers
             finally
             {
                 ClearStores(originalStoreFilePath, rebuiltStoreFilePath);
+                span.Finish();
+            }
+        }
+
+        [HttpGet("xmlreport")]
+        public IActionResult GetXMLReportByFileId([Required] Guid fileId)
+        {
+            _logger.LogInformation("'{0}' method invoked", nameof(GetXMLReportByFileId));
+            string fileIdString = string.Empty;
+            CloudProxyResponseModel cloudProxyResponseModel = new CloudProxyResponseModel();
+
+            ISpanBuilder builder = tracer.BuildSpan("Get::api/Analyse/xmlreport");
+            ISpan span = builder.Start();
+
+            // Set some context data
+            span.Log("Analyse xmlreport");
+            span.SetTag("Jaeger Testing Client", "GET api/Analyse/xmlreport request");
+
+            try
+            {
+                if (fileId == Guid.Empty)
+                {
+                    cloudProxyResponseModel.Errors.Add($"The value {fileId} should not be empty.");
+                    return BadRequest(cloudProxyResponseModel);
+                }
+
+                fileIdString = fileId.ToString();
+
+                _logger.LogInformation($"Using store locations '{OriginalStorePath}' and '{RebuiltStorePath}' for {fileId}");
+
+                string reportFolderPath = Directory.GetDirectories(Constants.TRANSACTION_STORE_PATH, $"{ fileId}", SearchOption.AllDirectories).FirstOrDefault();
+
+                if (string.IsNullOrEmpty(reportFolderPath))
+                {
+                    _logger.LogWarning($"Report folder not exist for file {fileId}");
+                    cloudProxyResponseModel.Errors.Add($"Report folder not exist for file {fileId}");
+                    return NotFound(cloudProxyResponseModel);
+                }
+
+                string reportPath = Path.Combine(reportFolderPath, Constants.REPORT_XML_FILE_NAME);
+                if (!System.IO.File.Exists(reportPath))
+                {
+                    _logger.LogWarning($"Report xml not exist for file {fileId}");
+                    cloudProxyResponseModel.Errors.Add($"Report xml not exist for file {fileId}");
+                    return NotFound(cloudProxyResponseModel);
+                }
+
+                AddHeaderToResponse(Constants.Header.FILE_ID, fileIdString);
+                return new FileContentResult(System.IO.File.ReadAllBytes(reportPath), Constants.OCTET_STREAM_CONTENT_TYPE) { FileDownloadName = Constants.REPORT_XML_FILE_NAME };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error Processing 'input' {fileIdString} and error detail is {ex.Message}");
+                cloudProxyResponseModel.Errors.Add($"Error Processing 'input' {fileIdString} and error detail is {ex.Message}");
+                cloudProxyResponseModel.Status = ReturnOutcome.GW_ERROR;
+                return StatusCode(StatusCodes.Status500InternalServerError, cloudProxyResponseModel);
+            }
+            finally
+            {
                 span.Finish();
             }
         }
