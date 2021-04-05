@@ -218,7 +218,6 @@ namespace Glasswall.CloudProxy.Api.Controllers
             }
             finally
             {
-                ClearStores(originalStoreFilePath, rebuiltStoreFilePath);
                 span.Finish();
             }
         }
