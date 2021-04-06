@@ -50,6 +50,7 @@ namespace Glasswall.CloudProxy.Api
             });
             services.ConfigureServices(Configuration);
             services.AddTransient<IFileUtility, FileUtility>();
+            services.AddTransient<IZipUtility, ZipUtility>();
             services.AddControllers();
 
             //services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
