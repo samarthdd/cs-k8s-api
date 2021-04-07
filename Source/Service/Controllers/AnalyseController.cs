@@ -57,8 +57,8 @@ namespace Glasswall.CloudProxy.Api.Controllers
             String fileIdString = "";
             CloudProxyResponseModel cloudProxyResponseModel = new CloudProxyResponseModel();
 
-            var builder = _tracer.BuildSpan("Post::Data");
-            var span = builder.Start();
+            ISpanBuilder builder = _tracer.BuildSpan("Post::Data");
+            ISpan span = builder.Start();
 
             // Set some context data
             span.Log("Analyse base64");

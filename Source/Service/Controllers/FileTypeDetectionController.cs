@@ -25,9 +25,9 @@ namespace Glasswall.CloudProxy.Api.Controllers
         private readonly IFileUtility _fileUtility;
         private readonly CancellationTokenSource _processingCancellationTokenSource;
         private readonly TimeSpan _processingTimeoutDuration;
-        private readonly string OriginalStorePath;
-        private readonly string RebuiltStorePath;
-        private readonly ITracer tracer;
+        private readonly string _originalStorePath;
+        private readonly string _rebuiltStorePath;
+        private readonly ITracer _tracer;
 
         public FileTypeDetectionController(IAdaptationServiceClient<AdaptationOutcomeProcessor> adaptationServiceClient, IStoreConfiguration storeConfiguration,
             IProcessingConfiguration processingConfiguration, ILogger<FileTypeDetectionController> logger, IFileUtility fileUtility, ITracer tracer) : base(logger)
@@ -39,10 +39,10 @@ namespace Glasswall.CloudProxy.Api.Controllers
             _processingTimeoutDuration = processingConfiguration.ProcessingTimeoutDuration;
             _processingCancellationTokenSource = new CancellationTokenSource(_processingTimeoutDuration);
 
-            OriginalStorePath = storeConfiguration.OriginalStorePath;
-            RebuiltStorePath = storeConfiguration.RebuiltStorePath;
+            _originalStorePath = storeConfiguration.OriginalStorePath;
+            _rebuiltStorePath = storeConfiguration.RebuiltStorePath;
 
-            this.tracer = tracer;
+            _tracer = tracer;
         }
 
         [HttpPost("base64")]
@@ -54,8 +54,8 @@ namespace Glasswall.CloudProxy.Api.Controllers
             String fileIdString = "";
             CloudProxyResponseModel cloudProxyResponseModel = new CloudProxyResponseModel();
 
-            var builder = tracer.BuildSpan("Post::Data");
-            var span = builder.Start();
+            ISpanBuilder builder = _tracer.BuildSpan("Post::Data");
+            ISpan span = builder.Start();
 
             // Set some context data
             span.Log("File Type Detection base64");
@@ -87,10 +87,10 @@ namespace Glasswall.CloudProxy.Api.Controllers
 
                 CancellationToken processingCancellationToken = _processingCancellationTokenSource.Token;
 
-                _logger.LogInformation($"Using store locations '{OriginalStorePath}' and '{RebuiltStorePath}' for {fileId}");
+                _logger.LogInformation($"Using store locations '{_originalStorePath}' and '{_rebuiltStorePath}' for {fileId}");
 
-                originalStoreFilePath = Path.Combine(OriginalStorePath, fileId.ToString());
-                rebuiltStoreFilePath = Path.Combine(RebuiltStorePath, fileId.ToString());
+                originalStoreFilePath = Path.Combine(_originalStorePath, fileId.ToString());
+                rebuiltStoreFilePath = Path.Combine(_rebuiltStorePath, fileId.ToString());
 
                 if (ReturnOutcome.GW_REBUILT != descriptor.Outcome)
                 {
