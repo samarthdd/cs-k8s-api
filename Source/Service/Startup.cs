@@ -1,21 +1,18 @@
-using Glasswall.CloudProxy.Common.Setup;
 using Glasswall.CloudProxy.Api.Utilities;
+using Glasswall.CloudProxy.Common.Setup;
+using Jaeger;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Http.Features;
-using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Logging;
 using OpenTracing;
 using OpenTracing.Util;
-using Jaeger.Samplers;
-using Jaeger;
-using IHostingEnvironment = Microsoft.Extensions.Hosting.IHostingEnvironment;
-using System.Reflection;
-using Microsoft.Extensions.Logging;
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace Glasswall.CloudProxy.Api
 {
@@ -52,25 +49,23 @@ namespace Glasswall.CloudProxy.Api
             services.AddTransient<IFileUtility, FileUtility>();
             services.AddTransient<IZipUtility, ZipUtility>();
             services.AddControllers();
-
-            //services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             services.AddOpenTracing();
 
             // Adds the Jaeger Tracer.
             services.AddSingleton<ITracer>(serviceProvider =>
             {
-                //string serviceName = serviceProvider.GetRequiredService<IHostingEnvironment>().ApplicationName;
+                //string serviceName = serviceProvider.GetRequiredService<IHostEnvironment>().ApplicationName;
 
-                //string serviceName = Assembly.GetEntryAssembly().GetName().Name;
+                //string serviceName = System.Reflection.Assembly.GetEntryAssembly().GetName().Name;
 
                 //ILoggerFactory loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
 
-                //ISampler sampler = new ConstSampler(sample: true);
+                //Jaeger.Samplers.ISampler sampler = new Jaeger.Samplers.ConstSampler(sample: true);
 
                 //// This will log to a default localhost installation of Jaeger.
-                //var tracer = new Tracer.Builder(serviceName)
+                //Tracer tracer = new Tracer.Builder(serviceName)
                 //    .WithLoggerFactory(loggerFactory)
-                //    .WithSampler(new ConstSampler(true))
+                //    .WithSampler(new Jaeger.Samplers.ConstSampler(true))
                 //    .Build();
 
                 Environment.SetEnvironmentVariable("JAEGER_SERVICE_NAME", "rebuild-rest-api");
@@ -78,10 +73,10 @@ namespace Glasswall.CloudProxy.Api
                 Environment.SetEnvironmentVariable("JAEGER_AGENT_PORT", "6831");
                 Environment.SetEnvironmentVariable("JAEGER_SAMPLER_TYPE", "const");
 
-                var loggerFactory = new LoggerFactory();
+                LoggerFactory loggerFactory = new LoggerFactory();
 
-                var config = Jaeger.Configuration.FromEnv(loggerFactory);
-                var tracer = config.GetTracer();
+                Configuration config = Jaeger.Configuration.FromEnv(loggerFactory);
+                ITracer tracer = config.GetTracer();
 
                 if (!GlobalTracer.IsRegistered())
                 {
@@ -122,9 +117,6 @@ namespace Glasswall.CloudProxy.Api
             {
                 endpoints.MapControllers();
             });
-
-            //app.UseMvc();
-
         }
     }
 }

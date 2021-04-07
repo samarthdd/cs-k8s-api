@@ -15,14 +15,16 @@ namespace Glasswall.CloudProxy.Api
             BuildWebHost(args).Run();
         }
 
-        public static IWebHost BuildWebHost(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>()
-                .UseKestrel(options =>
-                {
-                    Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerLimits limits = options.Limits;
-                    limits.MaxRequestBodySize = long.MaxValue;
-                })
-                .Build();
+        public static IWebHost BuildWebHost(string[] args)
+        {
+            return WebHost.CreateDefaultBuilder(args)
+            .UseStartup<Startup>()
+            .UseKestrel(options =>
+            {
+                Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerLimits limits = options.Limits;
+                limits.MaxRequestBodySize = long.MaxValue;
+            })
+            .Build();
+        }
     }
 }
