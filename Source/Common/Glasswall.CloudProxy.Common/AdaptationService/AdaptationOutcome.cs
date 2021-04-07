@@ -1,6 +1,6 @@
 ﻿namespace Glasswall.CloudProxy.Common.AdaptationService
 {
-    enum AdaptationOutcome
+    internal enum AdaptationOutcome
     {
         Replace, Unmodified, Failed
     }

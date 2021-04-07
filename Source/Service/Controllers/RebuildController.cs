@@ -1,20 +1,20 @@
-﻿using Glasswall.CloudProxy.Common;
+﻿using Glasswall.CloudProxy.Api.Models;
+using Glasswall.CloudProxy.Api.Utilities;
+using Glasswall.CloudProxy.Common;
 using Glasswall.CloudProxy.Common.AdaptationService;
 using Glasswall.CloudProxy.Common.Configuration;
 using Glasswall.CloudProxy.Common.Web.Abstraction;
-using Glasswall.CloudProxy.Api.Models;
-using Glasswall.CloudProxy.Api.Utilities;
+using Glasswall.CloudProxy.Common.Web.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using OpenTracing;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Linq;
-using Glasswall.CloudProxy.Common.Web.Models;
-using OpenTracing;
 
 namespace Glasswall.CloudProxy.Api.Controllers
 {
@@ -36,8 +36,16 @@ namespace Glasswall.CloudProxy.Api.Controllers
             _adaptationServiceClient = adaptationServiceClient ?? throw new ArgumentNullException(nameof(adaptationServiceClient));
             _fileUtility = fileUtility ?? throw new ArgumentNullException(nameof(fileUtility));
             _zipUtility = zipUtility ?? throw new ArgumentNullException(nameof(zipUtility));
-            if (storeConfiguration == null) throw new ArgumentNullException(nameof(storeConfiguration));
-            if (processingConfiguration == null) throw new ArgumentNullException(nameof(processingConfiguration));
+            if (storeConfiguration == null)
+            {
+                throw new ArgumentNullException(nameof(storeConfiguration));
+            }
+
+            if (processingConfiguration == null)
+            {
+                throw new ArgumentNullException(nameof(processingConfiguration));
+            }
+
             _processingTimeoutDuration = processingConfiguration.ProcessingTimeoutDuration;
             _processingCancellationTokenSource = new CancellationTokenSource(_processingTimeoutDuration);
 
@@ -54,7 +62,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
             _logger.LogInformation("'{0}' method invoked", nameof(RebuildFromFormFile));
             string originalStoreFilePath = string.Empty;
             string rebuiltStoreFilePath = string.Empty;
-            String fileIdString = "";
+            string fileIdString = "";
             CloudProxyResponseModel cloudProxyResponseModel = new CloudProxyResponseModel();
 
             ISpanBuilder builder = _tracer.BuildSpan("Post::Data");
@@ -146,7 +154,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
             _logger.LogInformation("'{0}' method invoked", nameof(RebuildFromBase64));
             string originalStoreFilePath = string.Empty;
             string rebuiltStoreFilePath = string.Empty;
-            String fileIdString = "";
+            string fileIdString = "";
             CloudProxyResponseModel cloudProxyResponseModel = new CloudProxyResponseModel();
 
             ISpanBuilder builder = _tracer.BuildSpan("Post::Data");

@@ -3,7 +3,6 @@ using Glasswall.CloudProxy.Common.ConfigLoaders;
 using Glasswall.CloudProxy.Common.Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Glasswall.CloudProxy.Common.Setup
 {

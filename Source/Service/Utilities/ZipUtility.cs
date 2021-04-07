@@ -25,7 +25,7 @@ namespace Glasswall.CloudProxy.Api.Utilities
         {
             using Stream fsInput = File.OpenRead(archivePath);
             using ZipFile zf = new ZipFile(fsInput);
-            if (!String.IsNullOrEmpty(password))
+            if (!string.IsNullOrEmpty(password))
             {
                 // AES encrypted entries are handled automatically
                 zf.Password = password;
@@ -39,7 +39,7 @@ namespace Glasswall.CloudProxy.Api.Utilities
                     continue;
                 }
 
-                String entryFileName = zipEntry.Name;
+                string entryFileName = zipEntry.Name;
                 // to remove the folder from the entry:
                 //entryFileName = Path.GetFileName(entryFileName);
                 // Optionally match entrynames against a selection list here
