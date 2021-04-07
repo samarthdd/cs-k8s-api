@@ -62,7 +62,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
             _logger.LogInformation("'{0}' method invoked", nameof(RebuildFromFormFile));
             string originalStoreFilePath = string.Empty;
             string rebuiltStoreFilePath = string.Empty;
-            string fileIdString = "";
+            string fileId = string.Empty;
             CloudProxyResponseModel cloudProxyResponseModel = new CloudProxyResponseModel();
 
             ISpanBuilder builder = _tracer.BuildSpan("Post::Data");
@@ -87,15 +87,13 @@ namespace Glasswall.CloudProxy.Api.Controllers
                     return BadRequest(cloudProxyResponseModel);
                 }
 
-                Guid fileId = descriptor.UUID;
-                fileIdString = fileId.ToString();
-
+                fileId = descriptor.UUID.ToString();
                 CancellationToken processingCancellationToken = _processingCancellationTokenSource.Token;
 
                 _logger.LogInformation($"Using store locations '{_originalStorePath}' and '{_rebuiltStorePath}' for {fileId}");
 
-                originalStoreFilePath = Path.Combine(_originalStorePath, fileId.ToString());
-                rebuiltStoreFilePath = Path.Combine(_rebuiltStorePath, fileId.ToString());
+                originalStoreFilePath = Path.Combine(_originalStorePath, fileId);
+                rebuiltStoreFilePath = Path.Combine(_rebuiltStorePath, fileId);
 
                 if (ReturnOutcome.GW_REBUILT != descriptor.Outcome)
                 {
@@ -106,7 +104,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                     }
 
                     _adaptationServiceClient.Connect();
-                    ReturnOutcome outcome = _adaptationServiceClient.AdaptationRequest(fileId, originalStoreFilePath, rebuiltStoreFilePath, processingCancellationToken);
+                    ReturnOutcome outcome = _adaptationServiceClient.AdaptationRequest(descriptor.UUID, originalStoreFilePath, rebuiltStoreFilePath, processingCancellationToken);
                     descriptor.Update(outcome, originalStoreFilePath, rebuiltStoreFilePath);
 
                     _logger.LogInformation($"Returning '{descriptor.Outcome}' Outcome for {fileId}");
@@ -115,7 +113,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 switch (descriptor.Outcome)
                 {
                     case ReturnOutcome.GW_REBUILT:
-                        AddHeaderToResponse(Constants.Header.FILE_ID, fileIdString);
+                        AddHeaderToResponse(Constants.Header.FILE_ID, fileId);
                         return new FileContentResult(System.IO.File.ReadAllBytes(descriptor.RebuiltStoreFilePath), Constants.OCTET_STREAM_CONTENT_TYPE) { FileDownloadName = file.FileName ?? "Unknown" };
                     case ReturnOutcome.GW_FAILED:
                     default:
@@ -129,15 +127,15 @@ namespace Glasswall.CloudProxy.Api.Controllers
             }
             catch (OperationCanceledException oce)
             {
-                _logger.LogError(oce, $"Error Processing Timeout 'input' {fileIdString} exceeded {_processingTimeoutDuration.TotalSeconds}s");
-                cloudProxyResponseModel.Errors.Add($"Error Processing Timeout 'input' {fileIdString} exceeded {_processingTimeoutDuration.TotalSeconds}s");
+                _logger.LogError(oce, $"Error Processing Timeout 'input' {fileId} exceeded {_processingTimeoutDuration.TotalSeconds}s");
+                cloudProxyResponseModel.Errors.Add($"Error Processing Timeout 'input' {fileId} exceeded {_processingTimeoutDuration.TotalSeconds}s");
                 cloudProxyResponseModel.Status = ReturnOutcome.GW_ERROR;
                 return StatusCode(StatusCodes.Status500InternalServerError, cloudProxyResponseModel);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error Processing 'input' {fileIdString} and error detail is {ex.Message}");
-                cloudProxyResponseModel.Errors.Add($"Error Processing 'input' {fileIdString} and error detail is {ex.Message}");
+                _logger.LogError(ex, $"Error Processing 'input' {fileId} and error detail is {ex.Message}");
+                cloudProxyResponseModel.Errors.Add($"Error Processing 'input' {fileId} and error detail is {ex.Message}");
                 cloudProxyResponseModel.Status = ReturnOutcome.GW_ERROR;
                 return StatusCode(StatusCodes.Status500InternalServerError, cloudProxyResponseModel);
             }
@@ -154,7 +152,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
             _logger.LogInformation("'{0}' method invoked", nameof(RebuildFromBase64));
             string originalStoreFilePath = string.Empty;
             string rebuiltStoreFilePath = string.Empty;
-            string fileIdString = "";
+            string fileId = string.Empty;
             CloudProxyResponseModel cloudProxyResponseModel = new CloudProxyResponseModel();
 
             ISpanBuilder builder = _tracer.BuildSpan("Post::Data");
@@ -185,15 +183,13 @@ namespace Glasswall.CloudProxy.Api.Controllers
                     return BadRequest(cloudProxyResponseModel);
                 }
 
-                Guid fileId = descriptor.UUID;
-                fileIdString = fileId.ToString();
-
+                fileId = descriptor.UUID.ToString();
                 CancellationToken processingCancellationToken = _processingCancellationTokenSource.Token;
 
                 _logger.LogInformation($"Using store locations '{_originalStorePath}' and '{_rebuiltStorePath}' for {fileId}");
 
-                originalStoreFilePath = Path.Combine(_originalStorePath, fileId.ToString());
-                rebuiltStoreFilePath = Path.Combine(_rebuiltStorePath, fileId.ToString());
+                originalStoreFilePath = Path.Combine(_originalStorePath, fileId);
+                rebuiltStoreFilePath = Path.Combine(_rebuiltStorePath, fileId);
 
                 if (ReturnOutcome.GW_REBUILT != descriptor.Outcome)
                 {
@@ -204,7 +200,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                     }
 
                     _adaptationServiceClient.Connect();
-                    ReturnOutcome outcome = _adaptationServiceClient.AdaptationRequest(fileId, originalStoreFilePath, rebuiltStoreFilePath, processingCancellationToken);
+                    ReturnOutcome outcome = _adaptationServiceClient.AdaptationRequest(descriptor.UUID, originalStoreFilePath, rebuiltStoreFilePath, processingCancellationToken);
                     descriptor.Update(outcome, originalStoreFilePath, rebuiltStoreFilePath);
 
                     _logger.LogInformation($"Returning '{outcome}' Outcome for {fileId}");
@@ -213,7 +209,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 switch (descriptor.Outcome)
                 {
                     case ReturnOutcome.GW_REBUILT:
-                        AddHeaderToResponse(Constants.Header.FILE_ID, fileIdString);
+                        AddHeaderToResponse(Constants.Header.FILE_ID, fileId);
                         return Ok(Convert.ToBase64String(System.IO.File.ReadAllBytes(descriptor.RebuiltStoreFilePath)));
                     case ReturnOutcome.GW_FAILED:
                     default:
@@ -227,15 +223,15 @@ namespace Glasswall.CloudProxy.Api.Controllers
             }
             catch (OperationCanceledException oce)
             {
-                _logger.LogError(oce, $"Error Processing Timeout 'input' {fileIdString} exceeded {_processingTimeoutDuration.TotalSeconds}s");
-                cloudProxyResponseModel.Errors.Add($"Error Processing Timeout 'input' {fileIdString} exceeded {_processingTimeoutDuration.TotalSeconds}s");
+                _logger.LogError(oce, $"Error Processing Timeout 'input' {fileId} exceeded {_processingTimeoutDuration.TotalSeconds}s");
+                cloudProxyResponseModel.Errors.Add($"Error Processing Timeout 'input' {fileId} exceeded {_processingTimeoutDuration.TotalSeconds}s");
                 cloudProxyResponseModel.Status = ReturnOutcome.GW_ERROR;
                 return StatusCode(StatusCodes.Status500InternalServerError, cloudProxyResponseModel);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error Processing 'input' {fileIdString} and error detail is {ex.Message}");
-                cloudProxyResponseModel.Errors.Add($"Error Processing 'input' {fileIdString} and error detail is {ex.Message}");
+                _logger.LogError(ex, $"Error Processing 'input' {fileId} and error detail is {ex.Message}");
+                cloudProxyResponseModel.Errors.Add($"Error Processing 'input' {fileId} and error detail is {ex.Message}");
                 cloudProxyResponseModel.Status = ReturnOutcome.GW_ERROR;
                 return StatusCode(StatusCodes.Status500InternalServerError, cloudProxyResponseModel);
             }
@@ -253,7 +249,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
 
             string originalStoreFilePath = string.Empty;
             string rebuiltStoreFilePath = string.Empty;
-            string fileIdString = string.Empty;
+            string fileId = string.Empty;
             string tempFolderPath = Path.Combine(Constants.VAR_PATH, $"{Guid.NewGuid()}");
             string protectedZipFilePath = Path.Combine(tempFolderPath, $"{Guid.NewGuid()}");
             string zipFilePath = Path.Combine(tempFolderPath, $"{Guid.NewGuid()}");
@@ -282,15 +278,13 @@ namespace Glasswall.CloudProxy.Api.Controllers
                     return BadRequest(cloudProxyResponseModel);
                 }
 
-                Guid fileId = descriptor.UUID;
-                fileIdString = fileId.ToString();
-
+                fileId = descriptor.UUID.ToString();
                 CancellationToken processingCancellationToken = _processingCancellationTokenSource.Token;
 
                 _logger.LogInformation($"Using store locations '{_originalStorePath}' and '{_rebuiltStorePath}' for {fileId}");
 
-                originalStoreFilePath = Path.Combine(_originalStorePath, fileId.ToString());
-                rebuiltStoreFilePath = Path.Combine(_rebuiltStorePath, fileId.ToString());
+                originalStoreFilePath = Path.Combine(_originalStorePath, fileId);
+                rebuiltStoreFilePath = Path.Combine(_rebuiltStorePath, fileId);
 
                 if (ReturnOutcome.GW_REBUILT != descriptor.Outcome)
                 {
@@ -324,7 +318,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                     }
 
                     _adaptationServiceClient.Connect();
-                    ReturnOutcome outcome = _adaptationServiceClient.AdaptationRequest(fileId, originalStoreFilePath, rebuiltStoreFilePath, processingCancellationToken);
+                    ReturnOutcome outcome = _adaptationServiceClient.AdaptationRequest(descriptor.UUID, originalStoreFilePath, rebuiltStoreFilePath, processingCancellationToken);
                     descriptor.Update(outcome, originalStoreFilePath, rebuiltStoreFilePath);
 
                     _logger.LogInformation($"Returning '{descriptor.Outcome}' Outcome for {fileId}");
@@ -333,7 +327,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 switch (descriptor.Outcome)
                 {
                     case ReturnOutcome.GW_REBUILT:
-                        AddHeaderToResponse(Constants.Header.FILE_ID, fileIdString);
+                        AddHeaderToResponse(Constants.Header.FILE_ID, fileId);
                         return new FileContentResult(System.IO.File.ReadAllBytes(descriptor.RebuiltStoreFilePath), Constants.OCTET_STREAM_CONTENT_TYPE) { FileDownloadName = file.FileName ?? "Unknown" };
                     case ReturnOutcome.GW_FAILED:
                     default:
@@ -347,15 +341,15 @@ namespace Glasswall.CloudProxy.Api.Controllers
             }
             catch (OperationCanceledException oce)
             {
-                _logger.LogError(oce, $"Error Processing Timeout 'input' {fileIdString} exceeded {_processingTimeoutDuration.TotalSeconds}s");
-                cloudProxyResponseModel.Errors.Add($"Error Processing Timeout 'input' {fileIdString} exceeded {_processingTimeoutDuration.TotalSeconds}s");
+                _logger.LogError(oce, $"Error Processing Timeout 'input' {fileId} exceeded {_processingTimeoutDuration.TotalSeconds}s");
+                cloudProxyResponseModel.Errors.Add($"Error Processing Timeout 'input' {fileId} exceeded {_processingTimeoutDuration.TotalSeconds}s");
                 cloudProxyResponseModel.Status = ReturnOutcome.GW_ERROR;
                 return StatusCode(StatusCodes.Status500InternalServerError, cloudProxyResponseModel);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error Processing 'input' {fileIdString} and error detail is {ex.Message}");
-                cloudProxyResponseModel.Errors.Add($"Error Processing 'input' {fileIdString} and error detail is {ex.Message}");
+                _logger.LogError(ex, $"Error Processing 'input' {fileId} and error detail is {ex.Message}");
+                cloudProxyResponseModel.Errors.Add($"Error Processing 'input' {fileId} and error detail is {ex.Message}");
                 cloudProxyResponseModel.Status = ReturnOutcome.GW_ERROR;
                 return StatusCode(StatusCodes.Status500InternalServerError, cloudProxyResponseModel);
             }
