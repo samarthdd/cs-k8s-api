@@ -5,9 +5,13 @@ VisualStudioVersion = 16.0.30907.101
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Glasswall.CloudProxy.Api", "Source\Service\Glasswall.CloudProxy.Api.csproj", "{2A782180-576B-44B7-9B31-5B3C00573BE3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Glasswall.CloudProxy.Common", "Source\Common\Glasswall.CloudProxy.Common\Glasswall.CloudProxy.Common.csproj", "{370D290E-DB0D-4201-B273-BBCCC80600C4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Glasswall.CloudProxy.Common", "Source\Common\Glasswall.CloudProxy.Common\Glasswall.CloudProxy.Common.csproj", "{370D290E-DB0D-4201-B273-BBCCC80600C4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{FD5F1234-E2CE-4C39-B984-EA28446817E0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{5D703880-F305-4657-8BB3-6F03148D75B9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Glasswall.CloudProxy.IntegrationTest", "Source\Test\Glasswall.CloudProxy.IntegrationTest\Glasswall.CloudProxy.IntegrationTest.csproj", "{F2735929-9DA7-4482-ADA9-4D6D9561D90E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,12 +27,17 @@ Global
 		{370D290E-DB0D-4201-B273-BBCCC80600C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{370D290E-DB0D-4201-B273-BBCCC80600C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{370D290E-DB0D-4201-B273-BBCCC80600C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2735929-9DA7-4482-ADA9-4D6D9561D90E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2735929-9DA7-4482-ADA9-4D6D9561D90E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2735929-9DA7-4482-ADA9-4D6D9561D90E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2735929-9DA7-4482-ADA9-4D6D9561D90E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{370D290E-DB0D-4201-B273-BBCCC80600C4} = {FD5F1234-E2CE-4C39-B984-EA28446817E0}
+		{F2735929-9DA7-4482-ADA9-4D6D9561D90E} = {5D703880-F305-4657-8BB3-6F03148D75B9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {218550F7-5B09-43E8-838D-0FF5AA856FF9}

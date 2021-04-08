@@ -11,11 +11,11 @@ namespace Glasswall.CloudProxy.Common.AdaptationService
 {
     public class RabbitMqClient<TResponseProcessor> : IAdaptationServiceClient<TResponseProcessor> where TResponseProcessor : IResponseProcessor
     {
-        private readonly IConnectionFactory connectionFactory;
+        private readonly IConnectionFactory _connectionFactory;
         private IConnection _connection;
         private IModel _channel;
         private EventingBasicConsumer _consumer;
-        private bool disposedValue;
+        private bool _disposedValue;
         private readonly BlockingCollection<ReturnOutcome> _respQueue = new BlockingCollection<ReturnOutcome>();
         private readonly IResponseProcessor _responseProcessor;
         private readonly IQueueConfiguration _queueConfiguration;
@@ -29,7 +29,7 @@ namespace Glasswall.CloudProxy.Common.AdaptationService
             CheckCredentials(queueConfiguration);
 
             _logger.LogInformation($"Setting up queue connection '{queueConfiguration.MBHostName}:{queueConfiguration.MBPort}'");
-            connectionFactory = new ConnectionFactory()
+            _connectionFactory = new ConnectionFactory()
             {
                 HostName = queueConfiguration.MBHostName,
                 Port = queueConfiguration.MBPort,
@@ -55,9 +55,11 @@ namespace Glasswall.CloudProxy.Common.AdaptationService
         public void Connect()
         {
             if (_connection != null || _channel != null || _consumer != null)
+            {
                 throw new AdaptationServiceClientException("'Connect' should only be called once.");
+            }
 
-            _connection = connectionFactory.CreateConnection();
+            _connection = _connectionFactory.CreateConnection();
             _channel = _connection.CreateModel();
             _consumer = new EventingBasicConsumer(_channel);
 
@@ -82,7 +84,9 @@ namespace Glasswall.CloudProxy.Common.AdaptationService
         public ReturnOutcome AdaptationRequest(Guid fileId, string originalStoreFilePath, string rebuiltStoreFilePath, CancellationToken processingCancellationToken)
         {
             if (_connection == null || _channel == null || _consumer == null)
+            {
                 throw new AdaptationServiceClientException("'Connect' should be called before 'AdaptationRequest'.");
+            }
 
             QueueDeclareOk queueDeclare = _channel.QueueDeclare(queue: _queueConfiguration.RequestQueueName,
                                                           durable: false,
@@ -117,7 +121,7 @@ namespace Glasswall.CloudProxy.Common.AdaptationService
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_disposedValue)
             {
                 if (disposing)
                 {
@@ -126,7 +130,7 @@ namespace Glasswall.CloudProxy.Common.AdaptationService
                     _respQueue?.Dispose();
                 }
 
-                disposedValue = true;
+                _disposedValue = true;
             }
         }
 

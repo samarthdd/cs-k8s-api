@@ -9,8 +9,7 @@ namespace Glasswall.CloudProxy.Common.AdaptationService
     public class AdaptationOutcomeProcessor : IResponseProcessor
     {
         private readonly ILogger<AdaptationOutcomeProcessor> _logger;
-
-        static readonly Dictionary<AdaptationOutcome, ReturnOutcome> OutcomeMap = new Dictionary<AdaptationOutcome, ReturnOutcome>
+        private static readonly Dictionary<AdaptationOutcome, ReturnOutcome> OutcomeMap = new Dictionary<AdaptationOutcome, ReturnOutcome>
         {
             { AdaptationOutcome.Unmodified, ReturnOutcome.GW_UNPROCESSED},
             { AdaptationOutcome.Replace, ReturnOutcome.GW_REBUILT},
@@ -28,7 +27,9 @@ namespace Glasswall.CloudProxy.Common.AdaptationService
             {
                 Guid fileId = Guid.Empty;
                 if (!headers.ContainsKey("file-id"))
+                {
                     throw NewAdaptationServiceException("Missing File Id");
+                }
 
                 string fileIdString = Encoding.UTF8.GetString((byte[])headers["file-id"]);
                 if (fileIdString == null || !Guid.TryParse(fileIdString, out fileId))
@@ -38,7 +39,9 @@ namespace Glasswall.CloudProxy.Common.AdaptationService
                 }
 
                 if (!headers.ContainsKey("file-outcome"))
+                {
                     throw NewAdaptationServiceException($"Missing outcome for File Id {fileId}");
+                }
 
                 string outcomeString = Encoding.UTF8.GetString((byte[])headers["file-outcome"]);
                 AdaptationOutcome outcome = (AdaptationOutcome)Enum.Parse(typeof(AdaptationOutcome), outcomeString, ignoreCase: true);

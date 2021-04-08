@@ -1,19 +1,16 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.IO;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace Glasswall.CloudProxy.Common.AdaptationService
 {
     public class AdaptionDescriptor
     {
         private Guid uuid; // field
-        ReturnOutcome outcome;
-        string originalStoreFilePath;
-        string rebuiltStoreFilePath;
-        DateTime accessTime;
+        private ReturnOutcome outcome;
+        private string originalStoreFilePath;
+        private string rebuiltStoreFilePath;
+        private DateTime accessTime;
         public AdaptionDescriptor()
         {
             uuid = Guid.NewGuid();
@@ -31,47 +28,50 @@ namespace Glasswall.CloudProxy.Common.AdaptationService
             rebuiltStoreFilePath = RebuiltStoreFilePath;
         }
 
-        public Guid UUID  { get { return uuid; } }
-        public ReturnOutcome Outcome { get { return outcome; } }
-        public string OriginalStoreFilePath { get { return originalStoreFilePath; } }
-        public string RebuiltStoreFilePath { get { return rebuiltStoreFilePath; } }
-        public DateTime AccessTime { get { return accessTime; } set { accessTime = value; } }
+        public Guid UUID => uuid;
+        public ReturnOutcome Outcome => outcome;
+        public string OriginalStoreFilePath => originalStoreFilePath;
+        public string RebuiltStoreFilePath => rebuiltStoreFilePath;
+        public DateTime AccessTime { get => accessTime; set => accessTime = value; }
 
     }
 
     public sealed class AdaptionCache
     {
-        static ConcurrentDictionary<String, AdaptionDescriptor> CacheMap;
+        private static ConcurrentDictionary<string, AdaptionDescriptor> CacheMap;
 
         private AdaptionCache()
         {
             //int concurrencyLevel = 100;
             //int initialCapacity = 100;
             //CacheMap = new ConcurrentDictionary<String, AdaptionDescriptor>(concurrencyLevel, initialCapacity);
-            CacheMap = new ConcurrentDictionary<String, AdaptionDescriptor>();
+            CacheMap = new ConcurrentDictionary<string, AdaptionDescriptor>();
         }
 
-        public static AdaptionCache Instance { get { return Nested.instance; } }
+        public static AdaptionCache Instance => Nested.instance;
 
         private static string BytesToString(byte[] bytes)
         {
             string result = "";
-            foreach (byte b in bytes) result += b.ToString("x2");
+            foreach (byte b in bytes)
+            {
+                result += b.ToString("x2");
+            }
+
             return result;
         }
 
-        private static String GetFileHash(byte[] file)
+        private static string GetFileHash(byte[] file)
         {
             SHA256 Sha256 = SHA256.Create();
             return BytesToString(Sha256.ComputeHash(file));
         }
 
-        public AdaptionDescriptor GetDescriptor (byte[] file)
+        public AdaptionDescriptor GetDescriptor(byte[] file)
         {
-            AdaptionDescriptor descriptor = null;
-            String fileHash = GetFileHash(file);
+            string fileHash = GetFileHash(file);
 
-            if (!CacheMap.TryGetValue(fileHash, out descriptor))
+            if (!CacheMap.TryGetValue(fileHash, out AdaptionDescriptor descriptor))
             {
                 descriptor = new AdaptionDescriptor();
                 if (!CacheMap.TryAdd(fileHash, descriptor))

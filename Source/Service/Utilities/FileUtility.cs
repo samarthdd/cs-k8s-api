@@ -20,7 +20,7 @@ namespace Glasswall.CloudProxy.Api.Utilities
 
             try
             {
-                using var ms = new MemoryStream();
+                using MemoryStream ms = new MemoryStream();
                 formFile.CopyTo(ms);
                 file = ms.ToArray();
             }
@@ -45,7 +45,7 @@ namespace Glasswall.CloudProxy.Api.Utilities
                 _logger.LogError(ex, "Could not parse base64 file {0}", base64File);
             }
 
-            var fileSize = file?.Length ?? 0;
+            int fileSize = file?.Length ?? 0;
             return fileSize > 0;
         }
     }

@@ -1,0 +1,13 @@
+{
+  "RequestQueueName": "adaptation-request-queue",
+  "RebuiltStorePath": "/var/target",
+  "ExchangeName": "adaptation-exchange",
+  "OutcomeQueueName": "amq.rabbitmq.reply-to",
+  "MBPassword": "",
+  "OriginalStorePath": "/var/source",
+  "MBUsername": "",
+  "MBHostName": "localhost",
+  "ProcessingTimeoutDuration": "00:1:00",
+  "RequestMessageName": "adaptation-request",
+  "MBPort": "5672"
+}
