@@ -1,5 +1,6 @@
 using Glasswall.CloudProxy.Api.Utilities;
 using Glasswall.CloudProxy.Common.Setup;
+using Glasswall.CloudProxy.Common.Web.Models;
 using Jaeger;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -13,6 +14,7 @@ using OpenTracing.Util;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using Constants = Glasswall.CloudProxy.Common.Constants;
 
 namespace Glasswall.CloudProxy.Api
 {
@@ -106,10 +108,18 @@ namespace Glasswall.CloudProxy.Api
 
             app.Use((context, next) =>
             {
+                ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
+                {
+                    builder.AddConsole();
+                });
+                ILogger logger = loggerFactory.CreateLogger<Startup>();
+                UserAgentInfo userAgentInfo = new UserAgentInfo(context.Request.Headers[Constants.UserAgent.USER_AGENT]);
+                logger.LogInformation($"UserAgent:: [{userAgentInfo?.ClientInfo?.String}]");
+
                 context.Response.Headers[Constants.Header.ACCESS_CONTROL_EXPOSE_HEADERS] = Constants.STAR;
                 context.Response.Headers[Constants.Header.ACCESS_CONTROL_ALLOW_HEADERS] = Constants.STAR;
                 context.Response.Headers[Constants.Header.ACCESS_CONTROL_ALLOW_ORIGIN] = Constants.STAR;
-                context.Response.Headers[Constants.Header.VIA] = System.Environment.MachineName;
+                context.Response.Headers[Constants.Header.VIA] = Environment.MachineName;
                 return next.Invoke();
             });
 

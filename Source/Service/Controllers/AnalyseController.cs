@@ -59,7 +59,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
         [HttpPost("base64")]
         public async Task<IActionResult> AnalyseFromBase64([FromBody][Required] Base64Request request)
         {
-            _logger.LogInformation("'{0}' method invoked", nameof(AnalyseFromBase64));
+            _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: {nameof(AnalyseFromBase64)} method invoked");
             string originalStoreFilePath = string.Empty;
             string rebuiltStoreFilePath = string.Empty;
             string fileId = string.Empty;
@@ -96,7 +96,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 fileId = descriptor.UUID.ToString();
                 CancellationToken processingCancellationToken = _processingCancellationTokenSource.Token;
 
-                _logger.LogInformation($"Using store locations '{_originalStorePath}' and '{_rebuiltStorePath}' for {fileId}");
+                _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: Using store locations '{_originalStorePath}' and '{_rebuiltStorePath}' for {fileId}");
 
                 originalStoreFilePath = Path.Combine(_originalStorePath, fileId);
                 rebuiltStoreFilePath = Path.Combine(_rebuiltStorePath, fileId);
@@ -104,7 +104,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
 
                 if (ReturnOutcome.GW_REBUILT != descriptor.Outcome)
                 {
-                    _logger.LogInformation($"Updating 'Original' store for {fileId}");
+                    _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: Updating 'Original' store for {fileId}");
                     using (Stream fileStream = new FileStream(originalStoreFilePath, FileMode.Create))
                     {
                         await fileStream.WriteAsync(file, 0, file.Length);
@@ -114,7 +114,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                     ReturnOutcome outcome = _adaptationServiceClient.AdaptationRequest(descriptor.UUID, originalStoreFilePath, rebuiltStoreFilePath, processingCancellationToken);
                     descriptor.Update(outcome, originalStoreFilePath, rebuiltStoreFilePath);
 
-                    _logger.LogInformation($"Returning '{descriptor.Outcome}' Outcome for {fileId}");
+                    _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: Returning '{descriptor.Outcome}' Outcome for {fileId}");
                 }
 
                 switch (descriptor.Outcome)
@@ -123,7 +123,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                         string reportFolderPath = Directory.GetDirectories(Constants.TRANSACTION_STORE_PATH, $"{ fileId}", SearchOption.AllDirectories).FirstOrDefault();
                         if (string.IsNullOrEmpty(descriptor.RebuiltStoreFilePath))
                         {
-                            _logger.LogWarning($"Report folder not exist for file {fileId}");
+                            _logger.LogWarning($"[{UserAgentInfo.ClientTypeString}]:: Report folder not exist for file {fileId}");
                             cloudProxyResponseModel.Errors.Add($"Report folder not exist for file {fileId}");
                             return NotFound(cloudProxyResponseModel);
                         }
@@ -131,7 +131,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                         string reportPath = Path.Combine(reportFolderPath, Constants.REPORT_XML_FILE_NAME);
                         if (!System.IO.File.Exists(reportPath))
                         {
-                            _logger.LogWarning($"Report xml not exist for file {fileId}");
+                            _logger.LogWarning($"[{UserAgentInfo.ClientTypeString}]:: Report xml not exist for file {fileId}");
                             cloudProxyResponseModel.Errors.Add($"Report xml not exist for file {fileId}");
                             return NotFound(cloudProxyResponseModel);
                         }
@@ -150,14 +150,14 @@ namespace Glasswall.CloudProxy.Api.Controllers
             }
             catch (OperationCanceledException oce)
             {
-                _logger.LogError(oce, $"Error Processing Timeout 'input' {fileId} exceeded {_processingTimeoutDuration.TotalSeconds}s");
+                _logger.LogError(oce, $"[{UserAgentInfo.ClientTypeString}]:: Error Processing Timeout 'input' {fileId} exceeded {_processingTimeoutDuration.TotalSeconds}s");
                 cloudProxyResponseModel.Errors.Add($"Error Processing Timeout 'input' {fileId} exceeded {_processingTimeoutDuration.TotalSeconds}s");
                 cloudProxyResponseModel.Status = ReturnOutcome.GW_ERROR;
                 return StatusCode(StatusCodes.Status500InternalServerError, cloudProxyResponseModel);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error Processing 'input' {fileId} and error detail is {ex.Message}");
+                _logger.LogError(ex, $"[{UserAgentInfo.ClientTypeString}]:: Error Processing 'input' {fileId} and error detail is {ex.Message}");
                 cloudProxyResponseModel.Errors.Add($"Error Processing 'input' {fileId} and error detail is {ex.Message}");
                 cloudProxyResponseModel.Status = ReturnOutcome.GW_ERROR;
                 return StatusCode(StatusCodes.Status500InternalServerError, cloudProxyResponseModel);
@@ -172,7 +172,8 @@ namespace Glasswall.CloudProxy.Api.Controllers
         [HttpGet("xmlreport")]
         public IActionResult GetXMLReportByFileId([Required] Guid fileId)
         {
-            _logger.LogInformation("'{0}' method invoked", nameof(GetXMLReportByFileId));
+            _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: {nameof(GetXMLReportByFileId)} method invoked");
+
             string fileIdString = string.Empty;
             CloudProxyResponseModel cloudProxyResponseModel = new CloudProxyResponseModel();
 
@@ -193,13 +194,13 @@ namespace Glasswall.CloudProxy.Api.Controllers
 
                 fileIdString = fileId.ToString();
 
-                _logger.LogInformation($"Using store locations '{_originalStorePath}' and '{_rebuiltStorePath}' for {fileIdString}");
+                _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: Using store locations '{_originalStorePath}' and '{_rebuiltStorePath}' for {fileIdString}");
 
                 string reportFolderPath = Directory.GetDirectories(Constants.TRANSACTION_STORE_PATH, $"{ fileIdString}", SearchOption.AllDirectories).FirstOrDefault();
 
                 if (string.IsNullOrEmpty(reportFolderPath))
                 {
-                    _logger.LogWarning($"Report folder not exist for file {fileIdString}");
+                    _logger.LogWarning($"[{UserAgentInfo.ClientTypeString}]:: Report folder not exist for file {fileIdString}");
                     cloudProxyResponseModel.Errors.Add($"Report folder not exist for file {fileIdString}");
                     return NotFound(cloudProxyResponseModel);
                 }
@@ -207,7 +208,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 string reportPath = Path.Combine(reportFolderPath, Constants.REPORT_XML_FILE_NAME);
                 if (!System.IO.File.Exists(reportPath))
                 {
-                    _logger.LogWarning($"Report xml not exist for file {fileIdString}");
+                    _logger.LogWarning($"[{UserAgentInfo.ClientTypeString}]:: Report xml not exist for file {fileIdString}");
                     cloudProxyResponseModel.Errors.Add($"Report xml not exist for file {fileIdString}");
                     return NotFound(cloudProxyResponseModel);
                 }
@@ -217,7 +218,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error Processing 'input' {fileIdString} and error detail is {ex.Message}");
+                _logger.LogError(ex, $"[{UserAgentInfo.ClientTypeString}]:: Error Processing 'input' {fileIdString} and error detail is {ex.Message}");
                 cloudProxyResponseModel.Errors.Add($"Error Processing 'input' {fileIdString} and error detail is {ex.Message}");
                 cloudProxyResponseModel.Status = ReturnOutcome.GW_ERROR;
                 return StatusCode(StatusCodes.Status500InternalServerError, cloudProxyResponseModel);
@@ -231,7 +232,8 @@ namespace Glasswall.CloudProxy.Api.Controllers
         [HttpGet("rebuildzip")]
         public IActionResult GetZipByFileId([Required] Guid fileId)
         {
-            _logger.LogInformation("'{0}' method invoked", nameof(GetZipByFileId));
+            _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: {nameof(GetZipByFileId)} method invoked");
+
             string fileIdString = string.Empty;
             string rebuiltStoreFilePath = string.Empty;
             CloudProxyResponseModel cloudProxyResponseModel = new CloudProxyResponseModel();
@@ -256,13 +258,13 @@ namespace Glasswall.CloudProxy.Api.Controllers
 
             try
             {
-                _logger.LogInformation($"Using store locations '{_originalStorePath}' and '{_rebuiltStorePath}' for {fileIdString}");
+                _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: Using store locations '{_originalStorePath}' and '{_rebuiltStorePath}' for {fileIdString}");
 
                 string transactionFolderPath = Directory.GetDirectories(Constants.TRANSACTION_STORE_PATH, $"{ fileIdString}", SearchOption.AllDirectories).FirstOrDefault();
 
                 if (string.IsNullOrEmpty(transactionFolderPath))
                 {
-                    _logger.LogWarning($"Report folder not exist for file {fileIdString}");
+                    _logger.LogWarning($"[{UserAgentInfo.ClientTypeString}]:: Report folder not exist for file {fileIdString}");
                     cloudProxyResponseModel.Errors.Add($"Report folder not exist for file {fileIdString}");
                     return NotFound(cloudProxyResponseModel);
                 }
@@ -270,7 +272,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 string reportPath = Path.Combine(transactionFolderPath, Constants.REPORT_XML_FILE_NAME);
                 if (!System.IO.File.Exists(reportPath))
                 {
-                    _logger.LogWarning($"Report xml not exist for file {fileIdString}");
+                    _logger.LogWarning($"[{UserAgentInfo.ClientTypeString}]:: Report xml not exist for file {fileIdString}");
                     cloudProxyResponseModel.Errors.Add($"Report xml not exist for file {fileIdString}");
                     return NotFound(cloudProxyResponseModel);
                 }
@@ -285,7 +287,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 string metaDataPath = Path.Combine(transactionFolderPath, Constants.METADATA_JSON_FILE_NAME);
                 if (!System.IO.File.Exists(metaDataPath))
                 {
-                    _logger.LogWarning($"Metadata json not exist for file {fileIdString}");
+                    _logger.LogWarning($"[{UserAgentInfo.ClientTypeString}]:: Metadata json not exist for file {fileIdString}");
                     cloudProxyResponseModel.Errors.Add($"Metadata json not exist for file {fileIdString}");
                     return NotFound(cloudProxyResponseModel);
                 }
@@ -310,7 +312,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 rebuiltStoreFilePath = Path.Combine(_rebuiltStorePath, fileIdString);
                 if (!System.IO.File.Exists(rebuiltStoreFilePath))
                 {
-                    _logger.LogWarning($"Rebuild file not exist for file {fileIdString}");
+                    _logger.LogWarning($"[{UserAgentInfo.ClientTypeString}]:: Rebuild file not exist for file {fileIdString}");
                     cloudProxyResponseModel.Errors.Add($"Rebuild file not exist for file {fileIdString}");
                     return NotFound(cloudProxyResponseModel);
                 }
@@ -325,7 +327,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error Processing 'input' {fileIdString} and error detail is {ex.Message}");
+                _logger.LogError(ex, $"[{UserAgentInfo.ClientTypeString}]:: Error Processing 'input' {fileIdString} and error detail is {ex.Message}");
                 cloudProxyResponseModel.Errors.Add($"Error Processing 'input' {fileIdString} and error detail is {ex.Message}");
                 cloudProxyResponseModel.Status = ReturnOutcome.GW_ERROR;
                 return StatusCode(StatusCodes.Status500InternalServerError, cloudProxyResponseModel);

@@ -1,24 +1,19 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Glasswall.CloudProxy.Common.Web.Abstraction;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System;
 
 namespace Glasswall.CloudProxy.Api.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class HealthController : ControllerBase
+    public class HealthController : CloudProxyController<HealthController>
     {
-        private readonly ILogger<HealthController> _logger;
-
-        public HealthController(ILogger<HealthController> logger)
+        public HealthController(ILogger<HealthController> logger) : base(logger)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         [HttpGet]
         public IActionResult GetHealth()
         {
-            _logger.Log(LogLevel.Trace, "Performing heartbeat");
+            _logger.Log(LogLevel.Trace, $"[{UserAgentInfo.ClientTypeString}]:: Performing heartbeat");
             return Ok();
         }
     }

@@ -1,17 +1,17 @@
 ﻿using Glasswall.CloudProxy.Api;
 using Glasswall.CloudProxy.IntegrationTest.Helpers;
-using System.Threading.Tasks;
-using Xunit;
-using System.Net.Http;
 using System;
 using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Xunit;
 
 namespace Glasswall.CloudProxy.IntegrationTest.ControllerTests
 {
     public class AnalyseControllerTests : IClassFixture<CustomWebApplicationFactory<Startup>>
     {
-        readonly CustomWebApplicationFactory<Startup> _factory;
-        readonly HttpClient _httpClient;
+        private readonly CustomWebApplicationFactory<Startup> _factory;
+        private readonly HttpClient _httpClient;
 
         public AnalyseControllerTests(CustomWebApplicationFactory<Startup> factory)
         {
