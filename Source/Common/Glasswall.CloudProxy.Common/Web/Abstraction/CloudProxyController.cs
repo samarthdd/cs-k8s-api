@@ -1,4 +1,5 @@
 ﻿using Amazon.S3.Util;
+using Glasswall.CloudProxy.Common.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -10,6 +11,8 @@ namespace Glasswall.CloudProxy.Common.Web.Abstraction
     public abstract class CloudProxyController<TController> : ControllerBase
     {
         protected readonly ILogger<TController> _logger;
+        private UserAgentInfo _userAgentInfo;
+
         public CloudProxyController(ILogger<TController> logger)
         {
             _logger = logger;
@@ -50,6 +53,18 @@ namespace Glasswall.CloudProxy.Common.Web.Abstraction
             if (!string.IsNullOrWhiteSpace(key) && !string.IsNullOrWhiteSpace(value) && !Response.Headers.ContainsKey(key))
             {
                 Response.Headers.Add(key, value);
+            }
+        }
+
+        protected UserAgentInfo UserAgentInfo
+        {
+            get
+            {
+                if (_userAgentInfo == null)
+                {
+                    _userAgentInfo = new UserAgentInfo(Request.Headers[Constants.UserAgent.USER_AGENT]);
+                }
+                return _userAgentInfo;
             }
         }
     }

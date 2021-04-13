@@ -16,7 +16,7 @@ The project is about a Kubernetes service that can be added to [ICAP infrastruct
 
 ## Dataflow Diagram
 
-![Dataflow Diagram](images/dataflow-diagram.png)
+![Dataflow Diagram](images/gw-cloud-sdk-dataflow-diagram.png)
 
 ## The docker image
 

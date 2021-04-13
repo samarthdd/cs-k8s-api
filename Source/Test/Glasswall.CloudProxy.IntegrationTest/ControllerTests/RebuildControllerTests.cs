@@ -10,8 +10,8 @@ namespace Glasswall.CloudProxy.IntegrationTest.ControllerTests
 {
     public class RebuildControllerTests : IClassFixture<CustomWebApplicationFactory<Startup>>
     {
-        readonly CustomWebApplicationFactory<Startup> _factory;
-        readonly HttpClient _httpClient;
+        private readonly CustomWebApplicationFactory<Startup> _factory;
+        private readonly HttpClient _httpClient;
 
         public RebuildControllerTests(CustomWebApplicationFactory<Startup> factory)
         {

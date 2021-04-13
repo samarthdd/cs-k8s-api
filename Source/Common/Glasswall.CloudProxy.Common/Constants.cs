@@ -1,4 +1,4 @@
-﻿namespace Glasswall.CloudProxy.Api
+﻿namespace Glasswall.CloudProxy.Common
 {
     public static class Constants
     {
@@ -26,6 +26,16 @@
         {
             public const string AWS_ACCESS_KEY_ID = "AwsAccessKeyId";
             public const string AWS_SECRET_ACCESS_KEY = "AwsSecretAccessKey";
+        }
+
+        public static class UserAgent
+        {
+            public const string USER_AGENT = "User-Agent";
+            public const string WEB_APP = "Web Application";
+            public const string DESKTOP_APP = "Desktop Application";
+            public const string OTHERS = "Unknown Application";
+            public const string ELECTRON_FAMILY = "electron";
+            public const string OTHER_FAMILY = "other";
         }
     }
 }

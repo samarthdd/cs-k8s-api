@@ -11,7 +11,7 @@ namespace Glasswall.CloudProxy.IntegrationTest
     {
         protected override IHostBuilder CreateHostBuilder()
         {
-            var builder = Host.CreateDefaultBuilder()
+            IHostBuilder builder = Host.CreateDefaultBuilder()
                               .ConfigureWebHostDefaults(x =>
                               {
                                   x.UseStartup<Startup>().UseTestServer();
@@ -23,7 +23,7 @@ namespace Glasswall.CloudProxy.IntegrationTest
         {
             builder.ConfigureAppConfiguration(config =>
             {
-                var integrationConfig = new ConfigurationBuilder()
+                IConfigurationRoot integrationConfig = new ConfigurationBuilder()
                   .AddJsonFile(Constants.APP_SETTINGS_FILE_NAME)
                   .Build();
 
