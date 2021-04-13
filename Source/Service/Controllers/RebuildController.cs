@@ -254,6 +254,8 @@ namespace Glasswall.CloudProxy.Api.Controllers
             string protectedZipFilePath = Path.Combine(tempFolderPath, $"{Guid.NewGuid()}");
             string zipFilePath = Path.Combine(tempFolderPath, $"{Guid.NewGuid()}");
             string extractedFolderPath = Path.Combine(tempFolderPath, $"{Guid.NewGuid()}");
+            string extractedRebuildZipFilePath = Path.Combine(tempFolderPath, $"{Guid.NewGuid()}");
+            string extractedRebuildFolderPath = Path.Combine(tempFolderPath, $"{Guid.NewGuid()}");
             CloudProxyResponseModel cloudProxyResponseModel = new CloudProxyResponseModel();
 
             ISpanBuilder builder = _tracer.BuildSpan("Post::Data");
@@ -327,8 +329,19 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 switch (descriptor.Outcome)
                 {
                     case ReturnOutcome.GW_REBUILT:
+                        try
+                        {
+                            _zipUtility.ExtractZipFile(descriptor.RebuiltStoreFilePath, null, extractedRebuildFolderPath);
+                        }
+                        catch (Exception ex)
+                        {
+                            cloudProxyResponseModel.Errors.Add(ex.Message);
+                            return BadRequest(cloudProxyResponseModel);
+                        }
+
+                        _zipUtility.CreateZipFile(extractedRebuildZipFilePath, password, extractedRebuildFolderPath);
                         AddHeaderToResponse(Constants.Header.FILE_ID, fileId);
-                        return new FileContentResult(System.IO.File.ReadAllBytes(descriptor.RebuiltStoreFilePath), Constants.OCTET_STREAM_CONTENT_TYPE) { FileDownloadName = file.FileName ?? "Unknown" };
+                        return new FileContentResult(System.IO.File.ReadAllBytes(extractedRebuildZipFilePath), Constants.OCTET_STREAM_CONTENT_TYPE) { FileDownloadName = file.FileName ?? "Unknown" };
                     case ReturnOutcome.GW_FAILED:
                     default:
                         if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
