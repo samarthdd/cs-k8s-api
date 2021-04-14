@@ -1,7 +1,6 @@
-﻿using Glasswall.CloudProxy.Common;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace Glasswall.CloudProxy.Api.Models
+namespace Glasswall.CloudProxy.Common.Web.Models
 {
     public interface ICloudProxyResponseModel
     {
