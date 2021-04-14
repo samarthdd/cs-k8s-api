@@ -43,11 +43,6 @@ namespace Glasswall.CloudProxy.Common.AdaptationService
                     throw NewAdaptationServiceException($"Missing outcome for File Id {fileId}");
                 }
 
-                foreach (var item in headers)
-                {
-                    _logger.LogInformation($"{item.Key}::{item.Value}");
-                }
-
                 string outcomeString = Encoding.UTF8.GetString((byte[])headers["file-outcome"]);
                 AdaptationOutcome outcome = (AdaptationOutcome)Enum.Parse(typeof(AdaptationOutcome), outcomeString, ignoreCase: true);
                 if (!OutcomeMap.ContainsKey(outcome))
