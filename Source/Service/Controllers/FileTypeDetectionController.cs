@@ -186,7 +186,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
             finally
             {
                 ClearStores(originalStoreFilePath, rebuiltStoreFilePath);
-                if (string.IsNullOrEmpty(fileId))
+                if (!string.IsNullOrEmpty(fileId))
                 {
                     AddHeaderToResponse(Constants.Header.FILE_ID, fileId);
                 }
