@@ -155,10 +155,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
             finally
             {
                 ClearStores(originalStoreFilePath, rebuiltStoreFilePath);
-                if (!string.IsNullOrEmpty(fileId))
-                {
-                    AddHeaderToResponse(Constants.Header.FILE_ID, fileId);
-                }
+                AddHeaderToResponse(Constants.Header.FILE_ID, fileId);
                 span.Finish();
             }
         }
@@ -269,10 +266,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
             finally
             {
                 ClearStores(originalStoreFilePath, rebuiltStoreFilePath);
-                if (!string.IsNullOrEmpty(fileId))
-                {
-                    AddHeaderToResponse(Constants.Header.FILE_ID, fileId);
-                }
+                AddHeaderToResponse(Constants.Header.FILE_ID, fileId);
                 span.Finish();
             }
         }
@@ -418,10 +412,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
             {
                 ClearStores(originalStoreFilePath, rebuiltStoreFilePath);
                 span.Finish();
-                if (!string.IsNullOrEmpty(fileId))
-                {
-                    AddHeaderToResponse(Constants.Header.FILE_ID, fileId);
-                }
+                AddHeaderToResponse(Constants.Header.FILE_ID, fileId);
                 if (Directory.Exists(tempFolderPath))
                 {
                     Directory.Delete(tempFolderPath, true);
