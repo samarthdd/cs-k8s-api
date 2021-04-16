@@ -33,7 +33,7 @@ spec:
             claimName: pvc-transaction-query-service
       containers:
       - name: proxy-rest-api
-        image: glasswallsolutions/cs-api:latest
+        image: glasswallsolutions/cs-k8s-api:latest
         ports:
         - containerPort: 80
         resources:
