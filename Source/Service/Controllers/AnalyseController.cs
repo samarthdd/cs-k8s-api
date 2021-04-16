@@ -1,5 +1,4 @@
-﻿using Glasswall.CloudProxy.Api.Models;
-using Glasswall.CloudProxy.Api.Utilities;
+﻿using Glasswall.CloudProxy.Api.Utilities;
 using Glasswall.CloudProxy.Common;
 using Glasswall.CloudProxy.Common.AdaptationService;
 using Glasswall.CloudProxy.Common.Configuration;
@@ -135,10 +134,22 @@ namespace Glasswall.CloudProxy.Api.Controllers
                             cloudProxyResponseModel.Errors.Add($"Report xml not exist for file {fileId}");
                             return NotFound(cloudProxyResponseModel);
                         }
-
-                        AddHeaderToResponse(Constants.Header.FILE_ID, fileId);
                         return new FileContentResult(System.IO.File.ReadAllBytes(reportPath), Constants.OCTET_STREAM_CONTENT_TYPE) { FileDownloadName = Constants.REPORT_XML_FILE_NAME };
                     case ReturnOutcome.GW_FAILED:
+                        if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
+                        {
+                            cloudProxyResponseModel.Errors.Add(System.IO.File.ReadAllText(descriptor.RebuiltStoreFilePath));
+                        }
+                        cloudProxyResponseModel.Status = descriptor.Outcome;
+                        return BadRequest(cloudProxyResponseModel);
+                    case ReturnOutcome.GW_UNPROCESSED:
+                        if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
+                        {
+                            cloudProxyResponseModel.Errors.Add(System.IO.File.ReadAllText(descriptor.RebuiltStoreFilePath));
+                        }
+                        cloudProxyResponseModel.Status = descriptor.Outcome;
+                        return BadRequest(cloudProxyResponseModel);
+                    case ReturnOutcome.GW_ERROR:
                     default:
                         if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
                         {
@@ -165,6 +176,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
             finally
             {
                 ClearStores(originalStoreFilePath, rebuiltStoreFilePath);
+                AddHeaderToResponse(Constants.Header.FILE_ID, fileId);
                 span.Finish();
             }
         }

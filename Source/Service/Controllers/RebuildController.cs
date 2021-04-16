@@ -1,5 +1,4 @@
-﻿using Glasswall.CloudProxy.Api.Models;
-using Glasswall.CloudProxy.Api.Utilities;
+﻿using Glasswall.CloudProxy.Api.Utilities;
 using Glasswall.CloudProxy.Common;
 using Glasswall.CloudProxy.Common.AdaptationService;
 using Glasswall.CloudProxy.Common.Configuration;
@@ -114,9 +113,22 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 switch (descriptor.Outcome)
                 {
                     case ReturnOutcome.GW_REBUILT:
-                        AddHeaderToResponse(Constants.Header.FILE_ID, fileId);
                         return new FileContentResult(System.IO.File.ReadAllBytes(descriptor.RebuiltStoreFilePath), Constants.OCTET_STREAM_CONTENT_TYPE) { FileDownloadName = file.FileName ?? "Unknown" };
                     case ReturnOutcome.GW_FAILED:
+                        if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
+                        {
+                            cloudProxyResponseModel.Errors.Add(System.IO.File.ReadAllText(descriptor.RebuiltStoreFilePath));
+                        }
+                        cloudProxyResponseModel.Status = descriptor.Outcome;
+                        return BadRequest(cloudProxyResponseModel);
+                    case ReturnOutcome.GW_UNPROCESSED:
+                        if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
+                        {
+                            cloudProxyResponseModel.Errors.Add(System.IO.File.ReadAllText(descriptor.RebuiltStoreFilePath));
+                        }
+                        cloudProxyResponseModel.Status = descriptor.Outcome;
+                        return BadRequest(cloudProxyResponseModel);
+                    case ReturnOutcome.GW_ERROR:
                     default:
                         if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
                         {
@@ -143,6 +155,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
             finally
             {
                 ClearStores(originalStoreFilePath, rebuiltStoreFilePath);
+                AddHeaderToResponse(Constants.Header.FILE_ID, fileId);
                 span.Finish();
             }
         }
@@ -211,9 +224,22 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 switch (descriptor.Outcome)
                 {
                     case ReturnOutcome.GW_REBUILT:
-                        AddHeaderToResponse(Constants.Header.FILE_ID, fileId);
                         return Ok(Convert.ToBase64String(System.IO.File.ReadAllBytes(descriptor.RebuiltStoreFilePath)));
                     case ReturnOutcome.GW_FAILED:
+                        if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
+                        {
+                            cloudProxyResponseModel.Errors.Add(System.IO.File.ReadAllText(descriptor.RebuiltStoreFilePath));
+                        }
+                        cloudProxyResponseModel.Status = descriptor.Outcome;
+                        return BadRequest(cloudProxyResponseModel);
+                    case ReturnOutcome.GW_UNPROCESSED:
+                        if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
+                        {
+                            cloudProxyResponseModel.Errors.Add(System.IO.File.ReadAllText(descriptor.RebuiltStoreFilePath));
+                        }
+                        cloudProxyResponseModel.Status = descriptor.Outcome;
+                        return BadRequest(cloudProxyResponseModel);
+                    case ReturnOutcome.GW_ERROR:
                     default:
                         if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
                         {
@@ -240,6 +266,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
             finally
             {
                 ClearStores(originalStoreFilePath, rebuiltStoreFilePath);
+                AddHeaderToResponse(Constants.Header.FILE_ID, fileId);
                 span.Finish();
             }
         }
@@ -342,9 +369,22 @@ namespace Glasswall.CloudProxy.Api.Controllers
                         }
 
                         _zipUtility.CreateZipFile(extractedRebuildZipFilePath, password, extractedRebuildFolderPath);
-                        AddHeaderToResponse(Constants.Header.FILE_ID, fileId);
                         return new FileContentResult(System.IO.File.ReadAllBytes(extractedRebuildZipFilePath), Constants.OCTET_STREAM_CONTENT_TYPE) { FileDownloadName = file.FileName ?? "Unknown" };
                     case ReturnOutcome.GW_FAILED:
+                        if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
+                        {
+                            cloudProxyResponseModel.Errors.Add(System.IO.File.ReadAllText(descriptor.RebuiltStoreFilePath));
+                        }
+                        cloudProxyResponseModel.Status = descriptor.Outcome;
+                        return BadRequest(cloudProxyResponseModel);
+                    case ReturnOutcome.GW_UNPROCESSED:
+                        if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
+                        {
+                            cloudProxyResponseModel.Errors.Add(System.IO.File.ReadAllText(descriptor.RebuiltStoreFilePath));
+                        }
+                        cloudProxyResponseModel.Status = descriptor.Outcome;
+                        return BadRequest(cloudProxyResponseModel);
+                    case ReturnOutcome.GW_ERROR:
                     default:
                         if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
                         {
@@ -372,6 +412,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
             {
                 ClearStores(originalStoreFilePath, rebuiltStoreFilePath);
                 span.Finish();
+                AddHeaderToResponse(Constants.Header.FILE_ID, fileId);
                 if (Directory.Exists(tempFolderPath))
                 {
                     Directory.Delete(tempFolderPath, true);
