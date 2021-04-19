@@ -56,29 +56,29 @@ namespace Glasswall.CloudProxy.Api
             // Adds the Jaeger Tracer.
             services.AddSingleton<ITracer>(serviceProvider =>
             {
-                //string serviceName = serviceProvider.GetRequiredService<IHostEnvironment>().ApplicationName;
+                string serviceName = serviceProvider.GetRequiredService<IHostEnvironment>().ApplicationName;
 
                 //string serviceName = System.Reflection.Assembly.GetEntryAssembly().GetName().Name;
 
-                //ILoggerFactory loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+                ILoggerFactory loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
 
-                //Jaeger.Samplers.ISampler sampler = new Jaeger.Samplers.ConstSampler(sample: true);
+                Jaeger.Samplers.ISampler sampler = new Jaeger.Samplers.ConstSampler(sample: true);
 
-                //// This will log to a default localhost installation of Jaeger.
-                //Tracer tracer = new Tracer.Builder(serviceName)
-                //    .WithLoggerFactory(loggerFactory)
-                //    .WithSampler(new Jaeger.Samplers.ConstSampler(true))
-                //    .Build();
+                // This will log to a default localhost installation of Jaeger.
+                Tracer tracer = new Tracer.Builder(serviceName)
+                    .WithLoggerFactory(loggerFactory)
+                    .WithSampler(new Jaeger.Samplers.ConstSampler(true))
+                    .Build();
 
-                Environment.SetEnvironmentVariable("JAEGER_SERVICE_NAME", "rebuild-rest-api");
-                Environment.SetEnvironmentVariable("JAEGER_AGENT_HOST", "simplest-agent.observability.svc.cluster.local");
-                Environment.SetEnvironmentVariable("JAEGER_AGENT_PORT", "6831");
-                Environment.SetEnvironmentVariable("JAEGER_SAMPLER_TYPE", "const");
+                //Environment.SetEnvironmentVariable("JAEGER_SERVICE_NAME", "rebuild-rest-api");
+                //Environment.SetEnvironmentVariable("JAEGER_AGENT_HOST", "simplest-agent.observability.svc.cluster.local");
+                //Environment.SetEnvironmentVariable("JAEGER_AGENT_PORT", "6831");
+                //Environment.SetEnvironmentVariable("JAEGER_SAMPLER_TYPE", "const");
 
-                LoggerFactory loggerFactory = new LoggerFactory();
+                //LoggerFactory loggerFactory = new LoggerFactory();
 
-                Configuration config = Jaeger.Configuration.FromEnv(loggerFactory);
-                ITracer tracer = config.GetTracer();
+                //Configuration config = Jaeger.Configuration.FromEnv(loggerFactory);
+                //ITracer tracer = config.GetTracer();
 
                 if (!GlobalTracer.IsRegistered())
                 {
