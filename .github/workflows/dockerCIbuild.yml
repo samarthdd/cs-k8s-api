@@ -7,7 +7,7 @@ on:
       - main
 
 env:
-  DOCKER_REPO_NAME: glasswall
+  DOCKER_REPO_NAME: glasswallsolutions
   GITHUB_SHA: ${{ github.sha }}
   
 
