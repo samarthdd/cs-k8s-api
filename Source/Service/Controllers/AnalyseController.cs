@@ -55,7 +55,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
             _zipUtility = zipUtility ?? throw new ArgumentNullException(nameof(zipUtility));
         }
 
-        [HttpPost("base64")]
+        [HttpPost(Constants.Endpoints.BASE64)]
         public async Task<IActionResult> AnalyseFromBase64([FromBody][Required] Base64Request request)
         {
             _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: {nameof(AnalyseFromBase64)} method invoked");
@@ -181,7 +181,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
             }
         }
 
-        [HttpGet("xmlreport")]
+        [HttpGet(Constants.Endpoints.XML_REPORT)]
         public IActionResult GetXMLReportByFileId([Required] Guid fileId)
         {
             _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: {nameof(GetXMLReportByFileId)} method invoked");
@@ -241,7 +241,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
             }
         }
 
-        [HttpGet("rebuildzip")]
+        [HttpGet(Constants.Endpoints.REBUILD_ZIP)]
         public IActionResult GetZipByFileId([Required] Guid fileId)
         {
             _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: {nameof(GetZipByFileId)} method invoked");

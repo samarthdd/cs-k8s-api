@@ -3,6 +3,7 @@
     public static class Constants
     {
         public const string REPORT_XML_FILE_NAME = "report.xml";
+        public const string ERROR_REPORT_HTML_FILE_NAME = "ErrorReport.html";
         public const string METADATA_JSON_FILE_NAME = "metadata.json";
         public const string REPORT_FOLDER_NAME = "report";
         public const string CLEAN_FOLDER_NAME = "clean";
@@ -36,6 +37,16 @@
             public const string OTHERS = "Unknown Application";
             public const string ELECTRON_FAMILY = "electron";
             public const string OTHER_FAMILY = "other";
+        }
+
+        public static class Endpoints
+        {
+            public const string FILE = "file";
+            public const string ZIP_FILE = "zipfile";
+            public const string BASE64 = "base64";
+            public const string PROTECTED_ZIP_FILE = "protectedzipfile";
+            public const string XML_REPORT = "xmlreport";
+            public const string REBUILD_ZIP = "rebuildzip";
         }
     }
 }

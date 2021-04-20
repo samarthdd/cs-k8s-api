@@ -52,7 +52,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
             _tracer = tracer;
         }
 
-        [HttpPost("base64")]
+        [HttpPost(Constants.Endpoints.BASE64)]
         public async Task<IActionResult> DetermineFileTypeFromBase64([FromBody][Required] Base64Request request)
         {
             _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: {nameof(DetermineFileTypeFromBase64)} method invoked");
