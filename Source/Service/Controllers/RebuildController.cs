@@ -54,15 +54,20 @@ namespace Glasswall.CloudProxy.Api.Controllers
             _tracer = tracer;
         }
 
-        [HttpPost("file")]
-        [HttpPost("zipfile")]
+        [HttpPost(Constants.Endpoints.FILE)]
+        [HttpPost(Constants.Endpoints.ZIP_FILE)]
         public async Task<IActionResult> RebuildFromFormFile([FromForm][Required] IFormFile file)
         {
+            bool zipRequest = Request.Path.ToString().ToLower().EndsWith(Constants.Endpoints.ZIP_FILE);
             _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: {nameof(RebuildFromFormFile)} method invoked");
 
             string originalStoreFilePath = string.Empty;
             string rebuiltStoreFilePath = string.Empty;
             string fileId = string.Empty;
+            string tempFolderPath = Path.Combine(Constants.VAR_PATH, $"{Guid.NewGuid()}");
+            string extractedFolderPath = Path.Combine(tempFolderPath, $"{Guid.NewGuid()}");
+            string extractedRebuildZipFilePath = Path.Combine(tempFolderPath, $"{Guid.NewGuid()}");
+            string extractedRebuildFolderPath = Path.Combine(tempFolderPath, $"{Guid.NewGuid()}");
             CloudProxyResponseModel cloudProxyResponseModel = new CloudProxyResponseModel();
 
             ISpanBuilder builder = _tracer.BuildSpan("Post::Data");
@@ -103,6 +108,13 @@ namespace Glasswall.CloudProxy.Api.Controllers
                         await file.CopyToAsync(fileStream);
                     }
 
+                    (bool status, string error) = IsValidZip(originalStoreFilePath, null, extractedFolderPath);
+                    if ((zipRequest && !status) || (!zipRequest && status))
+                    {
+                        cloudProxyResponseModel.Errors.Add(zipRequest ? "file should be a valid zip." : "file should not be a zip.");
+                        return BadRequest(cloudProxyResponseModel);
+                    }
+
                     _adaptationServiceClient.Connect();
                     ReturnOutcome outcome = _adaptationServiceClient.AdaptationRequest(descriptor.UUID, originalStoreFilePath, rebuiltStoreFilePath, processingCancellationToken);
                     descriptor.Update(outcome, originalStoreFilePath, rebuiltStoreFilePath);
@@ -113,6 +125,35 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 switch (descriptor.Outcome)
                 {
                     case ReturnOutcome.GW_REBUILT:
+                        if (zipRequest)
+                        {
+                            (bool status, string error) = IsValidZip(descriptor.RebuiltStoreFilePath, null, extractedRebuildFolderPath);
+                            if (!status)
+                            {
+                                cloudProxyResponseModel.Errors.Add(error);
+                                return BadRequest(cloudProxyResponseModel);
+                            }
+
+                            string[] files = Directory.GetFiles(extractedRebuildFolderPath, Constants.STAR, SearchOption.AllDirectories);
+
+                            if (files.Any(x => Path.GetFileName(x).Equals(Constants.ERROR_REPORT_HTML_FILE_NAME)))
+                            {
+                                if (files.Length == 1)
+                                {
+                                    if (System.IO.File.Exists(files[0]))
+                                    {
+                                        cloudProxyResponseModel.Errors.Add(System.IO.File.ReadAllText(files[0]));
+                                    }
+                                    cloudProxyResponseModel.Status = descriptor.Outcome;
+                                    return BadRequest(cloudProxyResponseModel);
+                                }
+                                else
+                                {
+                                    Response.StatusCode = StatusCodes.Status207MultiStatus;
+                                    return new FileContentResult(System.IO.File.ReadAllBytes(descriptor.RebuiltStoreFilePath), Constants.OCTET_STREAM_CONTENT_TYPE) { FileDownloadName = file.FileName ?? "Unknown" };
+                                }
+                            }
+                        }
                         return new FileContentResult(System.IO.File.ReadAllBytes(descriptor.RebuiltStoreFilePath), Constants.OCTET_STREAM_CONTENT_TYPE) { FileDownloadName = file.FileName ?? "Unknown" };
                     case ReturnOutcome.GW_FAILED:
                         if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
@@ -157,10 +198,14 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 ClearStores(originalStoreFilePath, rebuiltStoreFilePath);
                 AddHeaderToResponse(Constants.Header.FILE_ID, fileId);
                 span.Finish();
+                if (Directory.Exists(tempFolderPath))
+                {
+                    Directory.Delete(tempFolderPath, true);
+                }
             }
         }
 
-        [HttpPost("base64")]
+        [HttpPost(Constants.Endpoints.BASE64)]
         public async Task<IActionResult> RebuildFromBase64([FromBody][Required] Base64Request request)
         {
             _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: {nameof(RebuildFromBase64)} method invoked");
@@ -271,7 +316,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
             }
         }
 
-        [HttpPost("protectedzipfile")]
+        [HttpPost(Constants.Endpoints.PROTECTED_ZIP_FILE)]
         public async Task<IActionResult> RebuildFromFormProtectedFile([FromForm][Required] IFormFile file, [FromForm][Required] string password)
         {
             _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: {nameof(RebuildFromFormProtectedFile)} method invoked");
@@ -329,13 +374,10 @@ namespace Glasswall.CloudProxy.Api.Controllers
                         await file.CopyToAsync(fileStream);
                     }
 
-                    try
+                    (bool status, string error) = IsValidZip(protectedZipFilePath, password, extractedFolderPath);
+                    if (!status)
                     {
-                        _zipUtility.ExtractZipFile(protectedZipFilePath, password, extractedFolderPath);
-                    }
-                    catch (Exception ex)
-                    {
-                        cloudProxyResponseModel.Errors.Add(ex.Message);
+                        cloudProxyResponseModel.Errors.Add(error);
                         return BadRequest(cloudProxyResponseModel);
                     }
 
@@ -358,13 +400,10 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 switch (descriptor.Outcome)
                 {
                     case ReturnOutcome.GW_REBUILT:
-                        try
+                        (bool status, string error) = IsValidZip(descriptor.RebuiltStoreFilePath, null, extractedRebuildFolderPath);
+                        if (!status)
                         {
-                            _zipUtility.ExtractZipFile(descriptor.RebuiltStoreFilePath, null, extractedRebuildFolderPath);
-                        }
-                        catch (Exception ex)
-                        {
-                            cloudProxyResponseModel.Errors.Add(ex.Message);
+                            cloudProxyResponseModel.Errors.Add(error);
                             return BadRequest(cloudProxyResponseModel);
                         }
 
@@ -417,6 +456,19 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 {
                     Directory.Delete(tempFolderPath, true);
                 }
+            }
+        }
+
+        private (bool status, string error) IsValidZip(string zipFilePath, string password, string extractedFolderPath)
+        {
+            try
+            {
+                _zipUtility.ExtractZipFile(zipFilePath, password, extractedFolderPath);
+                return (true, null);
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
             }
         }
     }
