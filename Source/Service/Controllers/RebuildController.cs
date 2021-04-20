@@ -144,7 +144,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                                     {
                                         cloudProxyResponseModel.Errors.Add(System.IO.File.ReadAllText(files[0]));
                                     }
-                                    cloudProxyResponseModel.Status = descriptor.Outcome;
+                                    cloudProxyResponseModel.Status = ReturnOutcome.GW_FAILED;
                                     return BadRequest(cloudProxyResponseModel);
                                 }
                                 else
