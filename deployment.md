@@ -1,5 +1,7 @@
 # Deploy GW Cloud SDK with compliant kubernetes (worker and service cluster)
 
+![image](https://user-images.githubusercontent.com/58347752/115372624-64697d00-a1cb-11eb-96e0-7f6ba5cdc595.png)
+
 ## Deployment instructions using AMI
 
 Both worker and service cluster AMIs are automatically created by running **CK8icap-GW_CloudSDK** workflow in GitHub Actions using Packer.
