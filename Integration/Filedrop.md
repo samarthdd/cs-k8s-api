@@ -1,6 +1,6 @@
 # Deploying CS-API-CK8S WC OVA on ESXI
 
-- Download CS-API-CK8S  OVA
+- Download CS-API-CK8S-WC  OVA
 - Login to VMware ESXi
 - From left bar navigate to Virtual machines
 - From top bar on the right choose Create / Register VM
