@@ -76,14 +76,27 @@
 
     ```
         proxy-rest-api-7b7d5b6456-s44kq                         1/1     Running     0
-
+    
 ## Glasswall Cloud SDK with Compliant Kubernetes
 
 ### **Repository: https://github.com/k8-proxy/k8s-compliant-kubernetes/tree/cs-api**
 
 ![cs-api-ck8s Diagram](images/cs-api-ck8s-architecture.jpg)
 
-
+### Existing Cloud SDK in Complaint Kubernetes can be upgraded as explained below:
+- SSH into Workload Cluster Instance
+- Switch to sudo user using `sudo su`
+- Get docker image tag of Cloud SDK from https://github.com/k8-proxy/cs-k8s-api/actions. Select any run and navigate to `Push image` step
+- Every time code is pushed to main branch, two images are built and pushed to GW docker repository. `latest` refers to latest version of Cloud SDK and `main-<commit-id>` refers to specific version
+  ```
+  main-a47f080: digest: sha256:5b70ea91347bbd2ded4d87d5b9fbf9d7c20cc8c3a76fd004f49a2fd6492e01c2 size: 2424
+  ```
+- Once tag of required version of docker image is copied, execute below commands in Workload cluster instance. Replace `<image-tag>` with required version of Cloud SDK
+  ```
+        kubectl set image deployment/proxy-rest-api proxy-rest-api=glasswallsolutions/cs-k8s-api:<image-tag> -n icap-adaptation
+        kubectl rollout restart deployment proxy-rest-api -n icap-adaptation
+  ```
+- Creation of new pod with required version of Cloud SDK can be verified by executing `kubectl get pods -n icap-adaptation`
 ## FileDrop with Glasswall Cloud SDK
 
 ![FileDrop-Cloud-SDK Diagram](images/filedrop_architecture.jpg)
@@ -116,11 +129,3 @@
 
 
 Note : To Deploy in AWS, an AMI needs to be created with above setup
-
-
-
-
-
-
-
-
