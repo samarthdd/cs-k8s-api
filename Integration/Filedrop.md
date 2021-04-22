@@ -1,4 +1,4 @@
-# Deploying CS-API-CK8S WC OVA on ESXI
+# Deploying CS-API-CK8S-WC OVA on ESXI
 
 - Download CS-API-CK8S-WC  OVA
 - Login to VMware ESXi
