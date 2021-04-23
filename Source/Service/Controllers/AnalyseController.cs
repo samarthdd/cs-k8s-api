@@ -1,7 +1,7 @@
-﻿using Glasswall.CloudProxy.Api.Utilities;
-using Glasswall.CloudProxy.Common;
+﻿using Glasswall.CloudProxy.Common;
 using Glasswall.CloudProxy.Common.AdaptationService;
 using Glasswall.CloudProxy.Common.Configuration;
+using Glasswall.CloudProxy.Common.Utilities;
 using Glasswall.CloudProxy.Common.Web.Abstraction;
 using Glasswall.CloudProxy.Common.Web.Models;
 using Microsoft.AspNetCore.Http;

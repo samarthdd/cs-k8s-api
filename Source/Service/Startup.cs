@@ -1,5 +1,6 @@
-using Glasswall.CloudProxy.Api.Utilities;
+using Glasswall.CloudProxy.Common.Configuration;
 using Glasswall.CloudProxy.Common.Setup;
+using Glasswall.CloudProxy.Common.Utilities;
 using Glasswall.CloudProxy.Common.Web.Models;
 using Jaeger;
 using Microsoft.AspNetCore.Builder;
@@ -115,11 +116,13 @@ namespace Glasswall.CloudProxy.Api
                 ILogger logger = loggerFactory.CreateLogger<Startup>();
                 UserAgentInfo userAgentInfo = new UserAgentInfo(context.Request.Headers[Constants.UserAgent.USER_AGENT]);
                 logger.LogInformation($"UserAgent:: [{userAgentInfo?.ClientInfo?.String}]");
-
+                IVersionConfiguration versionConfig = app.ApplicationServices.GetService<IVersionConfiguration>();
                 context.Response.Headers[Constants.Header.ACCESS_CONTROL_EXPOSE_HEADERS] = Constants.STAR;
                 context.Response.Headers[Constants.Header.ACCESS_CONTROL_ALLOW_HEADERS] = Constants.STAR;
                 context.Response.Headers[Constants.Header.ACCESS_CONTROL_ALLOW_ORIGIN] = Constants.STAR;
                 context.Response.Headers[Constants.Header.VIA] = Environment.MachineName;
+                context.Response.Headers[Constants.Header.SDK_ENGINE_VERSION] = versionConfig.SDKEngineVersion;
+                context.Response.Headers[Constants.Header.SDK_API_VERSION] = Constants.Header.SDK_API_VERSION_VALUE;
                 return next.Invoke();
             });
 

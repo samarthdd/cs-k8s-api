@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 
-namespace Glasswall.CloudProxy.Api.Utilities
+namespace Glasswall.CloudProxy.Common.Utilities
 {
     public interface IFileUtility
     {
