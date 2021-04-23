@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 
-namespace Glasswall.CloudProxy.Api.Utilities
+namespace Glasswall.CloudProxy.Common.Utilities
 {
     public class FileUtility : IFileUtility
     {
