@@ -22,6 +22,10 @@ namespace Glasswall.CloudProxy.Common.Setup
             configuration.Bind(processingConfig);
             serviceCollection.AddSingleton<IProcessingConfiguration>(processingConfig);
 
+            IVersionConfiguration versionConfiguration = VersionConfigLoader.SetDefaults(new VersionConfiguration());
+            configuration.Bind(versionConfiguration);
+            serviceCollection.AddSingleton<IVersionConfiguration>(versionConfiguration);
+
             serviceCollection.AddTransient(typeof(IAdaptationServiceClient<>), typeof(RabbitMqClient<>));
             serviceCollection.AddTransient<IResponseProcessor, AdaptationOutcomeProcessor>();
 

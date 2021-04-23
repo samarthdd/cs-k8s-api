@@ -21,6 +21,10 @@
             public const string ACCESS_CONTROL_EXPOSE_HEADERS = "Access-Control-Expose-Headers";
             public const string ACCESS_CONTROL_ALLOW_HEADERS = "Access-Control-Allow-Headers";
             public const string ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
+            public const string SDK_ENGINE_VERSION = "X-SDK-Engine-Version";
+            public const string SDK_ENGINE_VERSION_VALUE = "1.157";
+            public const string SDK_API_VERSION = "X-SDK-Api-Version";
+            public const string SDK_API_VERSION_VALUE = "0.1.7";
         }
 
         public static class EnvironmentVariables
@@ -47,6 +51,7 @@
             public const string PROTECTED_ZIP_FILE = "protectedzipfile";
             public const string XML_REPORT = "xmlreport";
             public const string REBUILD_ZIP = "rebuildzip";
+            public const string VERSION = "version";
         }
     }
 }

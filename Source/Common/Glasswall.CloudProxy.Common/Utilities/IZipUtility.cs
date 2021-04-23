@@ -1,4 +1,4 @@
-﻿namespace Glasswall.CloudProxy.Api.Utilities
+﻿namespace Glasswall.CloudProxy.Common.Utilities
 {
     public interface IZipUtility
     {
