@@ -52,6 +52,7 @@
             public const string XML_REPORT = "xmlreport";
             public const string REBUILD_ZIP = "rebuildzip";
             public const string REBUILD_ZIP_FROM_BASE64 = "rebuild-zip-from-base64";
+            public const string REBUILD_ZIP_FROM_FILE = "rebuild-zip-from-file";
             public const string VERSION = "version";
         }
     }

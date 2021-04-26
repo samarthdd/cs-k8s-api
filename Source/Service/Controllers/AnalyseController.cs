@@ -263,8 +263,25 @@ namespace Glasswall.CloudProxy.Api.Controllers
 
             // Set some context data
             span.Log("Analyse GetRebuildZipFromBase64");
-            span.SetTag("Jaeger Testing Client", "POST api/Analyse/rebuildzip request");
+            span.SetTag("Jaeger Testing Client", "POST api/Analyse/rebuild-zip-from-base64 request");
+            return await RebuildZipFile(span, request);
+        }
 
+        [HttpPost(Constants.Endpoints.REBUILD_ZIP_FROM_FILE)]
+        public async Task<IActionResult> GetRebuildZipFromFormFile([FromForm][Required] IFormFile file)
+        {
+            _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: {nameof(GetRebuildZipFromFormFile)} method invoked");
+            ISpanBuilder builder = _tracer.BuildSpan("Post::Data");
+            ISpan span = builder.Start();
+
+            // Set some context data
+            span.Log("Analyse GetRebuildZipFromFormFile");
+            span.SetTag("Jaeger Testing Client", "POST api/Analyse/rebuild-zip-from-file request");
+            return await RebuildZipFile(span, formFile: file);
+        }
+
+        private async Task<IActionResult> RebuildZipFile(ISpan span, Base64Request request = null, IFormFile formFile = null)
+        {
             string originalStoreFilePath = string.Empty;
             string rebuiltStoreFilePath = string.Empty;
             string fileId = string.Empty;
@@ -272,16 +289,29 @@ namespace Glasswall.CloudProxy.Api.Controllers
 
             try
             {
+                byte[] file = null;
                 if (!ModelState.IsValid)
                 {
                     cloudProxyResponseModel.Errors.AddRange(ModelState.Values.SelectMany(v => v.Errors).Select(x => x.ErrorMessage));
                     return BadRequest(cloudProxyResponseModel);
                 }
 
-                if (!_fileUtility.TryGetBase64File(request.Base64, out byte[] file))
+                if (request != null)
                 {
-                    cloudProxyResponseModel.Errors.Add("Input file could not be decoded from base64.");
-                    return BadRequest(cloudProxyResponseModel);
+                    if (!_fileUtility.TryGetBase64File(request.Base64, out file))
+                    {
+                        cloudProxyResponseModel.Errors.Add("Input file could not be decoded from base64.");
+                        return BadRequest(cloudProxyResponseModel);
+                    }
+                }
+
+                if (formFile != null)
+                {
+                    if (!_fileUtility.TryReadFormFile(formFile, out file))
+                    {
+                        cloudProxyResponseModel.Errors.Add("Input file could not be decoded from base64.");
+                        return BadRequest(cloudProxyResponseModel);
+                    }
                 }
 
                 AdaptionDescriptor descriptor = AdaptionCache.Instance.GetDescriptor(file);
