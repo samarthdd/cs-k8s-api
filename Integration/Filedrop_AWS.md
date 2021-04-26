@@ -4,7 +4,7 @@
 - Search for the AMI with specific ID (make sure you are in the correct region)
 - Instance can be launch from AMIs or EC2 space
     - From AMIs workspace click on specific AMI > Choose `Launch` 
-    - Set instance type to `t3.xlarge` (4CPUs and 16GB RAM)
+    - Set instance type to `t3.2xlarge` (8CPUs and 32GB RAM)
     - Skip configuring Instance details and adding the storage (that can be left default if not specified differently)
     - Add any tags if needed
     - Security Group: 
@@ -16,6 +16,7 @@
     - Click on `Review and Launch`
     - Select `Create or use existing key pair` [Note: Your key pair is important for SSH]
     - Wait for instance to be initialized (~10 minutes) and use public IP to access File Drop web interface from your Browser
+    - To access Management UI in your hosts file add `<VM IP> management-ui.glasswall-icap.com` and access it from your Browser `https://management-ui.glasswall-icap.com/login`
 
 ## Deploying Service cluster
 
@@ -23,7 +24,7 @@
 - Search for the AMI with specific ID (make sure you are in the correct region)
 - Instance can be launch from AMIs or EC2 space
     - From AMIs workspace click on specific AMI > Choose `Launch` 
-    - Set instance type to `t2.large` (2CPUs and 8GB RAM)
+    - Set instance type to `t3.xlarge` (8CPUs and 32GB RAM)
     - Skip configuring Instance details and adding the storage (that can be left default if not specified differently)
     - Add any tags if needed
     - Security Group: 
@@ -31,12 +32,14 @@
         - HTTP > Port 80 
         - HTTPS > Port 443 
         - SSH > Port 22
+        - Custom TCP > Port 3000
+        - Custom TCP > Port 5601
     - Click on `Review and Launch`
     - Select `Create or use existing key pair` [Note: Your key pair is important for SSH]
     - Wait for instance to be initialized (~10 minutes) and use public IP to access File Drop web interface
 
 ## Instructions to integrate Service Cluster and Workload Cluster of Complaint K8 Cloud SDK
-- Login to virtual machine using SSH and navigate to `/home/ubuntu` and switch to root by `sudo su`
+- Login to GW SDK CK8s (with Filedrop integrated) CM using SSH and navigate to `/home/ubuntu` and switch to root by `sudo su`
 - Verify presence of below files by issuing command `ls`
    ```
     /home/ubuntu/monitoring-username.txt
@@ -49,6 +52,13 @@
     /home/ubuntu/wc-coredns-configmap.yml
     /home/ubuntu/setupscCluster.sh
     ```
+- In case you are missing `wc-coredns-configmap.yml`, `setupscCluster.sh` run: 
+   ```
+   wget https://raw.githubusercontent.com/k8-proxy/vmware-scripts/cs-api-ck8/packer/wc-coredns-configmap.yml
+   wget https://raw.githubusercontent.com/k8-proxy/vmware-scripts/cs-api-ck8/packer/setupscCluster.sh
+   ```
+- In case you are missing the rest of the files also create and edit them (using vi/vim) with values as shown below
+
 - Update each text file with corresponding values:
 ```
     monitoring-username.txt - wcWriter
