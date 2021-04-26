@@ -1,6 +1,7 @@
 ﻿using Glasswall.CloudProxy.Common.Web.Abstraction;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System.Net;
 
 namespace Glasswall.CloudProxy.Api.Controllers
 {
@@ -14,7 +15,10 @@ namespace Glasswall.CloudProxy.Api.Controllers
         public IActionResult GetHealth()
         {
             _logger.Log(LogLevel.Trace, $"[{UserAgentInfo.ClientTypeString}]:: Performing heartbeat");
-            return Ok();
+            return Ok(new
+            {
+                Status = HttpStatusCode.OK
+            });
         }
     }
 }
