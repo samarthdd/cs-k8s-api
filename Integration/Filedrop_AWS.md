@@ -74,8 +74,12 @@
 - Execute setupscCluster by below command:
     `./setupscCluster.sh`
 - Wait for all commands to complete. Once completed, login to Grafana and Kibana in service cluster
-    `http://<service-cluster-ip>:5601/  - Kibana`
-    `http://<service-cluster-ip>:3000/  - Grafana`
+    - `http://<service-cluster-ip>:5601/  - Kibana`
+    ![image](https://user-images.githubusercontent.com/70108899/116088990-afd7cb80-a6a2-11eb-96bf-31d2898b910e.png)
+        
+    - `http://<service-cluster-ip>:3000/  - Grafana`
+    
+    ![image](https://user-images.githubusercontent.com/70108899/116088330-0f81a700-a6a2-11eb-970a-a0a4fbbd4823.png)
 
     Username: `admin`
     Password: `Will be shared as part of delivery`
