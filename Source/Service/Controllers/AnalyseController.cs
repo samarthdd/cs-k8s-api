@@ -242,20 +242,132 @@ namespace Glasswall.CloudProxy.Api.Controllers
         }
 
         [HttpGet(Constants.Endpoints.REBUILD_ZIP)]
-        public IActionResult GetZipByFileId([Required] Guid fileId)
+        public async Task<IActionResult> GetRebuildZipFromFileId([Required] Guid fileId)
         {
-            _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: {nameof(GetZipByFileId)} method invoked");
-
-            string fileIdString = string.Empty;
-            string rebuiltStoreFilePath = string.Empty;
-            CloudProxyResponseModel cloudProxyResponseModel = new CloudProxyResponseModel();
-
-            ISpanBuilder builder = _tracer.BuildSpan("Get::api/Analyse/zip");
+            _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: {nameof(GetRebuildZipFromFileId)} method invoked");
+            ISpanBuilder builder = _tracer.BuildSpan("Get::api/Analyse/rebuildzip");
             ISpan span = builder.Start();
 
             // Set some context data
-            span.Log("Analyse zip");
-            span.SetTag("Jaeger Testing Client", "GET api/Analyse/zip request");
+            span.Log("Analyse GetRebuildZipFromFileId");
+            span.SetTag("Jaeger Testing Client", "GET api/Analyse/rebuildzip request");
+            return await RebuildZipInfoByFileId(fileId, span);
+        }
+
+        [HttpPost(Constants.Endpoints.REBUILD_ZIP_FROM_BASE64)]
+        public async Task<IActionResult> GetRebuildZipFromBase64([FromBody][Required] Base64Request request)
+        {
+            _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: {nameof(GetRebuildZipFromBase64)} method invoked");
+            ISpanBuilder builder = _tracer.BuildSpan("Post::Data");
+            ISpan span = builder.Start();
+
+            // Set some context data
+            span.Log("Analyse GetRebuildZipFromBase64");
+            span.SetTag("Jaeger Testing Client", "POST api/Analyse/rebuildzip request");
+
+            string originalStoreFilePath = string.Empty;
+            string rebuiltStoreFilePath = string.Empty;
+            string fileId = string.Empty;
+            CloudProxyResponseModel cloudProxyResponseModel = new CloudProxyResponseModel();
+
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    cloudProxyResponseModel.Errors.AddRange(ModelState.Values.SelectMany(v => v.Errors).Select(x => x.ErrorMessage));
+                    return BadRequest(cloudProxyResponseModel);
+                }
+
+                if (!_fileUtility.TryGetBase64File(request.Base64, out byte[] file))
+                {
+                    cloudProxyResponseModel.Errors.Add("Input file could not be decoded from base64.");
+                    return BadRequest(cloudProxyResponseModel);
+                }
+
+                AdaptionDescriptor descriptor = AdaptionCache.Instance.GetDescriptor(file);
+                if (null == descriptor)
+                {
+                    cloudProxyResponseModel.Errors.Add("Cannot create a cache entry for the file.");
+                    return BadRequest(cloudProxyResponseModel);
+                }
+
+                fileId = descriptor.UUID.ToString();
+                CancellationToken processingCancellationToken = _processingCancellationTokenSource.Token;
+
+                _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: Using store locations '{_originalStorePath}' and '{_rebuiltStorePath}' for {fileId}");
+
+                originalStoreFilePath = Path.Combine(_originalStorePath, fileId);
+                rebuiltStoreFilePath = Path.Combine(_rebuiltStorePath, fileId);
+
+
+                if (ReturnOutcome.GW_REBUILT != descriptor.Outcome)
+                {
+                    _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: Updating 'Original' store for {fileId}");
+                    using (Stream fileStream = new FileStream(originalStoreFilePath, FileMode.Create))
+                    {
+                        await fileStream.WriteAsync(file, 0, file.Length);
+                    }
+
+                    _adaptationServiceClient.Connect();
+                    ReturnOutcome outcome = _adaptationServiceClient.AdaptationRequest(descriptor.UUID, originalStoreFilePath, rebuiltStoreFilePath, processingCancellationToken);
+                    descriptor.Update(outcome, originalStoreFilePath, rebuiltStoreFilePath);
+
+                    _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: Returning '{descriptor.Outcome}' Outcome for {fileId}");
+                }
+
+                switch (descriptor.Outcome)
+                {
+                    case ReturnOutcome.GW_REBUILT:
+                        return await RebuildZipInfoByFileId(descriptor.UUID, span);
+                    case ReturnOutcome.GW_FAILED:
+                        if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
+                        {
+                            cloudProxyResponseModel.Errors.Add(System.IO.File.ReadAllText(descriptor.RebuiltStoreFilePath));
+                        }
+                        cloudProxyResponseModel.Status = descriptor.Outcome;
+                        return BadRequest(cloudProxyResponseModel);
+                    case ReturnOutcome.GW_UNPROCESSED:
+                        if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
+                        {
+                            cloudProxyResponseModel.Errors.Add(System.IO.File.ReadAllText(descriptor.RebuiltStoreFilePath));
+                        }
+                        cloudProxyResponseModel.Status = descriptor.Outcome;
+                        return BadRequest(cloudProxyResponseModel);
+                    case ReturnOutcome.GW_ERROR:
+                    default:
+                        if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
+                        {
+                            cloudProxyResponseModel.Errors.Add(System.IO.File.ReadAllText(descriptor.RebuiltStoreFilePath));
+                        }
+                        cloudProxyResponseModel.Status = descriptor.Outcome;
+                        return BadRequest(cloudProxyResponseModel);
+                }
+            }
+            catch (OperationCanceledException oce)
+            {
+                _logger.LogError(oce, $"[{UserAgentInfo.ClientTypeString}]:: Error Processing Timeout 'input' {fileId} exceeded {_processingTimeoutDuration.TotalSeconds}s");
+                cloudProxyResponseModel.Errors.Add($"Error Processing Timeout 'input' {fileId} exceeded {_processingTimeoutDuration.TotalSeconds}s");
+                cloudProxyResponseModel.Status = ReturnOutcome.GW_ERROR;
+                return StatusCode(StatusCodes.Status500InternalServerError, cloudProxyResponseModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"[{UserAgentInfo.ClientTypeString}]:: Error Processing 'input' {fileId} and error detail is {ex.Message}");
+                cloudProxyResponseModel.Errors.Add($"Error Processing 'input' {fileId} and error detail is {ex.Message}");
+                cloudProxyResponseModel.Status = ReturnOutcome.GW_ERROR;
+                return StatusCode(StatusCodes.Status500InternalServerError, cloudProxyResponseModel);
+            }
+            finally
+            {
+                ClearStores(originalStoreFilePath, rebuiltStoreFilePath);
+                AddHeaderToResponse(Constants.Header.FILE_ID, fileId);
+                span.Finish();
+            }
+        }
+
+        private async Task<IActionResult> RebuildZipInfoByFileId(Guid fileId, ISpan span)
+        {
+            CloudProxyResponseModel cloudProxyResponseModel = new CloudProxyResponseModel();
 
             if (fileId == Guid.Empty)
             {
@@ -263,7 +375,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 return BadRequest(cloudProxyResponseModel);
             }
 
-            fileIdString = fileId.ToString();
+            string fileIdString = fileId.ToString();
             string zipFileName = Path.Combine(Constants.VAR_PATH, $"{fileIdString}{Constants.ZIP_EXTENSION}");
             string fileIdFolderPath = Path.Combine(Constants.VAR_PATH, fileIdString);
             string tempFolderPath = Path.Combine(fileIdFolderPath, fileIdString);
@@ -321,7 +433,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                     Directory.CreateDirectory(cleanFolderPath);
                 }
 
-                rebuiltStoreFilePath = Path.Combine(_rebuiltStorePath, fileIdString);
+                string rebuiltStoreFilePath = Path.Combine(_rebuiltStorePath, fileIdString);
                 if (!System.IO.File.Exists(rebuiltStoreFilePath))
                 {
                     _logger.LogWarning($"[{UserAgentInfo.ClientTypeString}]:: Rebuild file not exist for file {fileIdString}");
@@ -329,9 +441,9 @@ namespace Glasswall.CloudProxy.Api.Controllers
                     return NotFound(cloudProxyResponseModel);
                 }
 
-                System.IO.File.WriteAllBytes(Path.Combine(tempFolderPath, Constants.METADATA_JSON_FILE_NAME), System.IO.File.ReadAllBytes(metaDataPath));
-                System.IO.File.WriteAllBytes(Path.Combine(reportFolderPath, Constants.REPORT_XML_FILE_NAME), System.IO.File.ReadAllBytes(reportPath));
-                System.IO.File.WriteAllBytes(Path.Combine(cleanFolderPath, $"{Path.GetFileName(rebuiltStoreFilePath)}.{gwInfo.DocumentStatistics.DocumentSummary.FileType}"), System.IO.File.ReadAllBytes(rebuiltStoreFilePath));
+                await System.IO.File.WriteAllTextAsync(Path.Combine(tempFolderPath, Constants.METADATA_JSON_FILE_NAME), (await System.IO.File.ReadAllTextAsync(metaDataPath)).FormattedJson());
+                await System.IO.File.WriteAllBytesAsync(Path.Combine(reportFolderPath, Constants.REPORT_XML_FILE_NAME), await System.IO.File.ReadAllBytesAsync(reportPath));
+                await System.IO.File.WriteAllBytesAsync(Path.Combine(cleanFolderPath, $"{Path.GetFileName(rebuiltStoreFilePath)}.{gwInfo.DocumentStatistics.DocumentSummary.FileType}"), await System.IO.File.ReadAllBytesAsync(rebuiltStoreFilePath));
 
                 _zipUtility.CreateZipFile(zipFileName, null, fileIdFolderPath);
                 AddHeaderToResponse(Constants.Header.FILE_ID, fileIdString);
