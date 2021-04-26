@@ -4,17 +4,18 @@
 - Search for the AMI with specific ID (make sure you are in the correct region)
 - Instance can be launch from AMIs or EC2 space
     - From AMIs workspace click on specific AMI > Choose `Launch` 
-    - Set instance type to `t2.large` (2CPUs and 8GB RAM)
+    - Set instance type to `t3.xlarge` (4CPUs and 16GB RAM)
     - Skip configuring Instance details and adding the storage (that can be left default if not specified differently)
     - Add any tags if needed
     - Security Group: 
       - Create a new security group > Add Rule:
         - HTTP > Port 80 
         - HTTPS > Port 443 
+        - Custom TCP > Port 8080
         - SSH > Port 22
     - Click on `Review and Launch`
     - Select `Create or use existing key pair` [Note: Your key pair is important for SSH]
-    - Wait for instance to be initialized (~10 minutes) and use public IP to access File Drop web interface
+    - Wait for instance to be initialized (~10 minutes) and use public IP to access File Drop web interface from your Browser
 
 ## Deploying Service cluster
 
