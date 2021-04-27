@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 
-namespace Glasswall.CloudProxy.Common
+namespace Glasswall.CloudProxy.Common.Utilities
 {
     public static class EnumExtensions
     {

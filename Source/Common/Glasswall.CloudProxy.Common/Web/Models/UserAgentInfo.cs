@@ -1,4 +1,5 @@
-﻿using UAParser;
+﻿using Glasswall.CloudProxy.Common.Utilities;
+using UAParser;
 
 namespace Glasswall.CloudProxy.Common.Web.Models
 {

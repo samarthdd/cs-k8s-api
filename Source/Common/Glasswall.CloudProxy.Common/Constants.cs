@@ -24,7 +24,7 @@
             public const string SDK_ENGINE_VERSION = "X-SDK-Engine-Version";
             public const string SDK_ENGINE_VERSION_VALUE = "1.157";
             public const string SDK_API_VERSION = "X-SDK-Api-Version";
-            public const string SDK_API_VERSION_VALUE = "0.1.8";
+            public const string SDK_API_VERSION_VALUE = "0.1.9";
         }
 
         public static class EnvironmentVariables
@@ -51,6 +51,8 @@
             public const string PROTECTED_ZIP_FILE = "protectedzipfile";
             public const string XML_REPORT = "xmlreport";
             public const string REBUILD_ZIP = "rebuildzip";
+            public const string REBUILD_ZIP_FROM_BASE64 = "rebuild-zip-from-base64";
+            public const string REBUILD_ZIP_FROM_FILE = "rebuild-zip-from-file";
             public const string VERSION = "version";
         }
     }
