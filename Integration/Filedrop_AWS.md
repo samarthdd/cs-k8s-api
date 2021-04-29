@@ -77,11 +77,11 @@
     `./setupscCluster.sh`
 - Wait for all commands to complete. Once completed, login to Grafana and Kibana in service cluster
     - `http://<service-cluster-ip>:5601/  - Kibana`
-    ![image](https://user-images.githubusercontent.com/70108899/116088990-afd7cb80-a6a2-11eb-96bf-31d2898b910e.png)
+        ![image](https://user-images.githubusercontent.com/70108899/116088990-afd7cb80-a6a2-11eb-96bf-31d2898b910e.png)
         
     - `http://<service-cluster-ip>:3000/  - Grafana`
     
-    ![image](https://user-images.githubusercontent.com/70108899/116088330-0f81a700-a6a2-11eb-970a-a0a4fbbd4823.png)
+        ![image](https://user-images.githubusercontent.com/70108899/116088330-0f81a700-a6a2-11eb-970a-a0a4fbbd4823.png)
 
     Username: `admin`
     Password: `Will be shared as part of delivery`
@@ -89,19 +89,30 @@
 
 ## Testing workflow
 - To check API health, from Browser access `<WC VM IP>/api/health` and verify its ok
-  ![image](https://user-images.githubusercontent.com/70108899/116484783-179c3b00-a88a-11eb-9c79-c70e10847bed.png)
+
+    ![image](https://user-images.githubusercontent.com/70108899/116484783-179c3b00-a88a-11eb-9c79-c70e10847bed.png)
+  
 - To rebuild files, from Browser access Filedrop `<WC VM IP>` and select any file you want to rebuild 
 - After file is rebuilt you will be able to download protected file along with XML report
- ![image](https://user-images.githubusercontent.com/70108899/116483290-13225300-a887-11eb-9187-2327fc559a47.png)
+    ![image](https://user-images.githubusercontent.com/70108899/116483290-13225300-a887-11eb-9187-2327fc559a47.png)
 - On Managment UI `https://management-ui.glasswall-icap.com/analytics` you will be able to see statistics of rebuild files, your request history and modify policies
- ![image](https://user-images.githubusercontent.com/70108899/116484583-a8264b80-a889-11eb-8cdd-e06627ddf1e8.png)
+    ![image](https://user-images.githubusercontent.com/70108899/116484583-a8264b80-a889-11eb-8cdd-e06627ddf1e8.png)
 - To see more details on traffic you are generating you can access Elastic or Grafana
 - For Elastic from browser navigate to `http://<SC VM IP>:5601`
    - From settings choose `Discover` and select one of three options for logs (kubespray*, kubernetes* or other*)
-     ![image](https://user-images.githubusercontent.com/70108899/116484905-53370500-a88a-11eb-8477-d55c1db73519.png)
+        ![image](https://user-images.githubusercontent.com/70108899/116484905-53370500-a88a-11eb-8477-d55c1db73519.png)
    - From settings choose `Dashboard` and select one of two available or create custom one. This option will give you more of a grafical overview compared to `Discover`
-     ![image](https://user-images.githubusercontent.com/70108899/116485151-cf314d00-a88a-11eb-99d7-b5a7e1d15a91.png)
+        ![image](https://user-images.githubusercontent.com/70108899/116485151-cf314d00-a88a-11eb-99d7-b5a7e1d15a91.png)
+     
 - For Grafana from browser navigate to `http://<SC VM IP>:3000`
+
+   - Click on `Search` and type `Kubernetes / Compute Resources / Namespace (Pods)` and select the dashboard from search result
+
+        ![image](https://user-images.githubusercontent.com/64204445/116515131-85c41a80-a8e9-11eb-9d98-cf26f9b6f4e4.png)
+        
+   - Here you can switch between Workload clusters and also namespaces to see metrics
+
    - `ck8s-metrics` data set is added and you can use it when creating custom dashbords
-     ![image](https://user-images.githubusercontent.com/70108899/116485399-65fe0980-a88b-11eb-84ba-0d4e7d77c379.png)
+  
+        ![image](https://user-images.githubusercontent.com/70108899/116485399-65fe0980-a88b-11eb-84ba-0d4e7d77c379.png)
 
