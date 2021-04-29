@@ -36,7 +36,7 @@ Use `Compliant_Kubernetes_ICAP_Service_with_Service_Cluster_Proxy_REST_API.json`
 
     The **Logging Password** & **Monitoring Password** are the elasticsearch.fluentdPassword & influxDB.wcWriterPassword Values respectively that are generated during the github action run which produced the used service cluster AMI
 
-    ![image](https://user-images.githubusercontent.com/58347752/115334524-d75aff80-a19b-11eb-94da-6784912c8b0a.png)
+    ![pic2](https://user-images.githubusercontent.com/70108899/116323434-3fbe6800-a7be-11eb-975b-592d81187897.jpg)
 
     
 
@@ -82,4 +82,4 @@ Use `Compliant_Kubernetes_ICAP_Service_with_Service_Cluster_Proxy_REST_API.json`
 
   * **Grafana's Password** & **Kibana's Password** are the user.grafanaPassword & elasticsearch.adminPassword Values respectively that are generated during the github action run which produced the used service cluster AMI
 
-    ![image](https://user-images.githubusercontent.com/58347752/115337642-a4b40580-a1a1-11eb-9fd3-d13246de3f54.png)
+    ![pic1](https://user-images.githubusercontent.com/70108899/116323389-29181100-a7be-11eb-8fb4-5e8581e1b9db.jpg)
