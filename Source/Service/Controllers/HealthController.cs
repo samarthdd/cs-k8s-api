@@ -1,4 +1,5 @@
-﻿using Glasswall.CloudProxy.Common.Web.Abstraction;
+﻿using Glasswall.CloudProxy.Common;
+using Glasswall.CloudProxy.Common.Web.Abstraction;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Net;
@@ -19,6 +20,13 @@ namespace Glasswall.CloudProxy.Api.Controllers
             {
                 Status = HttpStatusCode.OK
             });
+        }
+
+        [HttpGet]
+        [Route(Constants.Endpoints.Default)]
+        public IActionResult Swagger()
+        {
+            return Redirect(Constants.SWAGGER_URL);
         }
     }
 }

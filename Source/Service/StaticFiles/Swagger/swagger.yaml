@@ -1,0 +1,1767 @@
+﻿openapi: 3.0.0
+
+security:
+  - BearerAuth: []
+
+info:
+  title: Glasswall File Rebuild Product API
+  description: The Rebuild API provides developers the pathway to obtaining safe and secure files.
+  version: 0.1.9
+tags:
+  - name: Health
+    description: Glasswall System Health API  
+  - name: Rebuild
+    description: Glasswall File Rebuild Product API
+  - name: Analyse
+    description: Glasswall Analyse Product API
+  - name: FileTypeDetection
+    description: Glasswall FileTypeDetection Product API
+  - name: Detail
+    description: Glasswall Detail Product API              
+servers:
+  - url: ""
+    description: AWS
+paths:
+  /api/health:
+    get:
+      tags:
+      - Health    
+      summary: Returns 200 status code.
+      description: <h3>Description:</h3>This endpoint is to check the health of the system.         
+      responses:
+        '200':    # status code
+          description: OK - The request was processed successfully and service is up and running. 
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api. 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+        '405':
+          description: Method Not Allowed - This happens when an HTTP method is not allowed by a server for a requested URL.
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.                                                        
+        '415':
+          description: Unsupported Media Type - This happens when the payload format is in an unsupported format. The format problem might be due to the request's indicated Content-Type.
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.           
+        '500':
+          description: Internal Server Error - This is usually when something wrong on the server.
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.          
+  /api/rebuild/file:
+    post:
+      tags:
+      - Rebuild
+      summary: Rebuilds a file using its binary data
+      description: <h3>Description:</h3>This endpoint accepts requests to rebuild a file with Glasswall d-FIRST™ Engine. File is sent in the request body with a 'Content-Type' of 'multipart/form-data'. The Rebuilt file is then returned in the response body with a 'Content-Type' of 'application/octet-stream'.
+      parameters:
+        - in: header
+          name: Accept
+          description: A value of 'application/octet-stream' will return the rebuilt file's binary content to the client.
+          schema:
+            type: string
+            default: application/octet-stream
+          required: false
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The binary contents of the selected file will be uploaded to the server.
+              required:
+                - file
+            encoding:
+              file:
+                style: form
+              contentManagementFlagJson:
+                contentType: application/json
+                style: form
+      responses:
+        '200':    # status code
+          description: OK - The requested file was processed by the Glasswall d-FIRST™ Engine
+          content: 
+            application/octet-stream:
+              schema:
+                format: binary
+                description: The body is a binary stream, containing the rebuilt file.
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              example: attachment; filename=ExampleFileName.pdf; filename*=UTF-8''ExampleFileName.pdf
+              description: This contains the details of the rebuilt files binary data to download.
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.
+            X-Adaptation-File-Id:
+              schema:
+                type: string
+              description: Adaptation file id.                
+        '400':
+          description: Bad Request - This is usually when the input is malformed or missing parameters
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/CloudProxyResponseModel'
+                  - $ref: '#/components/schemas/RequiredResponseModel' 
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.  
+        '405':
+          description: Method Not Allowed - This happens when an HTTP method is not allowed by a server for a requested URL.
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.                                                
+        '415':
+          description: Unsupported Media Type - This happens when the payload format is in an unsupported format. The format problem might be due to the request's indicated Content-Type.
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.         
+        '500':
+          description: Internal Server Error - This is usually when something wrong on the server.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    description: "Error related to the request"
+                    items:
+                      type: string                    
+                  status:
+                      type: string          
+                      nullable: true
+                      enum:
+                        -
+                        - GW_FAILED
+                        - GW_UNPROCESSED
+                        - GW_ERROR                      
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.
+  /api/rebuild/base64:
+    post:
+      tags:
+      - Rebuild    
+      summary: Rebuilds a file using the Base64 encoded representation
+      description: >
+        This endpoint accepts requests to rebuild a file with Glasswall d-FIRST™ Engine.
+        The request body contains the Base64 representation of the file with a 'Content-Type' of 'application/json'. 
+        A Base64 Representation of the rebuilt file is then returned in the response with a 'Content-Type' of 'text/plain'.
+        <br/><br/>
+        <span><input id="base64Input" type="file"></input>        
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              type: object
+              required:
+                - Base64
+              properties:
+                Base64:
+                  type: string
+                  description: This is the Base64 encoded representation of the file to rebuild. 
+            encoding:
+              Base64:
+                style: form
+      responses:
+        '200':    # status code
+          description: OK - The requested Base64 was successfully decoded and processed by the Glasswall d-FIRST™ Engine
+          content: 
+            text/plain:
+              schema:
+                description: The body is a rebuilt file, Base64 encoded.
+                type: string
+                format: base64
+                example: "0M8R4KGxGuEAAAAAAAAAAAAAAAAAAAAAPgADAP7/CQAGAAAAAAAAAAAAAAABAAAAUgAAAAAAAAAAEAAAAAAAAAEAAAD+////AAAAAFMAAAD//////////////////////////////..."
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.
+            X-Adaptation-File-Id:
+              schema:
+                type: string
+              description: Adaptation file id. 
+        '400':
+          description: Bad Request - This is usually when the JSON input is malformed or missing parameters
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/CloudProxyResponseModel'  
+                  - $ref: '#/components/schemas/RequiredResponseModel' 
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.
+        '405':
+          description: Method Not Allowed - This happens when an HTTP method is not allowed by a server for a requested URL.
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.                                                                 
+        '415':
+          description: Unsupported Media Type - This happens when the payload format is in an unsupported format. The format problem might be due to the request's indicated Content-Type. 
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.          
+        '500':
+          description: Internal Server Error - This is usually when something wrong on the server.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    description: "Error related to the request"
+                    items:
+                      type: string                    
+                  status:
+                      type: string     
+                      nullable: true
+                      enum:
+                        -
+                        - GW_FAILED
+                        - GW_UNPROCESSED
+                        - GW_ERROR    
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.                                          
+  /api/analyse/base64:
+    post:
+      tags:
+      - Analyse    
+      summary: Analyse a file using the Base64 encoded representation
+      description: >
+        This endpoint accepts requests to rebuild a file with Glasswall d-FIRST™ Engine.
+        The request body contains the Base64 representation of the file with a 'Content-Type' of 'application/json'. 
+        The Report file is then returned in the response body with a 'Content-Type' of 'application/octet-stream'.
+        <br/><br/>
+        <span><input id="base64Input" type="file"></input> 
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              type: object
+              required:
+                - Base64
+              properties:
+                Base64:
+                  type: string
+                  description: This is the Base64 encoded representation of the file to rebuild. 
+            encoding:
+              Base64:
+                style: form
+      responses:
+        '200':    # status code
+          description: OK - The requested file was processed by the Glasswall d-FIRST™ Engine
+          content: 
+            application/octet-stream:
+              schema:
+                format: binary
+                description: The body is a binary stream, containing the report xml file.
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              example: attachment; filename=ExampleFileName.pdf; filename*=UTF-8''ExampleFileName.pdf
+              description: This contains the details of the report xml file binary data to download.
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.
+            X-Adaptation-File-Id:
+              schema:
+                type: string
+              description: Adaptation file id.               
+        '400':
+          description: Bad Request - This is usually when the JSON input is malformed or missing parameters
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/CloudProxyResponseModel'
+                  - $ref: '#/components/schemas/RequiredResponseModel' 
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api. 
+        '405':
+          description: Method Not Allowed - This happens when an HTTP method is not allowed by a server for a requested URL.
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.                               
+        '404':
+          description: Not Found - This is usually when the required return data is missing on server.
+          content:
+            application/json:
+              schema:          
+                $ref: '#/components/schemas/CloudProxyResponseModel' 
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.                                                     
+        '415':
+          description: Unsupported Media Type - This happens when the payload format is in an unsupported format. The format problem might be due to the request's indicated Content-Type. 
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.          
+        '500':
+          description: Internal Server Error - This is usually when something wrong on the server.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    description: "Error related to the request"
+                    items:
+                      type: string                    
+                  status:
+                      type: string
+                      nullable: true
+                      enum:
+                        -
+                        - GW_FAILED
+                        - GW_UNPROCESSED
+                        - GW_ERROR      
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.                                        
+  /api/analyse/xmlreport:
+    get:
+      tags:
+      - Analyse    
+      summary: Returns a xml report file using its FileId.
+      description: <h3>Description:</h3>This endpoint accepts FileId to fetch the xml report.
+      parameters:
+        - in: header
+          name: Accept
+          description: A value of 'application/octet-stream' will return the xml report file's binary content to the client.
+          schema:
+            type: string
+            default: application/octet-stream
+          required: false
+        - in: query
+          name: fileId
+          description: A value of 'FileId', based on will return the xml report file's binary content to the client.
+          schema:
+            type: string
+            default: 475df7aa-9739-4b7d-929e-40e625c14581
+          required: true          
+      responses:
+        '200':    # status code
+          description: OK - The request was processed by the Glasswall d-FIRST™ Engine and the xml report file's binary content is returned to the client.
+          content: 
+            application/octet-stream:
+              schema:
+                format: binary
+                description: The body is a binary stream, containing the xml report file
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              example: attachment; filename=report.xml; filename*=UTF-8''report.xml
+              description: This contains the details of the xml report files binary data to download
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.
+            X-Adaptation-File-Id:
+              schema:
+                type: string
+              description: Adaptation file id.               
+        '400':
+          description: Bad Request - This is usually when the input is malformed or missing parameters
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/CloudProxyResponseModel'
+                  - $ref: '#/components/schemas/RequiredResponseModel'
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.  
+        '405':
+          description: Method Not Allowed - This happens when an HTTP method is not allowed by a server for a requested URL.
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.                             
+        '404':
+          description: Not Found - This is usually when the required return data is missing on server.
+          content:
+            application/json:
+              schema:          
+                $ref: '#/components/schemas/CloudProxyResponseModel'
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.                              
+        '415':
+          description: Unsupported Media Type - This happens when the payload format is in an unsupported format. The format problem might be due to the request's indicated Content-Type. 
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.          
+        '500':
+          description: Internal Server Error - This is usually when something wrong on the server.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    description: "Error related to the request"
+                    items:
+                      type: string                    
+                  status:
+                      type: string
+                      nullable: true
+                      enum:
+                        -
+                        - GW_FAILED
+                        - GW_UNPROCESSED
+                        - GW_ERROR     
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.                                          
+  /api/analyse/rebuildzip:
+    get:
+      tags:
+      - Analyse    
+      summary: Returns a zip file with all available data using its FileId.
+      description: <h3>Description:</h3>This endpoint accepts FileId to fetch all the available data.
+      parameters:
+        - in: header
+          name: Accept
+          description: A value of 'application/octet-stream' will return the zip file's binary content to the client.
+          schema:
+            type: string
+            default: application/octet-stream
+          required: false
+        - in: query
+          name: fileId
+          description: A value of 'FileId', based on will return the zip file's binary content to the client.
+          schema:
+            type: string
+            default: 475df7aa-9739-4b7d-929e-40e625c14581
+          required: true          
+      responses:
+        '200':    # status code
+          description: OK - The request was processed by the Glasswall d-FIRST™ Engine and the zip file's binary content is returned to the client.
+          content: 
+            application/octet-stream:
+              schema:
+                format: binary
+                description: The body is a binary stream, containing the zip file
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              example: attachment; filename=475df7aa-9739-4b7d-929e-40e625c14581.zip; filename*=UTF-8''475df7aa-9739-4b7d-929e-40e625c14581.zip
+              description: This contains the details of the xml report files binary data to download
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.
+            X-Adaptation-File-Id:
+              schema:
+                type: string
+              description: Adaptation file id.               
+        '400':
+          description: Bad Request - This is usually when the input is malformed or missing parameters
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/CloudProxyResponseModel'
+                  - $ref: '#/components/schemas/RequiredResponseModel'
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api. 
+        '405':
+          description: Method Not Allowed - This happens when an HTTP method is not allowed by a server for a requested URL.
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.                               
+        '404':
+          description: Not Found - This is usually when the required return data is missing on server.
+          content:
+            application/json:
+              schema:          
+                $ref: '#/components/schemas/CloudProxyResponseModel'
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.                                
+        '415':
+          description: Unsupported Media Type - This happens when the payload format is in an unsupported format. The format problem might be due to the request's indicated Content-Type. 
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.          
+        '500':
+          description: Internal Server Error - This is usually when something wrong on the server.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    description: "Error related to the request"
+                    items:
+                      type: string                    
+                  status:
+                      type: string
+                      nullable: true
+                      enum:
+                        -
+                        - GW_FAILED
+                        - GW_UNPROCESSED
+                        - GW_ERROR 
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.                                             
+  /api/analyse/rebuild-zip-from-base64:
+    post:
+      tags:
+      - Analyse  
+      summary: Returns a zip file with all available data using the Base64 encoded representation
+      description: >
+        This endpoint accepts requests to fetch all the available data that is processed by Glasswall d-FIRST™ Engine.
+        The request body contains the Base64 representation of the file with a 'Content-Type' of 'application/json'. 
+        The zip file is then returned in the response body with a 'Content-Type' of 'application/octet-stream'.
+        <br/><br/>
+        <span><input id="base64Input" type="file"></input> 
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              type: object
+              required:
+                - Base64
+              properties:
+                Base64:
+                  type: string
+                  description: This is the Base64 encoded representation of the file to rebuild. 
+            encoding:
+              Base64:
+                style: form
+      responses:
+        '200':    # status code
+          description: OK - The request was processed by the Glasswall d-FIRST™ Engine and the zip file's binary content is returned to the client.
+          content: 
+            application/octet-stream:
+              schema:
+                format: binary
+                description: The body is a binary stream, containing the zip file
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              example: attachment; filename=475df7aa-9739-4b7d-929e-40e625c14581.zip; filename*=UTF-8''475df7aa-9739-4b7d-929e-40e625c14581.zip
+              description: This contains the details of the xml report files binary data to download
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.
+            X-Adaptation-File-Id:
+              schema:
+                type: string
+              description: Adaptation file id.              
+        '400':
+          description: Bad Request - This is usually when the input is malformed or missing parameters
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/CloudProxyResponseModel'
+                  - $ref: '#/components/schemas/RequiredResponseModel' 
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api. 
+        '405':
+          description: Method Not Allowed - This happens when an HTTP method is not allowed by a server for a requested URL.
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.                               
+        '404':
+          description: Not Found - This is usually when the required return data is missing on server.
+          content:
+            application/json:
+              schema:          
+                $ref: '#/components/schemas/CloudProxyResponseModel' 
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.                                                     
+        '415':
+          description: Unsupported Media Type - This happens when the payload format is in an unsupported format. The format problem might be due to the request's indicated Content-Type. 
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.          
+        '500':
+          description: Internal Server Error - This is usually when something wrong on the server.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    description: "Error related to the request"
+                    items:
+                      type: string                    
+                  status:
+                      type: string
+                      nullable: true
+                      enum:
+                        -
+                        - GW_FAILED
+                        - GW_UNPROCESSED
+                        - GW_ERROR      
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.
+  /api/analyse/rebuild-zip-from-file:
+    post:
+      tags:
+      - Analyse  
+      summary: Returns a zip file with all available data using its binary data.
+      description: <h3>Description:</h3>This endpoint accepts requests to return all available data corresponding to a input file processed by Glasswall d-FIRST™ Engine. File is sent in the request body with a 'Content-Type' of 'multipart/form-data'. The zip file is then returned in the response body with a 'Content-Type' of 'application/octet-stream'.       
+      parameters:
+        - in: header
+          name: Accept
+          description: A value of 'application/octet-stream' will return the zip file's binary content to the client.
+          schema:
+            type: string
+            default: application/octet-stream
+          required: false      
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The binary contents of the selected file will be uploaded to the server.
+              required:
+                - file
+            encoding:
+              file:
+                style: form
+              contentManagementFlagJson:
+                contentType: application/json
+                style: form
+      responses:
+        '200':    # status code
+          description: OK - The request was processed by the Glasswall d-FIRST™ Engine and the zip file's binary content is returned to the client.
+          content: 
+            application/octet-stream:
+              schema:
+                format: binary
+                description: The body is a binary stream, containing the zip file
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              example: attachment; filename=475df7aa-9739-4b7d-929e-40e625c14581.zip; filename*=UTF-8''475df7aa-9739-4b7d-929e-40e625c14581.zip
+              description: This contains the details of the xml report files binary data to download
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.
+            X-Adaptation-File-Id:
+              schema:
+                type: string
+              description: Adaptation file id.              
+        '400':
+          description: Bad Request - This is usually when the input is malformed or missing parameters
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/CloudProxyResponseModel'
+                  - $ref: '#/components/schemas/RequiredResponseModel' 
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api. 
+        '405':
+          description: Method Not Allowed - This happens when an HTTP method is not allowed by a server for a requested URL.
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.                               
+        '404':
+          description: Not Found - This is usually when the required return data is missing on server.
+          content:
+            application/json:
+              schema:          
+                $ref: '#/components/schemas/CloudProxyResponseModel' 
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.                                                     
+        '415':
+          description: Unsupported Media Type - This happens when the payload format is in an unsupported format. The format problem might be due to the request's indicated Content-Type. 
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.          
+        '500':
+          description: Internal Server Error - This is usually when something wrong on the server.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    description: "Error related to the request"
+                    items:
+                      type: string                    
+                  status:
+                      type: string
+                      nullable: true
+                      enum:
+                        -
+                        - GW_FAILED
+                        - GW_UNPROCESSED
+                        - GW_ERROR      
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.            
+  /api/filetypedetection/base64:
+    post:
+      tags:
+      - FileTypeDetection    
+      summary: Detect a file type and other information using the Base64 encoded representation
+      description: >
+        This endpoint accepts requests to rebuild a file with Glasswall d-FIRST™ Engine.
+        The request body contains the Base64 representation of the file with a 'Content-Type' of 'application/json'. 
+        File information then returned in the response body with a 'Content-Type' of 'application/json'.
+        <br/><br/>
+        <span><input id="base64Input" type="file"></input> 
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              type: object
+              required:
+                - Base64
+              properties:
+                Base64:
+                  type: string
+                  description: This is the Base64 encoded representation of the file to rebuild. 
+            encoding:
+              Base64:
+                style: form
+      responses:
+        '200':    # status code
+          description: OK - The requested file was processed by the Glasswall d-FIRST™ Engine
+          content: 
+            application/json:
+              schema:
+                description: The requested file was processed by the Glasswall d-FIRST™ Engine.
+                type: object
+                properties:
+                  fileTypeName:
+                    type: string
+                    description: A value indicating file type.
+                  fileSize:
+                    type: number
+                    description: A value indicating file size.
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.
+            X-Adaptation-File-Id:
+              schema:
+                type: string
+              description: Adaptation file id.                     
+        '400':
+          description: Bad Request - This is usually when the JSON input is malformed or missing parameters
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/CloudProxyResponseModel'
+                  - $ref: '#/components/schemas/RequiredResponseModel' 
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api. 
+        '405':
+          description: Method Not Allowed - This happens when an HTTP method is not allowed by a server for a requested URL.
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.                             
+        '404':
+          description: Not Found - This is usually when the required return data is missing on server.
+          content:
+            application/json:
+              schema:          
+                $ref: '#/components/schemas/CloudProxyResponseModel'   
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.                                                  
+        '415':
+          description: Unsupported Media Type - This happens when the payload format is in an unsupported format. The format problem might be due to the request's indicated Content-Type. 
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.          
+        '500':
+          description: Internal Server Error - This is usually when something wrong on the server.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    description: "Error related to the request"
+                    items:
+                      type: string         
+                      nullable: true
+                      enum:
+                        -
+                        - GW_FAILED
+                        - GW_UNPROCESSED
+                        - GW_ERROR
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.                                                                     
+  /api/rebuild/zipfile:
+    post:
+      tags:
+      - Rebuild    
+      summary: Rebuilds a zip file using its binary data
+      description: <h3>Description:</h3>This endpoint accepts requests to rebuild a zip file with Glasswall d-FIRST™ Engine. The file is sent in the request body with a 'Content-Type' of 'multipart/form-data'. Rebuilt zip file is then returned in the response body with a 'Content-Type' of 'application/octet-stream'.
+      parameters:
+        - in: header
+          name: Accept
+          description: A value of 'application/octet-stream' will return the rebuilt file's binary content to the client.
+          schema:
+            type: string
+            default: application/octet-stream
+          required: false
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The binary contents of the selected zip file will be uploaded to the server.
+              required:
+                - file
+            encoding:
+              file:
+                style: form
+              contentManagementFlagJson:
+                contentType: application/json
+                style: form
+      responses:
+        '200':    # status code
+          description: OK - The requested file was processed by the Glasswall d-FIRST™ Engine
+          content: 
+            application/octet-stream:
+              schema:
+                format: binary
+                description: The body is a binary stream, containing the rebuilt file
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              example: attachment; filename=ExampleFileName.pdf; filename*=UTF-8''ExampleFileName.pdf
+              description: This contains the details of the rebuilt files binary data to download
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.
+            X-Adaptation-File-Id:
+              schema:
+                type: string
+              description: Adaptation file id.               
+        '207':
+          description: Multi-Status - The requested file was processed with error report by the Glasswall d-FIRST™ Engine.
+          content: 
+            application/octet-stream:
+              schema:
+                format: binary
+                description: The body is a binary stream, containing the rebuilt files and ErrorHtml file
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              example: attachment; filename=ExampleFileName.pdf; filename*=UTF-8''ExampleFileName.pdf
+              description: This contains the details of the rebuilt files and ErrorHtml binary data to download
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.
+            X-Adaptation-File-Id:
+              schema:
+                type: string
+              description: Adaptation file id.                           
+        '400':
+          description: Bad Request - This is usually when the input is malformed or all the files in zip are unprocessable by SDK Engine or missing parameters
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/CloudProxyResponseModel'
+                  - $ref: '#/components/schemas/RequiredResponseModel'
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api. 
+        '405':
+          description: Method Not Allowed - This happens when an HTTP method is not allowed by a server for a requested URL.
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.                               
+        '415':
+          description: Unsupported Media Type - This happens when the payload format is in an unsupported format. The format problem might be due to the request's indicated Content-Type. 
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.          
+        '500':
+          description: Internal Server Error - This is usually when something wrong on the server.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    description: "Error related to the request"
+                    items:
+                      type: string                    
+                  status:
+                      type: string 
+                      nullable: true
+                      enum:
+                        -
+                        - GW_FAILED
+                        - GW_UNPROCESSED
+                        - GW_ERROR  
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.                                         
+  /api/rebuild/protectedzipfile:
+    post:
+      tags:
+      - Rebuild    
+      summary: Rebuilds a protected zip file using its binary data and password.
+      description: <h3>Description:</h3>This endpoint accepts requests to rebuild a protected zip file with Glasswall d-FIRST™ Engine. Both protected file and password are sent in the request body with a 'Content-Type' of 'multipart/form-data'. Rebuilt zip file is then returned in the response body with a 'Content-Type' of 'application/octet-stream'.
+      parameters:
+        - in: header
+          name: Accept
+          description: A value of 'application/octet-stream' will return the rebuilt file's binary content to the client.
+          schema:
+            type: string
+            default: application/octet-stream
+          required: false
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The binary contents of the selected protected zip file will be uploaded to the server.
+                password:
+                  type: string
+                  description: Password for the protected zip file.                 
+              required:
+                - file
+                - password
+            encoding:
+              file:
+                style: form
+              contentManagementFlagJson:
+                contentType: application/json
+                style: form
+      responses:
+        '200':    # status code
+          description: OK - The requested file was processed by the Glasswall d-FIRST™ Engine
+          content: 
+            application/octet-stream:
+              schema:
+                format: binary
+                description: The body is a binary stream, containing the rebuilt file
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              example: attachment; filename=ExampleFileName.zip; filename*=UTF-8''ExampleFileName.zip
+              description: This contains the details of the rebuilt files binary data to download
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.
+            X-Adaptation-File-Id:
+              schema:
+                type: string
+              description: Adaptation file id.               
+        '400':
+          description: Bad Request - This is usually when the input is malformed or missing parameters
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/CloudProxyResponseModel'
+                  - $ref: '#/components/schemas/RequiredResponseModel'
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api. 
+        '405':
+          description: Method Not Allowed - This happens when an HTTP method is not allowed by a server for a requested URL.
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.                               
+        '415':
+          description: Unsupported Media Type - This happens when the payload format is in an unsupported format. The format problem might be due to the request's indicated Content-Type. 
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.          
+        '500':
+          description: Internal Server Error - This is usually when something wrong on the server.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    description: "Error related to the request"
+                    items:
+                      type: string                    
+                  status:
+                      type: string    
+                      nullable: true
+                      enum:
+                        -
+                        - GW_FAILED
+                        - GW_UNPROCESSED
+                        - GW_ERROR  
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.
+  /api/detail/version:
+    get:
+      tags:
+      - Detail    
+      summary: Returns versions of api and SDK Engine.
+      description: <h3>Description:</h3>This endpoint is to return the version of api and SDK Engine.         
+      responses:
+        '200':    # status code
+          description: OK - The request was processed successfully and return the versions.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sdkEngineVersion:
+                    type: string
+                  sdkApiVersion:
+                    type: string
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.
+        '405':
+          description: Method Not Allowed - This happens when an HTTP method is not allowed by a server for a requested URL.
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.                                                         
+        '415':
+          description: Unsupported Media Type - This happens when the payload format is in an unsupported format. The format problem might be due to the request's indicated Content-Type.
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.           
+        '500':
+          description: Internal Server Error - This is usually when something wrong on the server.
+          headers:
+            Via:
+              schema:
+                type: string
+              description: Name of the machine which processed the request.
+            X-SDK-Engine-Version:
+              schema:
+                type: string
+              description: Version of the GW SDK Engine.
+            X-SDK-Api-Version:
+              schema:
+                type: string
+              description: Version of the Cloud SDK Api.                                                                           
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    CloudProxyResponseModel:
+      description: Bad Request - This is usually when the JSON input is malformed.
+      type: object
+      properties:
+        errors:
+          type: array
+          description: "Error related to the request"
+          items:
+            type: string                    
+        status:
+            type: string
+            nullable: true
+            enum:
+              -
+              - GW_FAILED
+              - GW_UNPROCESSED
+              - GW_ERROR
+    RequiredResponseModel:
+      description: Bad Request - This is usually when parameters are missing.
+      type: object
+      properties:
+        errors:
+          type: object
+          properties:
+            file:
+              type: array
+              items:
+                type: string
+            password:
+              type: array
+              items:
+                type: string

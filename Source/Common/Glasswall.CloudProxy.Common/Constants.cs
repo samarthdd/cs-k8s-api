@@ -13,6 +13,10 @@
         public const string STAR = "*";
         public const string CORS_POLICY = "GWApiPolicy";
         public const string OCTET_STREAM_CONTENT_TYPE = "application/octet-stream";
+        public const string SWAGGER_URL = "/swagger";
+        public const string STATIC_FILES_FOLDER_Name = "StaticFiles";
+        public const string SWAGGER_FOLDER_Name = "Swagger";
+        public const string SWAGGER_FILENAME = "swagger.yaml";
 
         public static class Header
         {
@@ -54,6 +58,7 @@
             public const string REBUILD_ZIP_FROM_BASE64 = "rebuild-zip-from-base64";
             public const string REBUILD_ZIP_FROM_FILE = "rebuild-zip-from-file";
             public const string VERSION = "version";
+            public const string Default = "/";
         }
     }
 }
