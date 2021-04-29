@@ -8,12 +8,17 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Readers;
 using OpenTracing;
 using OpenTracing.Util;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Text.Json.Serialization;
 using Constants = Glasswall.CloudProxy.Common.Constants;
 
@@ -53,6 +58,10 @@ namespace Glasswall.CloudProxy.Api
             services.AddTransient<IZipUtility, ZipUtility>();
             services.AddControllers();
             services.AddOpenTracing();
+            services.AddSwaggerGen(c =>
+            {
+                c.DocumentFilter<CloudSDKDocumentFilter>();
+            });
 
             // Adds the Jaeger Tracer.
             services.AddSingleton<ITracer>(serviceProvider =>
@@ -89,7 +98,6 @@ namespace Glasswall.CloudProxy.Api
 
                 return tracer;
             });
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -100,13 +108,21 @@ namespace Glasswall.CloudProxy.Api
             {
                 app.UseDeveloperExceptionPage();
             }
-
             app.UseHttpsRedirection();
-
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, Constants.STATIC_FILES_FOLDER_Name)),
+            });
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.yaml", "Cloud SDK Api");
+                c.InjectJavascript("/Swg/func.js");
+                c.InjectJavascript("/Swg/toast/toastify.js");
+                c.InjectStylesheet("/Swg/toast/toastify.css");
+            });
             app.UseRouting();
-
             app.UseAuthorization();
-
             app.Use((context, next) =>
             {
                 ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
@@ -122,7 +138,7 @@ namespace Glasswall.CloudProxy.Api
                 context.Response.Headers[Constants.Header.ACCESS_CONTROL_ALLOW_ORIGIN] = Constants.STAR;
                 context.Response.Headers[Constants.Header.VIA] = Environment.MachineName;
                 context.Response.Headers[Constants.Header.SDK_ENGINE_VERSION] = versionConfig.SDKEngineVersion;
-                context.Response.Headers[Constants.Header.SDK_API_VERSION] = Constants.Header.SDK_API_VERSION_VALUE;
+                context.Response.Headers[Constants.Header.SDK_API_VERSION] = versionConfig.SDKApiVersion;
                 return next.Invoke();
             });
 
@@ -130,6 +146,29 @@ namespace Glasswall.CloudProxy.Api
             {
                 endpoints.MapControllers();
             });
+        }
+    }
+
+    public class CloudSDKDocumentFilter : IDocumentFilter
+    {
+        private readonly IHostEnvironment _hostEnvironment;
+        public CloudSDKDocumentFilter(IHostEnvironment hostEnvironment)
+        {
+            _hostEnvironment = hostEnvironment;
+        }
+
+        public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
+        {
+            string swaggerFilePath = Path.Combine(_hostEnvironment.ContentRootPath, Constants.STATIC_FILES_FOLDER_Name, Constants.SWAGGER_FOLDER_Name, Constants.SWAGGER_FILENAME);
+            using FileStream fileStream = File.Open(swaggerFilePath, FileMode.Open, FileAccess.Read);
+            OpenApiDocument openApiDocument = new OpenApiStreamReader().Read(fileStream, out OpenApiDiagnostic diagnostic);
+            swaggerDoc.Components = openApiDocument.Components;
+            swaggerDoc.Extensions = openApiDocument.Extensions;
+            swaggerDoc.ExternalDocs = openApiDocument.ExternalDocs;
+            swaggerDoc.Info = openApiDocument.Info;
+            swaggerDoc.Paths = openApiDocument.Paths;
+            swaggerDoc.SecurityRequirements = openApiDocument.SecurityRequirements;
+            swaggerDoc.Tags = openApiDocument.Tags;
         }
     }
 }
