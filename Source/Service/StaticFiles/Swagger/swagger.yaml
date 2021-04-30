@@ -6,7 +6,7 @@ security:
 info:
   title: Glasswall File Rebuild Product API
   description: The Rebuild API provides developers the pathway to obtaining safe and secure files.
-  version: 1.0.0
+  version: 0.1.10
 tags:
   - name: Health
     description: Glasswall System Health API  
