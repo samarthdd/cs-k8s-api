@@ -22,7 +22,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
             return Ok(new
             {
                 _versionConfiguration.SDKEngineVersion,
-                SDKApiVersion = Constants.Header.SDK_API_VERSION_VALUE
+                _versionConfiguration.SDKApiVersion
             });
         }
     }

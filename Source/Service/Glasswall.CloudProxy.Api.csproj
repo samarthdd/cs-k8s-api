@@ -10,9 +10,11 @@
   <ItemGroup>
     <PackageReference Include="Jaeger" Version="0.2.2" />
     <PackageReference Include="Amazon.Lambda.AspNetCoreServer" Version="5.3.1" />
+    <PackageReference Include="Microsoft.OpenApi.Readers" Version="1.2.3" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.10.9" />
     <PackageReference Include="OpenTracing" Version="0.12.0" />
     <PackageReference Include="OpenTracing.Contrib.NetCore" Version="0.5.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.1.3" />
   </ItemGroup>
 
   <ItemGroup>
@@ -21,6 +23,25 @@
 
   <ItemGroup>
     <Folder Include="Properties\" />
+    <Folder Include="StaticFiles\Swg\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="StaticFiles\api.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="StaticFiles\Swagger\swagger.yaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="StaticFiles\Swg\func.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="StaticFiles\Swg\toast\toastify.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="StaticFiles\Swg\toast\toastify.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 
