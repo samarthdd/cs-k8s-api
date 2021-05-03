@@ -148,3 +148,6 @@ Payload:
 - form-data with `file` named field that contains the file binary
   
 On success, the output is the cleaned up file binary
+
+# Deployment instructions
+https://github.com/k8-proxy/k8s-compliant-kubernetes/blob/cs-api-filedrop/instructions.md
