@@ -132,7 +132,7 @@ namespace Glasswall.CloudProxy.Api
                 ILogger logger = loggerFactory.CreateLogger<Startup>();
                 UserAgentInfo userAgentInfo = new UserAgentInfo(context.Request.Headers[Constants.UserAgent.USER_AGENT]);
                 logger.LogInformation($"UserAgent:: [{userAgentInfo?.ClientInfo?.String}]");
-                IVersionConfiguration versionConfig = app.ApplicationServices.GetService<IVersionConfiguration>();
+                ICloudSdkConfiguration versionConfig = app.ApplicationServices.GetService<ICloudSdkConfiguration>();
                 context.Response.Headers[Constants.Header.ACCESS_CONTROL_EXPOSE_HEADERS] = Constants.STAR;
                 context.Response.Headers[Constants.Header.ACCESS_CONTROL_ALLOW_HEADERS] = Constants.STAR;
                 context.Response.Headers[Constants.Header.ACCESS_CONTROL_ALLOW_ORIGIN] = Constants.STAR;

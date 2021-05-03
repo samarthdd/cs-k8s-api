@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Glasswall.CloudProxy.Common.Configuration;
+using System;
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
 
@@ -67,8 +68,13 @@ namespace Glasswall.CloudProxy.Common.AdaptationService
             return BytesToString(Sha256.ComputeHash(file));
         }
 
-        public AdaptionDescriptor GetDescriptor(byte[] file)
+        public AdaptionDescriptor GetDescriptor(byte[] file, ICloudSdkConfiguration cloudSdkConfiguration)
         {
+            if (!cloudSdkConfiguration.EnableCache)
+            {
+                return new AdaptionDescriptor();
+            }
+
             string fileHash = GetFileHash(file);
 
             if (!CacheMap.TryGetValue(fileHash, out AdaptionDescriptor descriptor))

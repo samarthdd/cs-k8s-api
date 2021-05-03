@@ -9,8 +9,8 @@ namespace Glasswall.CloudProxy.Api.Controllers
 {
     public class DetailController : CloudProxyController<DetailController>
     {
-        private readonly IVersionConfiguration _versionConfiguration;
-        public DetailController(ILogger<DetailController> logger, IVersionConfiguration versionConfiguration) : base(logger)
+        private readonly ICloudSdkConfiguration _versionConfiguration;
+        public DetailController(ILogger<DetailController> logger, ICloudSdkConfiguration versionConfiguration) : base(logger)
         {
             _versionConfiguration = versionConfiguration ?? throw new ArgumentNullException(nameof(versionConfiguration));
         }

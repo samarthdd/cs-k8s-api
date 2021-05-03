@@ -20,19 +20,23 @@ namespace Glasswall.CloudProxy.Common.Web.Abstraction
 
         protected void ClearStores(string originalStoreFilePath, string rebuiltStoreFilePath)
         {
-            //try
-            //{
-            //    _logger.LogInformation($"Clearing stores '{originalStoreFilePath}' and {rebuiltStoreFilePath}");
-            //    if (!string.IsNullOrEmpty(originalStoreFilePath))
-            //        System.IO.File.Delete(originalStoreFilePath);
-            //    if (!string.IsNullOrEmpty(rebuiltStoreFilePath))
-            //        System.IO.File.Delete(rebuiltStoreFilePath);
-            //}
+            try
+            {
+                _logger.LogInformation($"Clearing stores '{originalStoreFilePath}' and {rebuiltStoreFilePath}");
+                if (!string.IsNullOrEmpty(originalStoreFilePath))
+                {
+                    System.IO.File.Delete(originalStoreFilePath);
+                }
 
-            //catch (Exception ex)
-            //{
-            //    _logger.LogWarning(ex, $"Error whilst attempting to clear stores: {ex.Message}");
-            //}
+                if (!string.IsNullOrEmpty(rebuiltStoreFilePath))
+                {
+                    System.IO.File.Delete(rebuiltStoreFilePath);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, $"Error whilst attempting to clear stores: {ex.Message}");
+            }
         }
 
         protected (AmazonS3Uri amazonS3Uri, string error) AmazonS3Uri(string url)

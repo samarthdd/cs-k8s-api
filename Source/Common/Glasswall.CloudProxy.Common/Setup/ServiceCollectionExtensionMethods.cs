@@ -22,9 +22,9 @@ namespace Glasswall.CloudProxy.Common.Setup
             configuration.Bind(processingConfig);
             serviceCollection.AddSingleton<IProcessingConfiguration>(processingConfig);
 
-            IVersionConfiguration versionConfiguration = VersionConfigLoader.SetDefaults(new VersionConfiguration());
+            ICloudSdkConfiguration versionConfiguration = CloudSdkConfigLoader.SetDefaults(new CloudSdkConfiguration());
             configuration.Bind(versionConfiguration);
-            serviceCollection.AddSingleton<IVersionConfiguration>(versionConfiguration);
+            serviceCollection.AddSingleton<ICloudSdkConfiguration>(versionConfiguration);
 
             serviceCollection.AddTransient(typeof(IAdaptationServiceClient<>), typeof(RabbitMqClient<>));
             serviceCollection.AddTransient<IResponseProcessor, AdaptationOutcomeProcessor>();
