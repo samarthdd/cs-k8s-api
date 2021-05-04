@@ -23,33 +23,22 @@ namespace Glasswall.CloudProxy.Api.Controllers
         private readonly IAdaptationServiceClient<AdaptationOutcomeProcessor> _adaptationServiceClient;
         private readonly IFileUtility _fileUtility;
         private readonly CancellationTokenSource _processingCancellationTokenSource;
-        private readonly TimeSpan _processingTimeoutDuration;
-        private readonly string _originalStorePath;
-        private readonly string _rebuiltStorePath;
+        private readonly IStoreConfiguration _storeConfiguration;
+        private readonly IProcessingConfiguration _processingConfiguration;
         private readonly ITracer _tracer;
+        private readonly ICloudSdkConfiguration _cloudSdkConfiguration;
 
         public FileTypeDetectionController(IAdaptationServiceClient<AdaptationOutcomeProcessor> adaptationServiceClient, IStoreConfiguration storeConfiguration,
-            IProcessingConfiguration processingConfiguration, ILogger<FileTypeDetectionController> logger, IFileUtility fileUtility, ITracer tracer) : base(logger)
+            IProcessingConfiguration processingConfiguration, ILogger<FileTypeDetectionController> logger, IFileUtility fileUtility, ITracer tracer,
+            ICloudSdkConfiguration cloudSdkConfiguration) : base(logger)
         {
             _adaptationServiceClient = adaptationServiceClient ?? throw new ArgumentNullException(nameof(adaptationServiceClient));
             _fileUtility = fileUtility ?? throw new ArgumentNullException(nameof(fileUtility));
-            if (storeConfiguration == null)
-            {
-                throw new ArgumentNullException(nameof(storeConfiguration));
-            }
-
-            if (processingConfiguration == null)
-            {
-                throw new ArgumentNullException(nameof(processingConfiguration));
-            }
-
-            _processingTimeoutDuration = processingConfiguration.ProcessingTimeoutDuration;
-            _processingCancellationTokenSource = new CancellationTokenSource(_processingTimeoutDuration);
-
-            _originalStorePath = storeConfiguration.OriginalStorePath;
-            _rebuiltStorePath = storeConfiguration.RebuiltStorePath;
-
-            _tracer = tracer;
+            _storeConfiguration = storeConfiguration ?? throw new ArgumentNullException(nameof(storeConfiguration));
+            _processingConfiguration = processingConfiguration ?? throw new ArgumentNullException(nameof(processingConfiguration));
+            _processingCancellationTokenSource = new CancellationTokenSource(processingConfiguration.ProcessingTimeoutDuration);
+            _tracer = tracer ?? throw new ArgumentNullException(nameof(tracer));
+            _cloudSdkConfiguration = cloudSdkConfiguration ?? throw new ArgumentNullException(nameof(cloudSdkConfiguration));
         }
 
         [HttpPost(Constants.Endpoints.BASE64)]
@@ -83,7 +72,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                     return BadRequest(cloudProxyResponseModel);
                 }
 
-                AdaptionDescriptor descriptor = AdaptionCache.Instance.GetDescriptor(file);
+                AdaptionDescriptor descriptor = AdaptionCache.Instance.GetDescriptor(file, _cloudSdkConfiguration);
                 if (null == descriptor)
                 {
                     cloudProxyResponseModel.Errors.Add("Cannot create a cache entry for the file.");
@@ -93,10 +82,10 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 fileId = descriptor.UUID.ToString();
                 CancellationToken processingCancellationToken = _processingCancellationTokenSource.Token;
 
-                _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: Using store locations '{_originalStorePath}' and '{_rebuiltStorePath}' for {fileId}");
+                _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: Using store locations '{_storeConfiguration.OriginalStorePath}' and '{_storeConfiguration.RebuiltStorePath}' for {fileId}");
 
-                originalStoreFilePath = Path.Combine(_originalStorePath, fileId);
-                rebuiltStoreFilePath = Path.Combine(_rebuiltStorePath, fileId);
+                originalStoreFilePath = Path.Combine(_storeConfiguration.OriginalStorePath, fileId);
+                rebuiltStoreFilePath = Path.Combine(_storeConfiguration.RebuiltStorePath, fileId);
 
                 if (ReturnOutcome.GW_REBUILT != descriptor.Outcome)
                 {
@@ -171,8 +160,8 @@ namespace Glasswall.CloudProxy.Api.Controllers
             }
             catch (OperationCanceledException oce)
             {
-                _logger.LogError(oce, $"[{UserAgentInfo.ClientTypeString}]:: Error Processing Timeout 'input' {fileId} exceeded {_processingTimeoutDuration.TotalSeconds}s");
-                cloudProxyResponseModel.Errors.Add($"Error Processing Timeout 'input' {fileId} exceeded {_processingTimeoutDuration.TotalSeconds}s");
+                _logger.LogError(oce, $"[{UserAgentInfo.ClientTypeString}]:: Error Processing Timeout 'input' {fileId} exceeded {_processingConfiguration.ProcessingTimeoutDuration.TotalSeconds}s");
+                cloudProxyResponseModel.Errors.Add($"Error Processing Timeout 'input' {fileId} exceeded {_processingConfiguration.ProcessingTimeoutDuration.TotalSeconds}s");
                 cloudProxyResponseModel.Status = ReturnOutcome.GW_ERROR;
                 return StatusCode(StatusCodes.Status500InternalServerError, cloudProxyResponseModel);
             }
