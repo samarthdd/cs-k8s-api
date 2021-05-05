@@ -22,7 +22,6 @@ namespace Glasswall.CloudProxy.Api.Controllers
     {
         private readonly IAdaptationServiceClient<AdaptationOutcomeProcessor> _adaptationServiceClient;
         private readonly IFileUtility _fileUtility;
-        private readonly CancellationTokenSource _processingCancellationTokenSource;
         private readonly IStoreConfiguration _storeConfiguration;
         private readonly IProcessingConfiguration _processingConfiguration;
         private readonly ITracer _tracer;
@@ -36,7 +35,6 @@ namespace Glasswall.CloudProxy.Api.Controllers
             _fileUtility = fileUtility ?? throw new ArgumentNullException(nameof(fileUtility));
             _storeConfiguration = storeConfiguration ?? throw new ArgumentNullException(nameof(storeConfiguration));
             _processingConfiguration = processingConfiguration ?? throw new ArgumentNullException(nameof(processingConfiguration));
-            _processingCancellationTokenSource = new CancellationTokenSource(processingConfiguration.ProcessingTimeoutDuration);
             _tracer = tracer ?? throw new ArgumentNullException(nameof(tracer));
             _cloudSdkConfiguration = cloudSdkConfiguration ?? throw new ArgumentNullException(nameof(cloudSdkConfiguration));
         }
@@ -80,7 +78,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 }
 
                 fileId = descriptor.UUID.ToString();
-                CancellationToken processingCancellationToken = _processingCancellationTokenSource.Token;
+                CancellationToken processingCancellationToken = new CancellationTokenSource(_processingConfiguration.ProcessingTimeoutDuration).Token;
 
                 _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: Using store locations '{_storeConfiguration.OriginalStorePath}' and '{_storeConfiguration.RebuiltStorePath}' for {fileId}");
 

@@ -15,7 +15,7 @@ namespace Glasswall.CloudProxy.Common.Web.Abstraction
 
         public CloudProxyController(ILogger<TController> logger)
         {
-            _logger = logger;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         protected void ClearStores(string originalStoreFilePath, string rebuiltStoreFilePath)
