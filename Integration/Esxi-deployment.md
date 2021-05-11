@@ -43,11 +43,11 @@ wizard
 
 - Important note: After the IP change wizard will return to the same window, navigate back to CMD by pressing Cancel
 - If needed you can use wizard to change password by selecting Change password
-- Verify that correct IP address is set by running ip -4 a and verifying IP for eth0
+- Verify that correct IP address is set by running `ip -4 a` and verifying IP for eth0
 
 4.- Launch FileDrop
 
-  - Give the VM ~10 minutes to initialize, then open your browser and access FileDrop UI on http://<VM IP>
+  - Give the VM ~10 minutes to initialize, then open your browser and access FileDrop UI on `http://<VM IP>`
 
 ![image](https://user-images.githubusercontent.com/64204445/115719738-03dc6a80-a39a-11eb-93d0-39597d65e6ee.png)
 
@@ -103,7 +103,7 @@ wizard
 
 - Important note: After the IP change wizard will return to the same window, navigate back to CMD by pressing Cancel
 - If needed you can use wizard to change password by selecting Change password
-- Verify that correct IP address is set by running ip -4 a and verifying IP for eth0
+- Verify that correct IP address is set by running `ip -4 a` and verifying IP for eth0
 
 
 
@@ -129,10 +129,9 @@ The following steps are needed to configure the workload cluster VM/s to send lo
    /home/ubuntu/setupscCluster.sh
   ```
 
-- In case you are missing `wc-coredns-configmap.yml` and `setupscCluster.sh` run: 
+- In case you are missing `setupscCluster.sh` run: 
 
   ```
-  wget https://raw.githubusercontent.com/k8-proxy/vmware-scripts/cs-api-ck8/packer/wc-coredns-configmap.yml
   wget https://raw.githubusercontent.com/k8-proxy/vmware-scripts/cs-api-ck8/packer/setupscCluster.sh
   ```
 
@@ -154,10 +153,10 @@ The mentioned above passwords (monitoring password - logging password) as well a
 
 To download the file:
 
-​	1- Either login to AWS console and navigate to S3 then search for glasswall-dev-sc-logs bucket where you will find the all the secrets files for all the 		      		service clusters OVAs.
+​	1- Either login to AWS console and navigate to S3 then search for **glasswall-dev-sc-logs** bucket where you will find the all the secrets files for all the 		      		service clusters OVAs.
 
 ​		You will find you specified file tagged with the same run ID as the service cluster ova you are using.
-​		for example: If the service cluster OVA is name **ck8-cs-api-SC-CI-sc-799339985.ova** , the secrets file will be named **secrets-799339985.yaml** 
+​		For example: If the service cluster OVA is name **ck8-cs-api-SC-CI-sc-799339985.ova** , the secrets file will be named **secrets-799339985.yaml** 
 
 ​	2- Or from your terminal Run the following to setup your AWS credentials 
 
@@ -244,7 +243,7 @@ Kibana password -> elasticsearch.adminPassword
 
 - For Elastic from browser navigate to `http://<SC VM IP>:5601`
 
-  - From settings choose `Discover` and select one of three options for logs (kubespray*, kubernetes* or other*)
+  - From settings choose `Discover` and select one of three options for logs (kubeaudit*, kubernetes* or other*)
 
     ![image](https://user-images.githubusercontent.com/70108899/116484905-53370500-a88a-11eb-8477-d55c1db73519.png)
 
