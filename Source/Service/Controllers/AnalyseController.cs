@@ -87,7 +87,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 rebuiltStoreFilePath = Path.Combine(_storeConfiguration.RebuiltStorePath, fileId);
 
 
-                if (ReturnOutcome.GW_REBUILT != descriptor.Outcome)
+                if (ReturnOutcome.GW_REBUILT != descriptor.AdaptationServiceResponse.FileOutcome)
                 {
                     _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: Updating 'Original' store for {fileId}");
                     using (Stream fileStream = new FileStream(originalStoreFilePath, FileMode.Create))
@@ -96,13 +96,13 @@ namespace Glasswall.CloudProxy.Api.Controllers
                     }
 
                     _adaptationServiceClient.Connect();
-                    ReturnOutcome outcome = _adaptationServiceClient.AdaptationRequest(descriptor.UUID, originalStoreFilePath, rebuiltStoreFilePath, processingCancellationToken);
-                    descriptor.Update(outcome, originalStoreFilePath, rebuiltStoreFilePath);
+                    IAdaptationServiceResponse adaptationServiceResponse = _adaptationServiceClient.AdaptationRequest(descriptor.UUID, originalStoreFilePath, rebuiltStoreFilePath, processingCancellationToken);
+                    descriptor.Update(adaptationServiceResponse, originalStoreFilePath, rebuiltStoreFilePath);
 
-                    _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: Returning '{descriptor.Outcome}' Outcome for {fileId}");
+                    _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: Returning '{descriptor.AdaptationServiceResponse.FileOutcome}' Outcome for {fileId}");
                 }
 
-                switch (descriptor.Outcome)
+                switch (descriptor.AdaptationServiceResponse.FileOutcome)
                 {
                     case ReturnOutcome.GW_REBUILT:
                         string reportFolderPath = Directory.GetDirectories(Constants.TRANSACTION_STORE_PATH, $"{ fileId}", SearchOption.AllDirectories).FirstOrDefault();
@@ -126,14 +126,14 @@ namespace Glasswall.CloudProxy.Api.Controllers
                         {
                             cloudProxyResponseModel.Errors.Add(System.IO.File.ReadAllText(descriptor.RebuiltStoreFilePath));
                         }
-                        cloudProxyResponseModel.Status = descriptor.Outcome;
+                        cloudProxyResponseModel.Status = descriptor.AdaptationServiceResponse.FileOutcome;
                         return BadRequest(cloudProxyResponseModel);
                     case ReturnOutcome.GW_UNPROCESSED:
                         if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
                         {
                             cloudProxyResponseModel.Errors.Add(System.IO.File.ReadAllText(descriptor.RebuiltStoreFilePath));
                         }
-                        cloudProxyResponseModel.Status = descriptor.Outcome;
+                        cloudProxyResponseModel.Status = descriptor.AdaptationServiceResponse.FileOutcome;
                         return BadRequest(cloudProxyResponseModel);
                     case ReturnOutcome.GW_ERROR:
                     default:
@@ -141,7 +141,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                         {
                             cloudProxyResponseModel.Errors.Add(System.IO.File.ReadAllText(descriptor.RebuiltStoreFilePath));
                         }
-                        cloudProxyResponseModel.Status = descriptor.Outcome;
+                        cloudProxyResponseModel.Status = descriptor.AdaptationServiceResponse.FileOutcome;
                         return BadRequest(cloudProxyResponseModel);
                 }
             }
@@ -316,7 +316,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 rebuiltStoreFilePath = Path.Combine(_storeConfiguration.RebuiltStorePath, fileId);
 
 
-                if (ReturnOutcome.GW_REBUILT != descriptor.Outcome)
+                if (ReturnOutcome.GW_REBUILT != descriptor.AdaptationServiceResponse.FileOutcome)
                 {
                     _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: Updating 'Original' store for {fileId}");
                     using (Stream fileStream = new FileStream(originalStoreFilePath, FileMode.Create))
@@ -325,13 +325,13 @@ namespace Glasswall.CloudProxy.Api.Controllers
                     }
 
                     _adaptationServiceClient.Connect();
-                    ReturnOutcome outcome = _adaptationServiceClient.AdaptationRequest(descriptor.UUID, originalStoreFilePath, rebuiltStoreFilePath, processingCancellationToken);
-                    descriptor.Update(outcome, originalStoreFilePath, rebuiltStoreFilePath);
+                    IAdaptationServiceResponse adaptationServiceResponse = _adaptationServiceClient.AdaptationRequest(descriptor.UUID, originalStoreFilePath, rebuiltStoreFilePath, processingCancellationToken);
+                    descriptor.Update(adaptationServiceResponse, originalStoreFilePath, rebuiltStoreFilePath);
 
-                    _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: Returning '{descriptor.Outcome}' Outcome for {fileId}");
+                    _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: Returning '{descriptor.AdaptationServiceResponse.FileOutcome}' Outcome for {fileId}");
                 }
 
-                switch (descriptor.Outcome)
+                switch (descriptor.AdaptationServiceResponse.FileOutcome)
                 {
                     case ReturnOutcome.GW_REBUILT:
                         return await RebuildZipInfoByFileId(descriptor.UUID, span);
@@ -340,14 +340,14 @@ namespace Glasswall.CloudProxy.Api.Controllers
                         {
                             cloudProxyResponseModel.Errors.Add(System.IO.File.ReadAllText(descriptor.RebuiltStoreFilePath));
                         }
-                        cloudProxyResponseModel.Status = descriptor.Outcome;
+                        cloudProxyResponseModel.Status = descriptor.AdaptationServiceResponse.FileOutcome;
                         return BadRequest(cloudProxyResponseModel);
                     case ReturnOutcome.GW_UNPROCESSED:
                         if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
                         {
                             cloudProxyResponseModel.Errors.Add(System.IO.File.ReadAllText(descriptor.RebuiltStoreFilePath));
                         }
-                        cloudProxyResponseModel.Status = descriptor.Outcome;
+                        cloudProxyResponseModel.Status = descriptor.AdaptationServiceResponse.FileOutcome;
                         return BadRequest(cloudProxyResponseModel);
                     case ReturnOutcome.GW_ERROR:
                     default:
@@ -355,7 +355,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                         {
                             cloudProxyResponseModel.Errors.Add(System.IO.File.ReadAllText(descriptor.RebuiltStoreFilePath));
                         }
-                        cloudProxyResponseModel.Status = descriptor.Outcome;
+                        cloudProxyResponseModel.Status = descriptor.AdaptationServiceResponse.FileOutcome;
                         return BadRequest(cloudProxyResponseModel);
                 }
             }

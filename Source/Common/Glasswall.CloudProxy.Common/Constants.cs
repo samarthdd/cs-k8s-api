@@ -29,6 +29,17 @@
             public const string SDK_ENGINE_VERSION_VALUE = "1.157";
             public const string SDK_API_VERSION = "X-SDK-Api-Version";
             public const string SDK_API_VERSION_VALUE = "0.1.11";
+
+            public const string ICAP_FILE_ID = "file-id";
+            public const string ICAP_FILE_OUTCOME = "file-outcome";
+            public const string ICAP_SOURCE_FILE_LOCATION = "source-file-location";
+            public const string ICAP_REBUILT_FILE_LOCATION = "rebuilt-file-location";
+            public const string ICAP_GENERATE_REPORT = "generate-report";
+            public const string ICAP_SOURCE_PRESIGNED_URL = "source-presigned-url";
+            public const string ICAP_REPORT_PRESIGNED_URL = "report-presigned-url";
+            public const string ICAP_CLEAN_PRESIGNED_URL = "clean-presigned-url";
+            public const string ICAP_REQUEST_MODE = "request-mode";
+            public const string ICAP_REQUEST_MODE_VALUE = "respmod";
         }
 
         public static class EnvironmentVariables
