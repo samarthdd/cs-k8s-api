@@ -2,7 +2,6 @@
 using Glasswall.CloudProxy.Common.ConfigLoaders;
 using Glasswall.CloudProxy.Common.Configuration;
 using Glasswall.CloudProxy.Common.HttpService;
-using Glasswall.CloudProxy.Common.MinioService;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -31,7 +30,6 @@ namespace Glasswall.CloudProxy.Common.Setup
             serviceCollection.AddTransient(typeof(IAdaptationServiceClient<>), typeof(RabbitMqClient<>));
             serviceCollection.AddTransient<IResponseProcessor, AdaptationOutcomeProcessor>();
             serviceCollection.AddSingleton<IHttpService, HttpService.HttpService>();
-            serviceCollection.AddSingleton<IMinioService, MinioService.MinioService>();
 
             return serviceCollection;
         }
