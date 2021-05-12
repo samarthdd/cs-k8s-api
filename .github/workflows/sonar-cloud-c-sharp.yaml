@@ -5,15 +5,16 @@ env:
   SONAR_PROJECT: cs-k8s-api
 on:
   push:
-    branches: 
-      - main 
+    branches:
+      - main
+      - test_sonar
     paths:
-      - 'Source'
+      - "Source"
   pull_request:
     branches:
       - main
     paths:
-      - 'Source'
+      - "Source'"
 jobs:
   build:
     runs-on: ubuntu-latest
