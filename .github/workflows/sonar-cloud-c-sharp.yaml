@@ -7,11 +7,11 @@ on:
   push:
     branches: '*'
     paths:
-      - 'cs-k8s-api/Source/Common/Glasswall.CloudProxy.Common/**'
+      - 'Source'
   pull_request:
     branches: [ main ]
     paths:
-      - 'cs-k8s-api/Source/Common/Glasswall.CloudProxy.Common/**'
+      - 'Source'
 jobs:
   build:
     runs-on: ubuntu-latest
