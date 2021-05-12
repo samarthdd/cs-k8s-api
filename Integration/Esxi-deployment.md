@@ -109,47 +109,10 @@ wizard
 
 ## Integrate Service Cluster and Workload Cluster of Complaint K8 Cloud SDK
 
-The following steps are needed to configure the workload cluster VM/s to send logs to service VM,
-
-- SSH to Workload Cluster VM and switch to root user `sudo su -` and change working directory `cd /home/ubuntu/`
-
-- **Impotant Note**: Below commands will work just if executed as root user
-
-- Verify presence of below files by issuing command `ls`
-
-  ```
-   /home/ubuntu/monitoring-username.txt
-   /home/ubuntu/monitoring-password.txt
-   /home/ubuntu/logging-username.txt
-   /home/ubuntu/logging-password.txt
-   /home/ubuntu/service-cluster.txt
-   /home/ubuntu/service-cluster-ip.txt
-   /home/ubuntu/cluster.txt
-   /home/ubuntu/wc-coredns-configmap.yml
-   /home/ubuntu/setupscCluster.sh
-  ```
-
-- In case you are missing `setupscCluster.sh` run: 
-
-  ```
-  wget https://raw.githubusercontent.com/k8-proxy/vmware-scripts/cs-api-ck8/packer/setupscCluster.sh
-  ```
-
-- In case you are missing the rest of the files also, create and edit them using commands below. **Note: Please replace placeholders**
-
-```
-echo "wcWriter" > monitoring-username.txt
-echo "<Add monitoring password>" > monitoring-password.txt
-echo "fluentd" > logging-username.txt
-echo "<Add logging password>" > logging-password.txt
-echo "ops.default.compliantkuberetes" > service-cluster.txt
-echo "<service-cluster-ip>" > service-cluster-ip.txt
-echo "<Unique Identifier of workload instance E.g., GWSDKWC01>" > cluster.txt
-```
 
 ### Extracting Passwords:
 
-The mentioned above passwords (monitoring password - logging password) as well as kibana's and grafana's passwords need to be extracted from a secrets file that's generated with the service cluster ova creation and it's stored in a amazon s3 bucket named **glasswall-dev-sc-logs**.
+To configure the workload cluster VM/s to send logs to service VM you will need passwords, as well as  kibana's and grafana's passwords, which will need to be extracted from a secrets file that's generated with the service cluster ova creation and it's stored in a amazon s3 bucket named **glasswall-dev-sc-logs**.
 
 To download the file:
 
@@ -183,6 +146,50 @@ Kibana password -> elasticsearch.adminPassword
 ```
 
 
+### The following steps are needed to configure the workload cluster VM/s to send logs to service VM,
+
+- SSH to Workload Cluster VM and switch to root user `sudo su -` and change working directory `cd /home/ubuntu/`
+
+- **Impotant Note**: Below commands will work just if executed as root user
+
+- Verify presence of below files by issuing command `ls`
+
+  ```
+   /home/ubuntu/monitoring-username.txt
+   /home/ubuntu/monitoring-password.txt
+   /home/ubuntu/logging-username.txt
+   /home/ubuntu/logging-password.txt
+   /home/ubuntu/service-cluster.txt
+   /home/ubuntu/service-cluster-ip.txt
+   /home/ubuntu/cluster.txt
+   /home/ubuntu/wc-coredns-configmap.yml
+   /home/ubuntu/setupscCluster.sh
+  ```
+
+- In case you are missing `setupscCluster.sh` run: 
+
+  ```
+  wget https://raw.githubusercontent.com/k8-proxy/vmware-scripts/cs-api-ck8/packer/setupscCluster.sh
+  ```
+
+- In case you are missing the rest of the files also, create and edit them using commands below. **Note: Please replace placeholders**
+
+ ```
+  echo "wcWriter" > monitoring-username.txt
+  echo "<Add monitoring password>" > monitoring-password.txt
+  echo "fluentd" > logging-username.txt
+  echo "<Add logging password>" > logging-password.txt
+  echo "ops.default.compliantkuberetes" > service-cluster.txt
+  echo "<service-cluster-ip>" > service-cluster-ip.txt
+  echo "<Unique Identifier of workload instance E.g., GWSDKWC01>" > cluster.txt
+ ```
+- Currently the below files need to be manually configured:
+ ```
+  vim/vi /home/ubuntu/service-cluster-ip.txt  #Add IP of service cluster
+  vim/vi /home/ubuntu/monitoring-password.txt #Add monitoring password
+  vim/vi /home/ubuntu/logging-password.txt    #Add logging password
+  vim/vi /home/ubuntu/cluster.txt             #Add Unique Identifier of workload instance E.g., GWSDKWC01
+ ```
 
 - Change permission of `setupscCluster.sh` by below command:
   `chmod +x setupscCluster.sh`
@@ -192,7 +199,6 @@ Kibana password -> elasticsearch.adminPassword
 
 - Wait for all commands to complete. Once completed, login to Grafana and Kibana using service cluster IP address on ports 5601 for grafana and port 3000 for kibana
 
-  
 
   - `http://<service-cluster-ip>:5601` >> For Kibana
 
