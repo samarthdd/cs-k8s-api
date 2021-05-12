@@ -8,6 +8,8 @@ on:
     branches:
       - main
       - test_sonar
+    paths:
+      - "Source"
   pull_request:
     branches:
       - main
