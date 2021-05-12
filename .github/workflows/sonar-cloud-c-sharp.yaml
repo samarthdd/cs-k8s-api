@@ -9,12 +9,12 @@ on:
       - main
       - test_sonar
     paths:
-      - "Source"
+      - Source
   pull_request:
     branches:
       - main
     paths:
-      - "Source"
+      - Source
 jobs:
   build:
     runs-on: ubuntu-latest
