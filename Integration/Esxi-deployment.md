@@ -113,7 +113,7 @@ wizard
 
 - URL/ID of the Workflow cluster
 - URL/ID of the Service cluster
-- The following passwords (click [here](https://github.com/k8-proxy/cs-k8s-api/blob/lestat/Integration/Passwords%20extraction.md) for instructions.
+- The following passwords (click [here](https://github.com/k8-proxy/cs-k8s-api/blob/lestat/Integration/Passwords%20extraction.md) for instructions on how to extract the passwords)
   - Monitoring password
   - Logging password
   - Kibana password
@@ -123,7 +123,7 @@ wizard
 
 - SSH to Workload Cluster VM and switch to root user `sudo su -` and change working directory `cd /home/ubuntu/`
 
-- **Impotant Note**: Below commands will work just if executed as root user
+- **Impotant Note**: Below commands will work only if executed as root user
 
 - Verify presence of below files by issuing command `ls`
 
