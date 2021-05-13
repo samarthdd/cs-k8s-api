@@ -1,8 +1,12 @@
 ﻿using Amazon.S3.Util;
+using Glasswall.CloudProxy.Common.Utilities;
 using Glasswall.CloudProxy.Common.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Glasswall.CloudProxy.Common.Web.Abstraction
 {
@@ -70,6 +74,31 @@ namespace Glasswall.CloudProxy.Common.Web.Abstraction
                 }
                 return _userAgentInfo;
             }
+        }
+
+        protected async Task<(byte[] ReportBytes, string ReportText, IActionResult Result)> GetReportXmlData(string fileId, CloudProxyResponseModel cloudProxyResponseModel)
+        {
+            string reportFolderPath = Directory.GetDirectories(Constants.TRANSACTION_STORE_PATH, $"{ fileId}", SearchOption.AllDirectories).FirstOrDefault();
+
+            if (string.IsNullOrEmpty(reportFolderPath))
+            {
+                _logger.LogWarning($"[{UserAgentInfo.ClientTypeString}]:: Report folder not exist for file {fileId}");
+                cloudProxyResponseModel.Errors.Add($"Report folder not exist for file {fileId}");
+                return (null, null, NotFound(cloudProxyResponseModel));
+            }
+
+            string reportPath = Path.Combine(reportFolderPath, Constants.REPORT_XML_FILE_NAME);
+            if (!System.IO.File.Exists(reportPath))
+            {
+                _logger.LogWarning($"[{UserAgentInfo.ClientTypeString}]:: Report xml not exist for file {fileId}");
+                cloudProxyResponseModel.Errors.Add($"Report xml not exist for file {fileId}");
+                return (null, null, NotFound(cloudProxyResponseModel));
+            }
+
+            byte[] reportXmlBytes = await System.IO.File.ReadAllBytesAsync(reportPath);
+            string xmlReportFileText = System.Text.Encoding.UTF8.GetString(reportXmlBytes);
+            _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: Report json {xmlReportFileText.XmlStringToJson()} for file {fileId}");
+            return (reportXmlBytes, xmlReportFileText, null);
         }
     }
 }
