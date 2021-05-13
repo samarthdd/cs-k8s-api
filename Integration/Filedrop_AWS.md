@@ -45,7 +45,7 @@
 
 - URL/ID of the Workflow cluster
 - URL/ID of the Service cluster
-- The following passwords (click [here](https://github.com/k8-proxy/cs-k8s-api/blob/lestat/Integration/Passwords%20extraction.md) for instructions on how to extract the passwords)
+- The following passwords (click [here]((https://github.com/k8-proxy/cs-k8s-api/blob/main/Integration/Password-extraction) for instructions on how to extract the passwords)
   - Monitoring password
   - Logging password
   - Kibana password
