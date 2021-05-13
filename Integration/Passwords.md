@@ -7,8 +7,8 @@ To download the file:
 
 ​	1- Either login to AWS console and navigate to S3 then search for **glasswall-dev-sc-logs** bucket where you will find the all the secrets files for all the service clusters OVAs.
 
-​		You will find you specified file tagged with the same run ID as the service cluster OVA you are using.
-​		For example: If the service cluster OVA is created with the name **ck8-cs-api-SC-CI-sc-799339985.ova** , the secrets file will be named **secrets-799339985.yaml** 
+​		You will find your specified file tagged with the same run ID as the service cluster OVA you are using.
+​		For example: If the service cluster OVA is created with the name **ck8-cs-api-SC-CI-sc-799339985.ova**, the secrets file will be named **secrets-799339985.yaml** 
 
 ​	2- Or from your terminal Run the following to setup your AWS credentials 
 
@@ -28,8 +28,8 @@ aws s3 cp s3://glasswall-dev-sc-logs/secrets-<Replace with run ID as illustrated
 Once you open the file and take note of the following
 
 ```bash
-monitoring password -> influxDB.wcWriterPassword
-logging password -> elasticsearch.fluentdPassword
+Monitoring password -> influxDB.wcWriterPassword
+Logging password -> elasticsearch.fluentdPassword
 Grafana password -> user.grafanaPassword
 Kibana password -> elasticsearch.adminPassword
 ```
