@@ -1,4 +1,4 @@
-# Deploying compliant k8s Worker cluster OVA on ESXI
+# Deploying compliant k8s Workload cluster OVA on ESXI
 
 1.- Have the worker cluster OVA downloaded and login to Esxi server
 
@@ -107,7 +107,7 @@ wizard
 
 
 
-## Integrate Service Cluster and Workload Cluster of Complaint K8 Cloud SDK
+## Instruction to integrate Service Cluster and Workload Cluster of Complaint K8 Cloud SDK
 
 ### Prerequisites
 
@@ -118,9 +118,8 @@ wizard
   - Logging password
   - Kibana password
   - Grafana password
-- 
 
-### The following steps are needed to configure the workload cluster VM/s to send logs to service VM,
+### The following steps are needed to configure the workload cluster VM/s to send logs to service VM
 
 - SSH to Workload Cluster VM and switch to root user `sudo su -` and change working directory `cd /home/ubuntu/`
 
@@ -157,21 +156,18 @@ wizard
   echo "<service-cluster-ip>" > service-cluster-ip.txt
   echo "<Unique Identifier of workload instance E.g., GWSDKWC01>" > cluster.txt
  ```
-- Currently the below files need to be manually configured:
+- Currently the below files need to be manually configured using `vi/vim`:
  ```
-  vim/vi /home/ubuntu/service-cluster-ip.txt  #Add IP of service cluster
-  vim/vi /home/ubuntu/monitoring-password.txt #Add monitoring password
-  vim/vi /home/ubuntu/logging-password.txt    #Add logging password
-  vim/vi /home/ubuntu/cluster.txt             #Add Unique Identifier of workload instance E.g., GWSDKWC01
+ /home/ubuntu/service-cluster-ip.txt  #Add IP of service cluster
+ /home/ubuntu/monitoring-password.txt #Add monitoring password
+ /home/ubuntu/logging-password.txt    #Add logging password
+ /home/ubuntu/cluster.txt             #Add Unique Identifier of workload instance E.g., GWSDKWC01
+ 
  ```
 
-- Change permission of `setupscCluster.sh` by below command:
+- Change permission of `setupscCluster.sh` running command: `chmod +x setupscCluster.sh`
 
-  `chmod +x setupscCluster.sh`
-
-- Execute `setupscCluster.sh` by below command **NOTE: Make sure you run the following script as root user** :
-
-  `./setupscCluster.sh`
+- Execute `setupscCluster.sh` running command **NOTE: Make sure you run the following script as root user** : `./setupscCluster.sh`
 
 - Wait for all commands to complete. Once completed, login to Grafana and Kibana using service cluster IP address on ports 5601 for grafana and port 3000 for kibana
 
