@@ -24,7 +24,6 @@ namespace Glasswall.CloudProxy.Api.Controllers
         private readonly IZipUtility _zipUtility;
         private readonly IStoreConfiguration _storeConfiguration;
         private readonly IProcessingConfiguration _processingConfiguration;
-        private readonly CancellationTokenSource _processingCancellationTokenSource;
         private readonly ITracer _tracer;
         private readonly ICloudSdkConfiguration _cloudSdkConfiguration;
 
@@ -37,7 +36,6 @@ namespace Glasswall.CloudProxy.Api.Controllers
             _zipUtility = zipUtility ?? throw new ArgumentNullException(nameof(zipUtility));
             _storeConfiguration = storeConfiguration ?? throw new ArgumentNullException(nameof(storeConfiguration));
             _processingConfiguration = processingConfiguration ?? throw new ArgumentNullException(nameof(processingConfiguration));
-            _processingCancellationTokenSource = new CancellationTokenSource(_processingConfiguration.ProcessingTimeoutDuration);
             _tracer = tracer ?? throw new ArgumentNullException(nameof(tracer));
             _cloudSdkConfiguration = cloudSdkConfiguration ?? throw new ArgumentNullException(nameof(cloudSdkConfiguration));
         }
@@ -81,7 +79,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 }
 
                 fileId = descriptor.UUID.ToString();
-                CancellationToken processingCancellationToken = _processingCancellationTokenSource.Token;
+                CancellationToken processingCancellationToken = new CancellationTokenSource(_processingConfiguration.ProcessingTimeoutDuration).Token;
 
                 _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: Using store locations '{_storeConfiguration.OriginalStorePath}' and '{_storeConfiguration.RebuiltStorePath}' for {fileId}");
 
@@ -142,6 +140,13 @@ namespace Glasswall.CloudProxy.Api.Controllers
                                 }
                             }
                         }
+
+                        (byte[] ReportBytes, string ReportText, IActionResult Result) = await GetReportXmlData(fileId, cloudProxyResponseModel);
+                        if (ReportBytes == null)
+                        {
+                            return Result;
+                        }
+
                         return new FileContentResult(System.IO.File.ReadAllBytes(descriptor.RebuiltStoreFilePath), Constants.OCTET_STREAM_CONTENT_TYPE) { FileDownloadName = file.FileName ?? "Unknown" };
                     case ReturnOutcome.GW_FAILED:
                         if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
@@ -232,7 +237,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 }
 
                 fileId = descriptor.UUID.ToString();
-                CancellationToken processingCancellationToken = _processingCancellationTokenSource.Token;
+                CancellationToken processingCancellationToken = new CancellationTokenSource(_processingConfiguration.ProcessingTimeoutDuration).Token;
 
                 _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: Using store locations '{_storeConfiguration.OriginalStorePath}' and '{_storeConfiguration.RebuiltStorePath}' for {fileId}");
 
@@ -257,6 +262,12 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 switch (descriptor.Outcome)
                 {
                     case ReturnOutcome.GW_REBUILT:
+                        (byte[] ReportBytes, string ReportText, IActionResult Result) = await GetReportXmlData(fileId, cloudProxyResponseModel);
+                        if (ReportBytes == null)
+                        {
+                            return Result;
+                        }
+
                         return Ok(Convert.ToBase64String(System.IO.File.ReadAllBytes(descriptor.RebuiltStoreFilePath)));
                     case ReturnOutcome.GW_FAILED:
                         if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
@@ -343,7 +354,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 }
 
                 fileId = descriptor.UUID.ToString();
-                CancellationToken processingCancellationToken = _processingCancellationTokenSource.Token;
+                CancellationToken processingCancellationToken = new CancellationTokenSource(_processingConfiguration.ProcessingTimeoutDuration).Token;
 
                 _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: Using store locations '{_storeConfiguration.OriginalStorePath}' and '{_storeConfiguration.RebuiltStorePath}' for {fileId}");
 
@@ -396,6 +407,12 @@ namespace Glasswall.CloudProxy.Api.Controllers
                         }
 
                         _zipUtility.CreateZipFile(extractedRebuildZipFilePath, password, extractedRebuildFolderPath);
+                        (byte[] ReportBytes, string ReportText, IActionResult Result) = await GetReportXmlData(fileId, cloudProxyResponseModel);
+                        if (ReportBytes == null)
+                        {
+                            return Result;
+                        }
+
                         return new FileContentResult(System.IO.File.ReadAllBytes(extractedRebuildZipFilePath), Constants.OCTET_STREAM_CONTENT_TYPE) { FileDownloadName = file.FileName ?? "Unknown" };
                     case ReturnOutcome.GW_FAILED:
                         if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
