@@ -1,4 +1,4 @@
-## Deploying Workload cluster (GW Cloud SDK with compliant kubernetes and filedrop integrated)
+# Deploying compliant k8s Workload cluster 
 
 - Navigate to AWS > AMIs
 - Search for the AMI with specific ID (make sure you are in the correct region)
@@ -19,7 +19,7 @@
     - Use VM public IP to access File Drop web interface from your Browser
     - To access Management UI in your hosts file add `<VM IP> management-ui.glasswall-icap.com` and access it from your Browser `https://management-ui.glasswall-icap.com/login`
 
-## Deploying Service cluster
+# Deploying compliant k8s Service cluster
 
 - Navigate to AWS > AMIs
 - Search for the AMI with specific ID (make sure you are in the correct region)
