@@ -14,7 +14,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Serialization;
 
 namespace Glasswall.CloudProxy.Api.Controllers
 {
@@ -22,7 +21,6 @@ namespace Glasswall.CloudProxy.Api.Controllers
     {
         private readonly IAdaptationServiceClient<AdaptationOutcomeProcessor> _adaptationServiceClient;
         private readonly IFileUtility _fileUtility;
-        private readonly CancellationTokenSource _processingCancellationTokenSource;
         private readonly IStoreConfiguration _storeConfiguration;
         private readonly IProcessingConfiguration _processingConfiguration;
         private readonly ITracer _tracer;
@@ -36,7 +34,6 @@ namespace Glasswall.CloudProxy.Api.Controllers
             _fileUtility = fileUtility ?? throw new ArgumentNullException(nameof(fileUtility));
             _storeConfiguration = storeConfiguration ?? throw new ArgumentNullException(nameof(storeConfiguration));
             _processingConfiguration = processingConfiguration ?? throw new ArgumentNullException(nameof(processingConfiguration));
-            _processingCancellationTokenSource = new CancellationTokenSource(processingConfiguration.ProcessingTimeoutDuration);
             _tracer = tracer ?? throw new ArgumentNullException(nameof(tracer));
             _cloudSdkConfiguration = cloudSdkConfiguration ?? throw new ArgumentNullException(nameof(cloudSdkConfiguration));
         }
@@ -80,7 +77,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 }
 
                 fileId = descriptor.UUID.ToString();
-                CancellationToken processingCancellationToken = _processingCancellationTokenSource.Token;
+                CancellationToken processingCancellationToken = new CancellationTokenSource(_processingConfiguration.ProcessingTimeoutDuration).Token;
 
                 _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: Using store locations '{_storeConfiguration.OriginalStorePath}' and '{_storeConfiguration.RebuiltStorePath}' for {fileId}");
 
@@ -105,29 +102,13 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 switch (descriptor.Outcome)
                 {
                     case ReturnOutcome.GW_REBUILT:
-                        string reportFolderPath = Directory.GetDirectories(Constants.TRANSACTION_STORE_PATH, $"{ fileId}", SearchOption.AllDirectories).FirstOrDefault();
-                        if (string.IsNullOrEmpty(descriptor.RebuiltStoreFilePath))
+                        (byte[] ReportBytes, string ReportText, IActionResult Result) = await GetReportXmlData(fileId, cloudProxyResponseModel);
+                        if (ReportBytes == null)
                         {
-                            _logger.LogWarning($"[{UserAgentInfo.ClientTypeString}]:: Report folder not exist for file {fileId}");
-                            cloudProxyResponseModel.Errors.Add($"Report folder not exist for file {fileId}");
-                            return NotFound(cloudProxyResponseModel);
+                            return Result;
                         }
 
-                        string reportPath = Path.Combine(reportFolderPath, Constants.REPORT_XML_FILE_NAME);
-                        if (!System.IO.File.Exists(reportPath))
-                        {
-                            _logger.LogWarning($"[{UserAgentInfo.ClientTypeString}]:: Report xml not exist for file {fileId}");
-                            cloudProxyResponseModel.Errors.Add($"Report xml not exist for file {fileId}");
-                            return NotFound(cloudProxyResponseModel);
-                        }
-
-                        XmlSerializer serializer = new XmlSerializer(typeof(GWallInfo));
-                        GWallInfo result = null;
-                        using (FileStream fileStream = new FileStream(reportPath, FileMode.Open))
-                        {
-                            result = (GWallInfo)serializer.Deserialize(fileStream);
-                        }
-
+                        GWallInfo result = ReportText.XmlStringToObject<GWallInfo>();
                         int.TryParse(result.DocumentStatistics.DocumentSummary.TotalSizeInBytes, out int fileSize);
                         return Ok(new
                         {
