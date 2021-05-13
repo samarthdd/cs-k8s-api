@@ -113,7 +113,7 @@ wizard
 
 - URL/ID of the Workflow cluster
 - URL/ID of the Service cluster
-- The following passwords (click [here](
+- The following passwords (click [here](https://github.com/k8-proxy/cs-k8s-api/blob/lestat/Integration/Passwords%20extraction.md) for instructions.
   - Monitoring password
   - Logging password
   - Kibana password
@@ -165,12 +165,11 @@ wizard
  
  ```
 
-- Change permission of `setupscCluster.sh` running command: `chmod +x setupscCluster.sh`
+- Change permission of *setupscCluster.sh* running command: `chmod +x setupscCluster.sh`
 
-- Execute `setupscCluster.sh` running command **NOTE: Make sure you run the following script as root user** : `./setupscCluster.sh`
+- Execute *setupscCluster.sh* running command **NOTE: Make sure you run the following script as root user** : `./setupscCluster.sh`
 
 - Wait for all commands to complete. Once completed, login to Grafana and Kibana using service cluster IP address on ports 5601 for grafana and port 3000 for kibana
-
 
   - `http://<service-cluster-ip>:5601` >> For Kibana
 
