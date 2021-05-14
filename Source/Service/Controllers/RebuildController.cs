@@ -142,11 +142,6 @@ namespace Glasswall.CloudProxy.Api.Controllers
                         }
 
                         (byte[] ReportBytes, string ReportText, IActionResult Result) = await GetReportXmlData(fileId, cloudProxyResponseModel);
-                        if (ReportBytes == null)
-                        {
-                            return Result;
-                        }
-
                         return new FileContentResult(System.IO.File.ReadAllBytes(descriptor.RebuiltStoreFilePath), Constants.OCTET_STREAM_CONTENT_TYPE) { FileDownloadName = file.FileName ?? "Unknown" };
                     case ReturnOutcome.GW_FAILED:
                         if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
@@ -263,11 +258,6 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 {
                     case ReturnOutcome.GW_REBUILT:
                         (byte[] ReportBytes, string ReportText, IActionResult Result) = await GetReportXmlData(fileId, cloudProxyResponseModel);
-                        if (ReportBytes == null)
-                        {
-                            return Result;
-                        }
-
                         return Ok(Convert.ToBase64String(System.IO.File.ReadAllBytes(descriptor.RebuiltStoreFilePath)));
                     case ReturnOutcome.GW_FAILED:
                         if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
@@ -408,11 +398,6 @@ namespace Glasswall.CloudProxy.Api.Controllers
 
                         _zipUtility.CreateZipFile(extractedRebuildZipFilePath, password, extractedRebuildFolderPath);
                         (byte[] ReportBytes, string ReportText, IActionResult Result) = await GetReportXmlData(fileId, cloudProxyResponseModel);
-                        if (ReportBytes == null)
-                        {
-                            return Result;
-                        }
-
                         return new FileContentResult(System.IO.File.ReadAllBytes(extractedRebuildZipFilePath), Constants.OCTET_STREAM_CONTENT_TYPE) { FileDownloadName = file.FileName ?? "Unknown" };
                     case ReturnOutcome.GW_FAILED:
                         if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
