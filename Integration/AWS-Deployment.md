@@ -1,4 +1,4 @@
-## Deploying Workload cluster (GW Cloud SDK with compliant kubernetes and filedrop integrated)
+# Deploying compliant k8s Workload cluster 
 
 - Navigate to AWS > AMIs
 - Search for the AMI with specific ID (make sure you are in the correct region)
@@ -19,7 +19,7 @@
     - Use VM public IP to access File Drop web interface from your Browser
     - To access Management UI in your hosts file add `<VM IP> management-ui.glasswall-icap.com` and access it from your Browser `https://management-ui.glasswall-icap.com/login`
 
-## Deploying Service cluster
+# Deploying compliant k8s Service cluster
 
 - Navigate to AWS > AMIs
 - Search for the AMI with specific ID (make sure you are in the correct region)
@@ -40,9 +40,25 @@
     - **Important Note**: Wait for instance to be initialized ~10 minutes
 
 ## Instructions to integrate Service Cluster and Workload Cluster of Complaint K8 Cloud SDK
+
+### Prerequisites
+
+- URL/ID of the Workflow cluster
+- URL/ID of the Service cluster
+- The following passwords (click [here](https://github.com/k8-proxy/cs-k8s-api/blob/main/Integration/Password-extraction) for instructions on how to extract the passwords)
+  - Monitoring password
+  - Logging password
+  - Kibana password
+  - Grafana password
+  
+### The following steps are needed to configure the workload cluster VM/s to send logs to service VM
+
 - SSH to Workload Cluster VM (`ssh -i yourkey.pem ubuntu@<WC VM IP>`), navigate to `/home/ubuntu` and switch to root by `sudo su`
-- **Impotant Note**: Below commands will work just if executed as root user
+
+- **Impotant Note**: Below commands will work only if executed as root user
+
 - Verify presence of below files by issuing command `ls`
+
    ```
     /home/ubuntu/monitoring-username.txt
     /home/ubuntu/monitoring-password.txt
@@ -54,38 +70,47 @@
     /home/ubuntu/wc-coredns-configmap.yml
     /home/ubuntu/setupscCluster.sh
     ```
-- In case you are missing `wc-coredns-configmap.yml` and `setupscCluster.sh` run: 
+- In case you are missing `setupscCluster.sh` run: 
+
    ```
-   wget https://raw.githubusercontent.com/k8-proxy/vmware-scripts/cs-api-ck8/packer/wc-coredns-configmap.yml
    wget https://raw.githubusercontent.com/k8-proxy/vmware-scripts/cs-api-ck8/packer/setupscCluster.sh
    ```
-- In case you are missing the rest of the files also, create and edit them (using vi/vim) with values as shown below
+- In case you are missing the rest of the files also, create and edit them using commands below. **Note: Please replace placeholders**
 
-- Update each text file with corresponding values:
-```
-    monitoring-username.txt - wcWriter
-    monitoring-password.txt - <Add monitoring password>
-    logging-username.txt - fluentd
-    logging-password.txt - <Add logging password>
-    service-cluster.txt - ops.default.compliantkuberetes
-    service-cluster-ip.txt - <service-cluster-ip>
-    cluster.txt - <Unique Identifier of workload instance> E.g., GWSDKWC01
-```
-- Change permission of `setupscCluster.sh` by below command:
-    `chmod +x setupscCluster.sh`
-- Execute setupscCluster by below command:
-    `./setupscCluster.sh`
-- Wait for all commands to complete. Once completed, login to Grafana and Kibana in service cluster
-    - `http://<service-cluster-ip>:5601/  - Kibana`
+ ```
+  echo "wcWriter" > monitoring-username.txt
+  echo "<Add monitoring password>" > monitoring-password.txt
+  echo "fluentd" > logging-username.txt
+  echo "<Add logging password>" > logging-password.txt
+  echo "ops.default.compliantkuberetes" > service-cluster.txt
+  echo "<service-cluster-ip>" > service-cluster-ip.txt
+  echo "<Unique Identifier of workload instance E.g., GWSDKWC01>" > cluster.txt
+ ```
+ 
+ - Currently the below files need to be manually configured using `vi/vim`:
+ ```
+/home/ubuntu/service-cluster-ip.txt  #Add IP of service cluster
+/home/ubuntu/monitoring-password.txt #Add monitoring password
+/home/ubuntu/logging-password.txt    #Add logging password
+/home/ubuntu/cluster.txt             #Add Unique Identifier of workload instance E.g., GWSDKWC01
+ ```
+
+- Change permission of *setupscCluster.sh* running command: `chmod +x setupscCluster.sh`
+
+- Execute *setupscCluster.sh* running command **NOTE: Make sure you run the following script as root user** : `./setupscCluster.sh`
+    
+- Wait for all commands to complete. Once completed, login to Grafana and Kibana using service cluster IP address on ports 5601 for grafana and port 3000 for kibana
+
+    - `http://<service-cluster-ip>:5601/` >> For Kibana
     
         ![image](https://user-images.githubusercontent.com/70108899/116088990-afd7cb80-a6a2-11eb-96bf-31d2898b910e.png)
         
-    - `http://<service-cluster-ip>:3000/  - Grafana`
+    - `http://<service-cluster-ip>:3000/` >> For grafana
     
         ![image](https://user-images.githubusercontent.com/70108899/116088330-0f81a700-a6a2-11eb-970a-a0a4fbbd4823.png)
 
     Username: `admin`
-    Password: `Will be shared as part of delivery`
+    Password: `Will be shared as part of delivery` or can be extracted from the secrets file mentioned above
     
 
 ## Testing workflow
@@ -98,13 +123,19 @@
 
     ![image](https://user-images.githubusercontent.com/70108899/116483290-13225300-a887-11eb-9187-2327fc559a47.png)
     
+- To access the management UI for the workload cluster, add the following  line to your hosts file.
+
+  ```bash
+  <WORKLOAD CLUSTER IP ADDRESS> management-ui.glasswall-icap.com  
+  ```
+    
 - On Managment UI `https://management-ui.glasswall-icap.com/analytics` you will be able to see statistics of rebuild files, your request history and modify policies
 
     ![image](https://user-images.githubusercontent.com/70108899/116484583-a8264b80-a889-11eb-8cdd-e06627ddf1e8.png)
     
 - To see more details on traffic you are generating you can access Elastic or Grafana
 - For Elastic from browser navigate to `http://<SC VM IP>:5601`
-   - From settings choose `Discover` and select one of three options for logs (kubespray*, kubernetes* or other*)
+   - From settings choose `Discover` and select one of three options for logs (kubeaudit*, kubernetes* or other*)
    
         ![image](https://user-images.githubusercontent.com/70108899/116484905-53370500-a88a-11eb-8477-d55c1db73519.png)
         
