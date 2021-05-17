@@ -6,6 +6,10 @@
  * Copyright (C) 2018 Varun A P
  */
 
+.swagger-ui .topbar {
+    display: none;
+}
+
 .toastify {
     padding: 12px 20px;
     color: #ffffff;
