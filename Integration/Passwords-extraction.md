@@ -5,7 +5,7 @@ extracted from a secrets file that's generated with the service cluster OVA crea
 
 To download the file:
 
-​	1- Either login to AWS console and navigate to S3 then search for **glasswall-dev-sc-logs** bucket where you will find the all the secrets files for all the service clusters OVAs.
+​	1- Either login to AWS console and navigate to S3 then search for **glasswall-dev-sc-logs** bucket where you will find all the secrets files for all the service clusters OVAs.
 
 ​		You will find your specified file tagged with the same run ID as the service cluster OVA you are using.
 ​		For example: If the service cluster OVA is created with the name **ck8-cs-api-SC-CI-sc-799339985.ova**, the secrets file will be named **secrets-799339985.yaml** 
