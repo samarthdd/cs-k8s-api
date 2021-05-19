@@ -45,15 +45,15 @@ namespace Glasswall.CloudProxy.Common.Web.Abstraction
             try
             {
                 _logger.LogInformation($"Clearing stores '{originalStoreFilePath}' and {rebuiltStoreFilePath}");
-                //if (!string.IsNullOrEmpty(originalStoreFilePath))
-                //{
-                //    System.IO.File.Delete(originalStoreFilePath);
-                //}
+                if (!string.IsNullOrEmpty(originalStoreFilePath))
+                {
+                    System.IO.File.Delete(originalStoreFilePath);
+                }
 
-                //if (!string.IsNullOrEmpty(rebuiltStoreFilePath))
-                //{
-                //    System.IO.File.Delete(rebuiltStoreFilePath);
-                //}
+                if (!string.IsNullOrEmpty(rebuiltStoreFilePath))
+                {
+                    System.IO.File.Delete(rebuiltStoreFilePath);
+                }
             }
             catch (Exception ex)
             {
