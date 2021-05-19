@@ -167,9 +167,6 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 cloudProxyResponseModel.Status = ReturnOutcome.GW_ERROR;
                 return StatusCode(StatusCodes.Status500InternalServerError, cloudProxyResponseModel);
             }
-            finally
-            {
-            }
         }
 
         [HttpPost(Constants.Endpoints.REBUILD_ZIP_FROM_BASE64)]
