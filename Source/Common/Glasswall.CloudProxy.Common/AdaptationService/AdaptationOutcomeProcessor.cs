@@ -23,60 +23,24 @@ namespace Glasswall.CloudProxy.Common.AdaptationService
 
         public IAdaptationServiceResponse Process(IDictionary<string, object> headers, byte[] body)
         {
-            IAdaptationServiceResponse adaptationServiceResponse = new AdaptationServiceResponse();
             try
             {
-                Guid fileId = Guid.Empty;
-                if (!headers.ContainsKey(Constants.Header.ICAP_FILE_ID))
-                {
-                    throw NewAdaptationServiceException("Missing File Id");
-                }
-
-                string fileIdString = Encoding.UTF8.GetString((byte[])headers[Constants.Header.ICAP_FILE_ID]);
-                if (fileIdString == null || !Guid.TryParse(fileIdString, out fileId))
-                {
-                    _logger.LogError($"Error in FileID: {fileIdString ?? "-"}");
-                    adaptationServiceResponse.FileOutcome = ReturnOutcome.GW_ERROR;
-                    return adaptationServiceResponse;
-                }
-
-                adaptationServiceResponse.FileId = fileId;
-                if (!headers.ContainsKey(Constants.Header.ICAP_FILE_OUTCOME))
-                {
-                    throw NewAdaptationServiceException($"Missing outcome for File Id {fileId}");
-                }
-
-                string outcomeString = Encoding.UTF8.GetString((byte[])headers[Constants.Header.ICAP_FILE_OUTCOME]);
-                AdaptationOutcome outcome = (AdaptationOutcome)Enum.Parse(typeof(AdaptationOutcome), outcomeString, ignoreCase: true);
-
-                if (!OutcomeMap.ContainsKey(outcome))
-                {
-                    _logger.LogError($"Returning outcome unmapped: {outcomeString} for File Id {fileId}");
-                    adaptationServiceResponse.FileOutcome = ReturnOutcome.GW_ERROR;
-                    return adaptationServiceResponse;
-                }
-
-                adaptationServiceResponse.FileOutcome = OutcomeMap[outcome];
-                FillHeaderValues(adaptationServiceResponse, headers);
-                return adaptationServiceResponse;
+                return ProcessHeader(headers);
             }
             catch (ArgumentException aex)
             {
                 _logger.LogError($"Unrecognised enumeration processing adaptation outcome {aex.Message}");
-                adaptationServiceResponse.FileOutcome = ReturnOutcome.GW_ERROR;
-                return adaptationServiceResponse;
+                return new AdaptationServiceResponse() { FileOutcome = ReturnOutcome.GW_ERROR };
             }
             catch (JsonReaderException jre)
             {
                 _logger.LogError($"Poorly formated adaptation outcome : {jre.Message}");
-                adaptationServiceResponse.FileOutcome = ReturnOutcome.GW_ERROR;
-                return adaptationServiceResponse;
+                return new AdaptationServiceResponse() { FileOutcome = ReturnOutcome.GW_ERROR };
             }
             catch (AdaptationServiceClientException asce)
             {
                 _logger.LogError($"Poorly formated adaptation outcome : {asce.Message}");
-                adaptationServiceResponse.FileOutcome = ReturnOutcome.GW_ERROR;
-                return adaptationServiceResponse;
+                return new AdaptationServiceResponse() { FileOutcome = ReturnOutcome.GW_ERROR };
             }
         }
 
@@ -85,8 +49,40 @@ namespace Glasswall.CloudProxy.Common.AdaptationService
             return new AdaptationServiceClientException(message);
         }
 
-        private void FillHeaderValues(IAdaptationServiceResponse adaptationServiceResponse, IDictionary<string, object> headers)
+        private IAdaptationServiceResponse ProcessHeader(IDictionary<string, object> headers)
         {
+            IAdaptationServiceResponse adaptationServiceResponse = new AdaptationServiceResponse();
+            if (!headers.ContainsKey(Constants.Header.ICAP_FILE_ID))
+            {
+                throw NewAdaptationServiceException("Missing File Id");
+            }
+
+            string fileIdString = Encoding.UTF8.GetString((byte[])headers[Constants.Header.ICAP_FILE_ID]);
+
+            if (fileIdString == null || !Guid.TryParse(fileIdString, out Guid fileId))
+            {
+                _logger.LogError($"Error in FileID: {fileIdString ?? "-"}");
+                adaptationServiceResponse.FileOutcome = ReturnOutcome.GW_ERROR;
+                return adaptationServiceResponse;
+            }
+
+            adaptationServiceResponse.FileId = fileId;
+            if (!headers.ContainsKey(Constants.Header.ICAP_FILE_OUTCOME))
+            {
+                throw NewAdaptationServiceException($"Missing outcome for File Id {fileId}");
+            }
+
+            string outcomeString = Encoding.UTF8.GetString((byte[])headers[Constants.Header.ICAP_FILE_OUTCOME]);
+            AdaptationOutcome outcome = (AdaptationOutcome)Enum.Parse(typeof(AdaptationOutcome), outcomeString, ignoreCase: true);
+
+            if (!OutcomeMap.ContainsKey(outcome))
+            {
+                _logger.LogError($"Returning outcome unmapped: {outcomeString} for File Id {fileId}");
+                adaptationServiceResponse.FileOutcome = ReturnOutcome.GW_ERROR;
+                return adaptationServiceResponse;
+            }
+
+            adaptationServiceResponse.FileOutcome = OutcomeMap[outcome];
             if (headers.ContainsKey(Constants.Header.ICAP_CLEAN_PRESIGNED_URL))
             {
                 adaptationServiceResponse.CleanPresignedUrl = Encoding.UTF8.GetString((byte[])headers[Constants.Header.ICAP_CLEAN_PRESIGNED_URL]);
@@ -111,6 +107,27 @@ namespace Glasswall.CloudProxy.Common.AdaptationService
             {
                 adaptationServiceResponse.SourcePresignedUrl = Encoding.UTF8.GetString((byte[])headers[Constants.Header.ICAP_SOURCE_PRESIGNED_URL]);
             }
+
+            if (headers.ContainsKey(Constants.Header.ICAP_SDK_ENGINE_VERSION))
+            {
+                adaptationServiceResponse.SDKEngineVersion = Encoding.UTF8.GetString((byte[])headers[Constants.Header.ICAP_SDK_ENGINE_VERSION]);
+            }
+
+            if (headers.ContainsKey(Constants.Header.ICAP_REBUILD_PROCESSING_STATUS))
+            {
+                adaptationServiceResponse.RebuildProcessingStatus = Encoding.UTF8.GetString((byte[])headers[Constants.Header.ICAP_REBUILD_PROCESSING_STATUS]);
+            }
+
+            if (headers.ContainsKey(Constants.Header.ICAP_GWLOG_PRESIGNED_URL))
+            {
+                adaptationServiceResponse.GwLogPresignedUrl = Encoding.UTF8.GetString((byte[])headers[Constants.Header.ICAP_GWLOG_PRESIGNED_URL]);
+            }
+
+            if (headers.ContainsKey(Constants.Header.ICAP_LOG_PRESIGNED_URL))
+            {
+                adaptationServiceResponse.LogPresignedUrl = Encoding.UTF8.GetString((byte[])headers[Constants.Header.ICAP_LOG_PRESIGNED_URL]);
+            }
+            return adaptationServiceResponse;
         }
     }
 }

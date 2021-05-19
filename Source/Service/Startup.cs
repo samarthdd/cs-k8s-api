@@ -2,7 +2,6 @@ using Glasswall.CloudProxy.Common.Configuration;
 using Glasswall.CloudProxy.Common.Setup;
 using Glasswall.CloudProxy.Common.Utilities;
 using Glasswall.CloudProxy.Common.Web.Models;
-using Jaeger;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features;
@@ -11,11 +10,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Readers;
-using OpenTracing;
-using OpenTracing.Util;
-using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -57,45 +51,8 @@ namespace Glasswall.CloudProxy.Api
             services.AddTransient<IFileUtility, FileUtility>();
             services.AddTransient<IZipUtility, ZipUtility>();
             services.AddControllers();
-            services.AddOpenTracing();
             services.AddSwaggerGen(c =>
             {
-            });
-
-            // Adds the Jaeger Tracer.
-            services.AddSingleton<ITracer>(serviceProvider =>
-            {
-                string serviceName = serviceProvider.GetRequiredService<IHostEnvironment>().ApplicationName;
-
-                //string serviceName = System.Reflection.Assembly.GetEntryAssembly().GetName().Name;
-
-                ILoggerFactory loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
-
-                Jaeger.Samplers.ISampler sampler = new Jaeger.Samplers.ConstSampler(sample: true);
-
-                // This will log to a default localhost installation of Jaeger.
-                Tracer tracer = new Tracer.Builder(serviceName)
-                    .WithLoggerFactory(loggerFactory)
-                    .WithSampler(new Jaeger.Samplers.ConstSampler(true))
-                    .Build();
-
-                //Environment.SetEnvironmentVariable("JAEGER_SERVICE_NAME", "rebuild-rest-api");
-                //Environment.SetEnvironmentVariable("JAEGER_AGENT_HOST", "simplest-agent.observability.svc.cluster.local");
-                //Environment.SetEnvironmentVariable("JAEGER_AGENT_PORT", "6831");
-                //Environment.SetEnvironmentVariable("JAEGER_SAMPLER_TYPE", "const");
-
-                //LoggerFactory loggerFactory = new LoggerFactory();
-
-                //Configuration config = Jaeger.Configuration.FromEnv(loggerFactory);
-                //ITracer tracer = config.GetTracer();
-
-                if (!GlobalTracer.IsRegistered())
-                {
-                    // Allows code that can't use DI to also access the tracer.
-                    GlobalTracer.Register(tracer);
-                }
-
-                return tracer;
             });
         }
 

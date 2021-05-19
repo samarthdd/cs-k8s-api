@@ -7,7 +7,6 @@ using Glasswall.CloudProxy.Common.Web.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using OpenTracing;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
@@ -19,23 +18,11 @@ namespace Glasswall.CloudProxy.Api.Controllers
 {
     public class FileTypeDetectionController : CloudProxyController<FileTypeDetectionController>
     {
-        private readonly IAdaptationServiceClient<AdaptationOutcomeProcessor> _adaptationServiceClient;
-        private readonly IFileUtility _fileUtility;
-        private readonly IStoreConfiguration _storeConfiguration;
-        private readonly IProcessingConfiguration _processingConfiguration;
-        private readonly ITracer _tracer;
-        private readonly ICloudSdkConfiguration _cloudSdkConfiguration;
-
         public FileTypeDetectionController(IAdaptationServiceClient<AdaptationOutcomeProcessor> adaptationServiceClient, IStoreConfiguration storeConfiguration,
-            IProcessingConfiguration processingConfiguration, ILogger<FileTypeDetectionController> logger, IFileUtility fileUtility, ITracer tracer,
-            ICloudSdkConfiguration cloudSdkConfiguration) : base(logger)
+            IProcessingConfiguration processingConfiguration, ILogger<FileTypeDetectionController> logger, IFileUtility fileUtility,
+            IZipUtility zipUtility, ICloudSdkConfiguration cloudSdkConfiguration) : base(logger, adaptationServiceClient, fileUtility, cloudSdkConfiguration,
+                                                                                        processingConfiguration, storeConfiguration, zipUtility)
         {
-            _adaptationServiceClient = adaptationServiceClient ?? throw new ArgumentNullException(nameof(adaptationServiceClient));
-            _fileUtility = fileUtility ?? throw new ArgumentNullException(nameof(fileUtility));
-            _storeConfiguration = storeConfiguration ?? throw new ArgumentNullException(nameof(storeConfiguration));
-            _processingConfiguration = processingConfiguration ?? throw new ArgumentNullException(nameof(processingConfiguration));
-            _tracer = tracer ?? throw new ArgumentNullException(nameof(tracer));
-            _cloudSdkConfiguration = cloudSdkConfiguration ?? throw new ArgumentNullException(nameof(cloudSdkConfiguration));
         }
 
         [HttpPost(Constants.Endpoints.BASE64)]
@@ -47,13 +34,6 @@ namespace Glasswall.CloudProxy.Api.Controllers
             string rebuiltStoreFilePath = string.Empty;
             string fileId = string.Empty;
             CloudProxyResponseModel cloudProxyResponseModel = new CloudProxyResponseModel();
-
-            ISpanBuilder builder = _tracer.BuildSpan("Post::Data");
-            ISpan span = builder.Start();
-
-            // Set some context data
-            span.Log("File Type Detection base64");
-            span.SetTag("Jaeger Testing Client", "POST api/FileTypeDetection/base64 request");
 
             try
             {
@@ -157,7 +137,6 @@ namespace Glasswall.CloudProxy.Api.Controllers
             {
                 ClearStores(originalStoreFilePath, rebuiltStoreFilePath);
                 AddHeaderToResponse(Constants.Header.FILE_ID, fileId);
-                span.Finish();
             }
         }
     }

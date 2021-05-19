@@ -40,6 +40,10 @@
             public const string ICAP_CLEAN_PRESIGNED_URL = "clean-presigned-url";
             public const string ICAP_REQUEST_MODE = "request-mode";
             public const string ICAP_REQUEST_MODE_VALUE = "respmod";
+            public const string ICAP_SDK_ENGINE_VERSION = "rebuild-sdk-version";
+            public const string ICAP_REBUILD_PROCESSING_STATUS = "rebuild-processing-status";
+            public const string ICAP_GWLOG_PRESIGNED_URL = "gwlog-presigned-url";
+            public const string ICAP_LOG_PRESIGNED_URL = "log-presigned-url";
         }
 
         public static class EnvironmentVariables
@@ -65,7 +69,6 @@
             public const string BASE64 = "base64";
             public const string PROTECTED_ZIP_FILE = "protectedzipfile";
             public const string XML_REPORT = "xmlreport";
-            public const string REBUILD_ZIP = "rebuildzip";
             public const string REBUILD_ZIP_FROM_BASE64 = "rebuild-zip-from-base64";
             public const string REBUILD_ZIP_FROM_FILE = "rebuild-zip-from-file";
             public const string VERSION = "version";

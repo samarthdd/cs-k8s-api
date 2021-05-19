@@ -8,7 +8,6 @@ using Glasswall.CloudProxy.Common.Web.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using OpenTracing;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
@@ -20,26 +19,13 @@ namespace Glasswall.CloudProxy.Api.Controllers
 {
     public class RebuildController : CloudProxyController<RebuildController>
     {
-        private readonly IAdaptationServiceClient<AdaptationOutcomeProcessor> _adaptationServiceClient;
-        private readonly IFileUtility _fileUtility;
-        private readonly IZipUtility _zipUtility;
         private readonly IHttpService _httpService;
-        private readonly IStoreConfiguration _storeConfiguration;
-        private readonly IProcessingConfiguration _processingConfiguration;
-        private readonly ITracer _tracer;
-        private readonly ICloudSdkConfiguration _cloudSdkConfiguration;
 
         public RebuildController(IAdaptationServiceClient<AdaptationOutcomeProcessor> adaptationServiceClient, IStoreConfiguration storeConfiguration,
-            IProcessingConfiguration processingConfiguration, ILogger<RebuildController> logger, IFileUtility fileUtility, ITracer tracer,
-            IZipUtility zipUtility, ICloudSdkConfiguration cloudSdkConfiguration, IHttpService httpService) : base(logger)
+            IProcessingConfiguration processingConfiguration, ILogger<RebuildController> logger, IFileUtility fileUtility,
+            IZipUtility zipUtility, ICloudSdkConfiguration cloudSdkConfiguration, IHttpService httpService) : base(logger, adaptationServiceClient, fileUtility, cloudSdkConfiguration,
+                                                                                                                processingConfiguration, storeConfiguration, zipUtility)
         {
-            _adaptationServiceClient = adaptationServiceClient ?? throw new ArgumentNullException(nameof(adaptationServiceClient));
-            _fileUtility = fileUtility ?? throw new ArgumentNullException(nameof(fileUtility));
-            _zipUtility = zipUtility ?? throw new ArgumentNullException(nameof(zipUtility));
-            _storeConfiguration = storeConfiguration ?? throw new ArgumentNullException(nameof(storeConfiguration));
-            _processingConfiguration = processingConfiguration ?? throw new ArgumentNullException(nameof(processingConfiguration));
-            _tracer = tracer ?? throw new ArgumentNullException(nameof(tracer));
-            _cloudSdkConfiguration = cloudSdkConfiguration ?? throw new ArgumentNullException(nameof(cloudSdkConfiguration));
             _httpService = httpService ?? throw new ArgumentNullException(nameof(httpService));
         }
 
@@ -58,13 +44,6 @@ namespace Glasswall.CloudProxy.Api.Controllers
             string extractedRebuildZipFilePath = Path.Combine(tempFolderPath, $"{Guid.NewGuid()}");
             string extractedRebuildFolderPath = Path.Combine(tempFolderPath, $"{Guid.NewGuid()}");
             CloudProxyResponseModel cloudProxyResponseModel = new CloudProxyResponseModel();
-
-            ISpanBuilder builder = _tracer.BuildSpan("Post::Data");
-            ISpan span = builder.Start();
-
-            // Set some context data
-            span.Log("Rebuild file");
-            span.SetTag("Jaeger Testing Client", "POST api/Rebuild/file request");
 
             try
             {
@@ -188,7 +167,6 @@ namespace Glasswall.CloudProxy.Api.Controllers
             {
                 ClearStores(originalStoreFilePath, rebuiltStoreFilePath);
                 AddHeaderToResponse(Constants.Header.FILE_ID, fileId);
-                span.Finish();
                 if (Directory.Exists(tempFolderPath))
                 {
                     Directory.Delete(tempFolderPath, true);
@@ -205,13 +183,6 @@ namespace Glasswall.CloudProxy.Api.Controllers
             string rebuiltStoreFilePath = string.Empty;
             string fileId = string.Empty;
             CloudProxyResponseModel cloudProxyResponseModel = new CloudProxyResponseModel();
-
-            ISpanBuilder builder = _tracer.BuildSpan("Post::Data");
-            ISpan span = builder.Start();
-
-            // Set some context data
-            span.Log("Rebuild base64");
-            span.SetTag("Jaeger Testing Client", "POST api/Rebuild/base64 request");
 
             try
             {
@@ -304,7 +275,6 @@ namespace Glasswall.CloudProxy.Api.Controllers
             {
                 ClearStores(originalStoreFilePath, rebuiltStoreFilePath);
                 AddHeaderToResponse(Constants.Header.FILE_ID, fileId);
-                span.Finish();
             }
         }
 
@@ -323,13 +293,6 @@ namespace Glasswall.CloudProxy.Api.Controllers
             string extractedRebuildZipFilePath = Path.Combine(tempFolderPath, $"{Guid.NewGuid()}");
             string extractedRebuildFolderPath = Path.Combine(tempFolderPath, $"{Guid.NewGuid()}");
             CloudProxyResponseModel cloudProxyResponseModel = new CloudProxyResponseModel();
-
-            ISpanBuilder builder = _tracer.BuildSpan("Post::Data");
-            ISpan span = builder.Start();
-
-            // Set some context data
-            span.Log("Rebuild protected file");
-            span.SetTag("Jaeger Testing Client", "POST api/Rebuild/protectedzipfile request");
 
             try
             {
@@ -443,7 +406,6 @@ namespace Glasswall.CloudProxy.Api.Controllers
             finally
             {
                 ClearStores(originalStoreFilePath, rebuiltStoreFilePath);
-                span.Finish();
                 AddHeaderToResponse(Constants.Header.FILE_ID, fileId);
                 if (Directory.Exists(tempFolderPath))
                 {

@@ -1,18 +1,20 @@
 ﻿using Glasswall.CloudProxy.Common;
+using Glasswall.CloudProxy.Common.AdaptationService;
 using Glasswall.CloudProxy.Common.Configuration;
+using Glasswall.CloudProxy.Common.Utilities;
 using Glasswall.CloudProxy.Common.Web.Abstraction;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System;
 
 namespace Glasswall.CloudProxy.Api.Controllers
 {
     public class DetailController : CloudProxyController<DetailController>
     {
-        private readonly ICloudSdkConfiguration _versionConfiguration;
-        public DetailController(ILogger<DetailController> logger, ICloudSdkConfiguration versionConfiguration) : base(logger)
+        public DetailController(IAdaptationServiceClient<AdaptationOutcomeProcessor> adaptationServiceClient, IStoreConfiguration storeConfiguration,
+            IProcessingConfiguration processingConfiguration, ILogger<DetailController> logger, IFileUtility fileUtility,
+            IZipUtility zipUtility, ICloudSdkConfiguration cloudSdkConfiguration) : base(logger, adaptationServiceClient, fileUtility, cloudSdkConfiguration,
+                                                                                        processingConfiguration, storeConfiguration, zipUtility)
         {
-            _versionConfiguration = versionConfiguration ?? throw new ArgumentNullException(nameof(versionConfiguration));
         }
 
         [HttpGet(Constants.Endpoints.VERSION)]
@@ -21,8 +23,8 @@ namespace Glasswall.CloudProxy.Api.Controllers
             _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: {nameof(GetVersionDetails)} method invoked");
             return Ok(new
             {
-                _versionConfiguration.SDKEngineVersion,
-                _versionConfiguration.SDKApiVersion
+                _cloudSdkConfiguration.SDKEngineVersion,
+                _cloudSdkConfiguration.SDKApiVersion
             });
         }
     }
