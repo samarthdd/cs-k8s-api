@@ -27,10 +27,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="StaticFiles\api.html">
+    <Content Update="StaticFiles\openapi.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="StaticFiles\Swagger\swagger.yaml">
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="StaticFiles\api.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="StaticFiles\Swg\func.js">

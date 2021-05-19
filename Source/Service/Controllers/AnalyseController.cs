@@ -14,7 +14,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Serialization;
 
 namespace Glasswall.CloudProxy.Api.Controllers
 {
@@ -105,22 +104,13 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 switch (descriptor.AdaptationServiceResponse.FileOutcome)
                 {
                     case ReturnOutcome.GW_REBUILT:
-                        string reportFolderPath = Directory.GetDirectories(Constants.TRANSACTION_STORE_PATH, $"{ fileId}", SearchOption.AllDirectories).FirstOrDefault();
-                        if (string.IsNullOrEmpty(descriptor.RebuiltStoreFilePath))
+                        (byte[] ReportBytes, string ReportText, IActionResult Result) = await GetReportXmlData(fileId, cloudProxyResponseModel);
+                        if (ReportBytes == null)
                         {
-                            _logger.LogWarning($"[{UserAgentInfo.ClientTypeString}]:: Report folder not exist for file {fileId}");
-                            cloudProxyResponseModel.Errors.Add($"Report folder not exist for file {fileId}");
-                            return NotFound(cloudProxyResponseModel);
+                            return Result;
                         }
 
-                        string reportPath = Path.Combine(reportFolderPath, Constants.REPORT_XML_FILE_NAME);
-                        if (!System.IO.File.Exists(reportPath))
-                        {
-                            _logger.LogWarning($"[{UserAgentInfo.ClientTypeString}]:: Report xml not exist for file {fileId}");
-                            cloudProxyResponseModel.Errors.Add($"Report xml not exist for file {fileId}");
-                            return NotFound(cloudProxyResponseModel);
-                        }
-                        return new FileContentResult(System.IO.File.ReadAllBytes(reportPath), Constants.OCTET_STREAM_CONTENT_TYPE) { FileDownloadName = Constants.REPORT_XML_FILE_NAME };
+                        return new FileContentResult(ReportBytes, Constants.OCTET_STREAM_CONTENT_TYPE) { FileDownloadName = Constants.REPORT_XML_FILE_NAME };
                     case ReturnOutcome.GW_FAILED:
                         if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
                         {
@@ -168,7 +158,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
         }
 
         [HttpGet(Constants.Endpoints.XML_REPORT)]
-        public IActionResult GetXMLReportByFileId([Required] Guid fileId)
+        public async Task<IActionResult> GetXMLReportByFileId([Required] Guid fileId)
         {
             _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: {nameof(GetXMLReportByFileId)} method invoked");
 
@@ -191,28 +181,14 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 }
 
                 fileIdString = fileId.ToString();
-
-                _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: Using store locations '{_storeConfiguration.OriginalStorePath}' and '{_storeConfiguration.RebuiltStorePath}' for {fileIdString}");
-
-                string reportFolderPath = Directory.GetDirectories(Constants.TRANSACTION_STORE_PATH, $"{ fileIdString}", SearchOption.AllDirectories).FirstOrDefault();
-
-                if (string.IsNullOrEmpty(reportFolderPath))
+                (byte[] ReportBytes, string ReportText, IActionResult Result) = await GetReportXmlData(fileIdString, cloudProxyResponseModel);
+                if (ReportBytes == null)
                 {
-                    _logger.LogWarning($"[{UserAgentInfo.ClientTypeString}]:: Report folder not exist for file {fileIdString}");
-                    cloudProxyResponseModel.Errors.Add($"Report folder not exist for file {fileIdString}");
-                    return NotFound(cloudProxyResponseModel);
-                }
-
-                string reportPath = Path.Combine(reportFolderPath, Constants.REPORT_XML_FILE_NAME);
-                if (!System.IO.File.Exists(reportPath))
-                {
-                    _logger.LogWarning($"[{UserAgentInfo.ClientTypeString}]:: Report xml not exist for file {fileIdString}");
-                    cloudProxyResponseModel.Errors.Add($"Report xml not exist for file {fileIdString}");
-                    return NotFound(cloudProxyResponseModel);
+                    return Result;
                 }
 
                 AddHeaderToResponse(Constants.Header.FILE_ID, fileIdString);
-                return new FileContentResult(System.IO.File.ReadAllBytes(reportPath), Constants.OCTET_STREAM_CONTENT_TYPE) { FileDownloadName = Constants.REPORT_XML_FILE_NAME };
+                return new FileContentResult(ReportBytes, Constants.OCTET_STREAM_CONTENT_TYPE) { FileDownloadName = Constants.REPORT_XML_FILE_NAME };
             }
             catch (Exception ex)
             {
@@ -402,35 +378,23 @@ namespace Glasswall.CloudProxy.Api.Controllers
 
                 string transactionFolderPath = Directory.GetDirectories(Constants.TRANSACTION_STORE_PATH, $"{ fileIdString}", SearchOption.AllDirectories).FirstOrDefault();
 
-                if (string.IsNullOrEmpty(transactionFolderPath))
+                (byte[] ReportBytes, string ReportText, IActionResult Result) = await GetReportXmlData(fileIdString, cloudProxyResponseModel);
+                if (ReportBytes == null)
                 {
-                    _logger.LogWarning($"[{UserAgentInfo.ClientTypeString}]:: Report folder not exist for file {fileIdString}");
-                    cloudProxyResponseModel.Errors.Add($"Report folder not exist for file {fileIdString}");
-                    return NotFound(cloudProxyResponseModel);
+                    return Result;
                 }
 
-                string reportPath = Path.Combine(transactionFolderPath, Constants.REPORT_XML_FILE_NAME);
-                if (!System.IO.File.Exists(reportPath))
-                {
-                    _logger.LogWarning($"[{UserAgentInfo.ClientTypeString}]:: Report xml not exist for file {fileIdString}");
-                    cloudProxyResponseModel.Errors.Add($"Report xml not exist for file {fileIdString}");
-                    return NotFound(cloudProxyResponseModel);
-                }
-
-                XmlSerializer serializer = new XmlSerializer(typeof(GWallInfo));
-                GWallInfo gwInfo = null;
-                using (FileStream fileStream = new FileStream(reportPath, FileMode.Open))
-                {
-                    gwInfo = (GWallInfo)serializer.Deserialize(fileStream);
-                }
-
+                GWallInfo gwInfo = ReportText.XmlStringToObject<GWallInfo>();
                 string metaDataPath = Path.Combine(transactionFolderPath, Constants.METADATA_JSON_FILE_NAME);
+
                 if (!System.IO.File.Exists(metaDataPath))
                 {
                     _logger.LogWarning($"[{UserAgentInfo.ClientTypeString}]:: Metadata json not exist for file {fileIdString}");
                     cloudProxyResponseModel.Errors.Add($"Metadata json not exist for file {fileIdString}");
                     return NotFound(cloudProxyResponseModel);
                 }
+
+                string metadataFileText = (await System.IO.File.ReadAllTextAsync(metaDataPath)).FormattedJson();
 
                 if (!Directory.Exists(tempFolderPath))
                 {
@@ -457,8 +421,8 @@ namespace Glasswall.CloudProxy.Api.Controllers
                     return NotFound(cloudProxyResponseModel);
                 }
 
-                await System.IO.File.WriteAllTextAsync(Path.Combine(tempFolderPath, Constants.METADATA_JSON_FILE_NAME), (await System.IO.File.ReadAllTextAsync(metaDataPath)).FormattedJson());
-                await System.IO.File.WriteAllBytesAsync(Path.Combine(reportFolderPath, Constants.REPORT_XML_FILE_NAME), await System.IO.File.ReadAllBytesAsync(reportPath));
+                await System.IO.File.WriteAllTextAsync(Path.Combine(tempFolderPath, Constants.METADATA_JSON_FILE_NAME), metadataFileText);
+                await System.IO.File.WriteAllTextAsync(Path.Combine(reportFolderPath, Constants.REPORT_XML_FILE_NAME), ReportText);
                 await System.IO.File.WriteAllBytesAsync(Path.Combine(cleanFolderPath, $"{Path.GetFileName(rebuiltStoreFilePath)}.{gwInfo.DocumentStatistics.DocumentSummary.FileType}"), await System.IO.File.ReadAllBytesAsync(rebuiltStoreFilePath));
 
                 _zipUtility.CreateZipFile(zipFileName, null, fileIdFolderPath);

@@ -60,7 +60,6 @@ namespace Glasswall.CloudProxy.Api
             services.AddOpenTracing();
             services.AddSwaggerGen(c =>
             {
-                c.DocumentFilter<CloudSDKDocumentFilter>();
             });
 
             // Adds the Jaeger Tracer.
@@ -116,7 +115,7 @@ namespace Glasswall.CloudProxy.Api
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.yaml", "Cloud SDK Api");
+                c.SwaggerEndpoint("/openapi.json", "Cloud SDK Api");
                 c.InjectJavascript("/Swg/func.js");
                 c.InjectJavascript("/Swg/toast/toastify.js");
                 c.InjectStylesheet("/Swg/toast/toastify.css");
@@ -146,29 +145,6 @@ namespace Glasswall.CloudProxy.Api
             {
                 endpoints.MapControllers();
             });
-        }
-    }
-
-    public class CloudSDKDocumentFilter : IDocumentFilter
-    {
-        private readonly IHostEnvironment _hostEnvironment;
-        public CloudSDKDocumentFilter(IHostEnvironment hostEnvironment)
-        {
-            _hostEnvironment = hostEnvironment;
-        }
-
-        public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
-        {
-            string swaggerFilePath = Path.Combine(_hostEnvironment.ContentRootPath, Constants.STATIC_FILES_FOLDER_Name, Constants.SWAGGER_FOLDER_Name, Constants.SWAGGER_FILENAME);
-            using FileStream fileStream = File.Open(swaggerFilePath, FileMode.Open, FileAccess.Read);
-            OpenApiDocument openApiDocument = new OpenApiStreamReader().Read(fileStream, out OpenApiDiagnostic diagnostic);
-            swaggerDoc.Components = openApiDocument.Components;
-            swaggerDoc.Extensions = openApiDocument.Extensions;
-            swaggerDoc.ExternalDocs = openApiDocument.ExternalDocs;
-            swaggerDoc.Info = openApiDocument.Info;
-            swaggerDoc.Paths = openApiDocument.Paths;
-            swaggerDoc.SecurityRequirements = openApiDocument.SecurityRequirements;
-            swaggerDoc.Tags = openApiDocument.Tags;
         }
     }
 }
