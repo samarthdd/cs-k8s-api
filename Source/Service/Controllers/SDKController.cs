@@ -205,20 +205,20 @@ namespace Glasswall.CloudProxy.Api.Controllers
 
                 string transactionFolderPath = Directory.GetDirectories(Constants.TRANSACTION_STORE_PATH, $"{ fileIdString}", SearchOption.AllDirectories).FirstOrDefault();
 
-                if (string.IsNullOrEmpty(transactionFolderPath))
-                {
-                    _logger.LogWarning($"[{UserAgentInfo.ClientTypeString}]:: Report folder not exist for file {fileIdString}");
-                    cloudProxyResponseModel.Errors.Add($"Report folder not exist for file {fileIdString}");
-                    return NotFound(cloudProxyResponseModel);
-                }
+                //if (string.IsNullOrEmpty(transactionFolderPath))
+                //{
+                //    _logger.LogWarning($"[{UserAgentInfo.ClientTypeString}]:: Report folder not exist for file {fileIdString}");
+                //    cloudProxyResponseModel.Errors.Add($"Report folder not exist for file {fileIdString}");
+                //    return NotFound(cloudProxyResponseModel);
+                //}
 
-                string reportPath = Path.Combine(transactionFolderPath, Constants.REPORT_XML_FILE_NAME);
-                if (!System.IO.File.Exists(reportPath))
-                {
-                    _logger.LogWarning($"[{UserAgentInfo.ClientTypeString}]:: Report xml not exist for file {fileIdString}");
-                    cloudProxyResponseModel.Errors.Add($"Report xml not exist for file {fileIdString}");
-                    return NotFound(cloudProxyResponseModel);
-                }
+                //string reportPath = Path.Combine(transactionFolderPath, Constants.REPORT_XML_FILE_NAME);
+                //if (!System.IO.File.Exists(reportPath))
+                //{
+                //    _logger.LogWarning($"[{UserAgentInfo.ClientTypeString}]:: Report xml not exist for file {fileIdString}");
+                //    cloudProxyResponseModel.Errors.Add($"Report xml not exist for file {fileIdString}");
+                //    return NotFound(cloudProxyResponseModel);
+                //}
 
                 //XmlSerializer serializer = new XmlSerializer(typeof(GWallInfo));
                 //GWallInfo gwInfo = null;
@@ -267,7 +267,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 }
 
                 //await System.IO.File.WriteAllTextAsync(Path.Combine(tempFolderPath, Constants.METADATA_JSON_FILE_NAME), (await System.IO.File.ReadAllTextAsync(metaDataPath)).FormattedJson());
-                await System.IO.File.WriteAllBytesAsync(Path.Combine(reportFolderPath, Constants.REPORT_XML_FILE_NAME), await System.IO.File.ReadAllBytesAsync(reportPath));
+                //await System.IO.File.WriteAllBytesAsync(Path.Combine(reportFolderPath, Constants.REPORT_XML_FILE_NAME), await System.IO.File.ReadAllBytesAsync(reportPath));
                 await System.IO.File.WriteAllBytesAsync(Path.Combine(cleanFolderPath, $"{Path.GetFileName(rebuiltStoreFilePath)}.pdf"), await System.IO.File.ReadAllBytesAsync(rebuiltStoreFilePath));
 
                 (byte[] Data, string Error) resp = await _httpService.GetFileBytes(descriptor.AdaptationServiceResponse.CleanPresignedUrl);
