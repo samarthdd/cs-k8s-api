@@ -1,6 +1,7 @@
 ﻿using Glasswall.CloudProxy.Common;
 using Glasswall.CloudProxy.Common.AdaptationService;
 using Glasswall.CloudProxy.Common.Configuration;
+using Glasswall.CloudProxy.Common.HttpService;
 using Glasswall.CloudProxy.Common.Utilities;
 using Glasswall.CloudProxy.Common.Web.Abstraction;
 using Microsoft.AspNetCore.Mvc;
@@ -12,8 +13,8 @@ namespace Glasswall.CloudProxy.Api.Controllers
     {
         public DetailController(IAdaptationServiceClient<AdaptationOutcomeProcessor> adaptationServiceClient, IStoreConfiguration storeConfiguration,
             IProcessingConfiguration processingConfiguration, ILogger<DetailController> logger, IFileUtility fileUtility,
-            IZipUtility zipUtility, ICloudSdkConfiguration cloudSdkConfiguration) : base(logger, adaptationServiceClient, fileUtility, cloudSdkConfiguration,
-                                                                                        processingConfiguration, storeConfiguration, zipUtility)
+            IZipUtility zipUtility, ICloudSdkConfiguration cloudSdkConfiguration, IHttpService httpService) : base(logger, adaptationServiceClient, fileUtility, cloudSdkConfiguration,
+                                                                                        processingConfiguration, storeConfiguration, zipUtility, httpService)
         {
         }
 

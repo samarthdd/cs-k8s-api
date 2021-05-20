@@ -1,6 +1,7 @@
 ﻿using Glasswall.CloudProxy.Common;
 using Glasswall.CloudProxy.Common.AdaptationService;
 using Glasswall.CloudProxy.Common.Configuration;
+using Glasswall.CloudProxy.Common.HttpService;
 using Glasswall.CloudProxy.Common.Utilities;
 using Glasswall.CloudProxy.Common.Web.Abstraction;
 using Glasswall.CloudProxy.Common.Web.Models;
@@ -20,8 +21,8 @@ namespace Glasswall.CloudProxy.Api.Controllers
     {
         public AnalyseController(IAdaptationServiceClient<AdaptationOutcomeProcessor> adaptationServiceClient, IStoreConfiguration storeConfiguration,
             IProcessingConfiguration processingConfiguration, ILogger<AnalyseController> logger, IFileUtility fileUtility,
-            IZipUtility zipUtility, ICloudSdkConfiguration cloudSdkConfiguration) : base(logger, adaptationServiceClient, fileUtility, cloudSdkConfiguration,
-                                                                                        processingConfiguration, storeConfiguration, zipUtility)
+            IZipUtility zipUtility, ICloudSdkConfiguration cloudSdkConfiguration, IHttpService httpService) : base(logger, adaptationServiceClient, fileUtility, cloudSdkConfiguration,
+                                                                                        processingConfiguration, storeConfiguration, zipUtility, httpService)
         {
         }
 
@@ -82,13 +83,13 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 switch (descriptor.AdaptationServiceResponse.FileOutcome)
                 {
                     case ReturnOutcome.GW_REBUILT:
-                        (byte[] ReportBytes, string ReportText, IActionResult Result) = await GetReportXmlData(fileId, cloudProxyResponseModel);
-                        if (ReportBytes == null)
+                        (ReportInformation reportInformation, IActionResult Result) = await GetReportAndMetadataInformation(fileId, descriptor.AdaptationServiceResponse.ReportPresignedUrl);
+                        if (reportInformation.ReportBytes == null)
                         {
                             return Result;
                         }
 
-                        return new FileContentResult(ReportBytes, Constants.OCTET_STREAM_CONTENT_TYPE) { FileDownloadName = Constants.REPORT_XML_FILE_NAME };
+                        return new FileContentResult(reportInformation.ReportBytes, Constants.OCTET_STREAM_CONTENT_TYPE) { FileDownloadName = Constants.REPORT_XML_FILE_NAME };
                     case ReturnOutcome.GW_FAILED:
                         if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
                         {
@@ -151,14 +152,14 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 }
 
                 fileIdString = fileId.ToString();
-                (byte[] ReportBytes, string ReportText, IActionResult Result) = await GetReportXmlData(fileIdString, cloudProxyResponseModel);
-                if (ReportBytes == null)
+                (ReportInformation reportInformation, IActionResult Result) = await GetReportAndMetadataInformation(fileIdString, null);
+                if (reportInformation.ReportBytes == null)
                 {
                     return Result;
                 }
 
                 AddHeaderToResponse(Constants.Header.FILE_ID, fileIdString);
-                return new FileContentResult(ReportBytes, Constants.OCTET_STREAM_CONTENT_TYPE) { FileDownloadName = Constants.REPORT_XML_FILE_NAME };
+                return new FileContentResult(reportInformation.ReportBytes, Constants.OCTET_STREAM_CONTENT_TYPE) { FileDownloadName = Constants.REPORT_XML_FILE_NAME };
             }
             catch (Exception ex)
             {

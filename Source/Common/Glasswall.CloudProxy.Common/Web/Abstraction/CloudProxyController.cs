@@ -1,6 +1,7 @@
 ﻿using Amazon.S3.Util;
 using Glasswall.CloudProxy.Common.AdaptationService;
 using Glasswall.CloudProxy.Common.Configuration;
+using Glasswall.CloudProxy.Common.HttpService;
 using Glasswall.CloudProxy.Common.Utilities;
 using Glasswall.CloudProxy.Common.Web.Models;
 using Microsoft.AspNetCore.Http;
@@ -25,11 +26,13 @@ namespace Glasswall.CloudProxy.Common.Web.Abstraction
         protected readonly IStoreConfiguration _storeConfiguration;
         protected readonly IAdaptationServiceClient<AdaptationOutcomeProcessor> _adaptationServiceClient;
         protected readonly IZipUtility _zipUtility;
+        protected readonly IHttpService _httpService;
 
         private UserAgentInfo _userAgentInfo;
 
         public CloudProxyController(ILogger<TController> logger, IAdaptationServiceClient<AdaptationOutcomeProcessor> adaptationServiceClient, IFileUtility fileUtility,
-            ICloudSdkConfiguration cloudSdkConfiguration, IProcessingConfiguration processingConfiguration, IStoreConfiguration storeConfiguration, IZipUtility zipUtility)
+            ICloudSdkConfiguration cloudSdkConfiguration, IProcessingConfiguration processingConfiguration, IStoreConfiguration storeConfiguration, IZipUtility zipUtility,
+            IHttpService httpService)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _fileUtility = fileUtility ?? throw new ArgumentNullException(nameof(fileUtility));
@@ -38,6 +41,7 @@ namespace Glasswall.CloudProxy.Common.Web.Abstraction
             _storeConfiguration = storeConfiguration ?? throw new ArgumentNullException(nameof(storeConfiguration));
             _adaptationServiceClient = adaptationServiceClient ?? throw new ArgumentNullException(nameof(adaptationServiceClient));
             _zipUtility = zipUtility ?? throw new ArgumentNullException(nameof(zipUtility));
+            _httpService = httpService ?? throw new ArgumentNullException(nameof(httpService));
         }
 
         protected void ClearStores(string originalStoreFilePath, string rebuiltStoreFilePath)
@@ -94,29 +98,58 @@ namespace Glasswall.CloudProxy.Common.Web.Abstraction
             }
         }
 
-        protected async Task<(byte[] ReportBytes, string ReportText, IActionResult Result)> GetReportXmlData(string fileId, CloudProxyResponseModel cloudProxyResponseModel)
+        protected async Task<(ReportInformation reportInformation, IActionResult Result)> GetReportAndMetadataInformation(string fileId, string cleanPresignedUrl)
         {
+            CloudProxyResponseModel cloudProxyResponseModel = new CloudProxyResponseModel();
             string reportFolderPath = Directory.GetDirectories(Constants.TRANSACTION_STORE_PATH, $"{ fileId}", SearchOption.AllDirectories).FirstOrDefault();
+            ReportInformation reportInformation = new ReportInformation();
 
-            if (string.IsNullOrEmpty(reportFolderPath))
+            if (!string.IsNullOrWhiteSpace(cleanPresignedUrl))
             {
-                _logger.LogWarning($"[{UserAgentInfo.ClientTypeString}]:: Report folder not exist for file {fileId}");
-                cloudProxyResponseModel.Errors.Add($"Report folder not exist for file {fileId}");
-                return (null, null, NotFound(cloudProxyResponseModel));
+                (byte[] Data, string Error) = await _httpService.GetFileBytes(cleanPresignedUrl);
+                if (!string.IsNullOrEmpty(Error))
+                {
+                    cloudProxyResponseModel.Errors.Add($"Error while downloading report for {fileId} and errror detail is {Error}");
+                    return (reportInformation, NotFound(cloudProxyResponseModel));
+                }
+
+                reportInformation.ReportBytes = Data;
+                //TO DO: download metadata file from the presignedUrl for minio-version
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(reportFolderPath))
+                {
+                    _logger.LogWarning($"[{UserAgentInfo.ClientTypeString}]:: Report folder not exist for file {fileId}");
+                    cloudProxyResponseModel.Errors.Add($"Report folder not exist for file {fileId}");
+                    return (reportInformation, NotFound(cloudProxyResponseModel));
+                }
+
+                string reportPath = Path.Combine(reportFolderPath, Constants.REPORT_XML_FILE_NAME);
+                if (!System.IO.File.Exists(reportPath))
+                {
+                    _logger.LogWarning($"[{UserAgentInfo.ClientTypeString}]:: Report xml not exist for file {fileId}");
+                    cloudProxyResponseModel.Errors.Add($"Report xml not exist for file {fileId}");
+                    return (reportInformation, NotFound(cloudProxyResponseModel));
+                }
+
+                reportInformation.ReportBytes = await System.IO.File.ReadAllBytesAsync(reportPath);
+                string metaDataPath = Path.Combine(reportFolderPath, Constants.METADATA_JSON_FILE_NAME);
+
+                if (!System.IO.File.Exists(metaDataPath))
+                {
+                    _logger.LogWarning($"[{UserAgentInfo.ClientTypeString}]:: Metadata json not exist for file {fileId}");
+                    cloudProxyResponseModel.Errors.Add($"Metadata json not exist for file {fileId}");
+                    return (reportInformation, NotFound(cloudProxyResponseModel));
+                }
+
+                reportInformation.MetadaBytes = await System.IO.File.ReadAllBytesAsync(metaDataPath);
             }
 
-            string reportPath = Path.Combine(reportFolderPath, Constants.REPORT_XML_FILE_NAME);
-            if (!System.IO.File.Exists(reportPath))
-            {
-                _logger.LogWarning($"[{UserAgentInfo.ClientTypeString}]:: Report xml not exist for file {fileId}");
-                cloudProxyResponseModel.Errors.Add($"Report xml not exist for file {fileId}");
-                return (null, null, NotFound(cloudProxyResponseModel));
-            }
-
-            byte[] reportXmlBytes = await System.IO.File.ReadAllBytesAsync(reportPath);
-            string xmlReportFileText = System.Text.Encoding.UTF8.GetString(reportXmlBytes);
-            _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: Report json {xmlReportFileText.XmlStringToJson()} for file {fileId}");
-            return (reportXmlBytes, xmlReportFileText, null);
+            reportInformation.ReportXmlText = System.Text.Encoding.UTF8.GetString(reportInformation.ReportBytes);
+            reportInformation.MetadaJsonText = reportInformation.MetadaBytes != null ? System.Text.Encoding.UTF8.GetString(reportInformation.MetadaBytes).FormattedJson() : null;
+            _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: Report json {reportInformation.ReportXmlText.XmlStringToJson()} for file {fileId}");
+            return (reportInformation, null);
         }
 
         protected async Task<IActionResult> RebuildZipFile(Base64Request request = null, IFormFile formFile = null)
@@ -253,23 +286,13 @@ namespace Glasswall.CloudProxy.Common.Web.Abstraction
 
                 string transactionFolderPath = Directory.GetDirectories(Constants.TRANSACTION_STORE_PATH, $"{ fileIdString}", SearchOption.AllDirectories).FirstOrDefault();
 
-                (byte[] ReportBytes, string ReportText, IActionResult Result) = await GetReportXmlData(fileIdString, cloudProxyResponseModel);
-                if (ReportBytes == null)
+                (ReportInformation reportInformation, IActionResult Result) = await GetReportAndMetadataInformation(fileIdString, descriptor.AdaptationServiceResponse.ReportPresignedUrl);
+                if (reportInformation.ReportBytes == null)
                 {
                     return Result;
                 }
 
-                GWallInfo gwInfo = ReportText.XmlStringToObject<GWallInfo>();
-                string metaDataPath = Path.Combine(transactionFolderPath, Constants.METADATA_JSON_FILE_NAME);
-
-                if (!System.IO.File.Exists(metaDataPath))
-                {
-                    _logger.LogWarning($"[{UserAgentInfo.ClientTypeString}]:: Metadata json not exist for file {fileIdString}");
-                    cloudProxyResponseModel.Errors.Add($"Metadata json not exist for file {fileIdString}");
-                    return NotFound(cloudProxyResponseModel);
-                }
-
-                string metadataFileText = (await System.IO.File.ReadAllTextAsync(metaDataPath)).FormattedJson();
+                GWallInfo gwInfo = reportInformation.ReportXmlText.XmlStringToObject<GWallInfo>();
 
                 if (!Directory.Exists(tempFolderPath))
                 {
@@ -296,8 +319,8 @@ namespace Glasswall.CloudProxy.Common.Web.Abstraction
                     return NotFound(cloudProxyResponseModel);
                 }
 
-                await System.IO.File.WriteAllTextAsync(Path.Combine(tempFolderPath, Constants.METADATA_JSON_FILE_NAME), metadataFileText);
-                await System.IO.File.WriteAllTextAsync(Path.Combine(reportFolderPath, Constants.REPORT_XML_FILE_NAME), ReportText);
+                await System.IO.File.WriteAllTextAsync(Path.Combine(reportFolderPath, Constants.REPORT_XML_FILE_NAME), reportInformation.ReportXmlText);
+                await System.IO.File.WriteAllTextAsync(Path.Combine(tempFolderPath, Constants.METADATA_JSON_FILE_NAME), reportInformation.MetadaJsonText);
                 await System.IO.File.WriteAllBytesAsync(Path.Combine(cleanFolderPath, $"{Path.GetFileName(rebuiltStoreFilePath)}.{gwInfo.DocumentStatistics.DocumentSummary.FileType}"), await System.IO.File.ReadAllBytesAsync(rebuiltStoreFilePath));
 
                 _zipUtility.CreateZipFile(zipFileName, null, fileIdFolderPath);
