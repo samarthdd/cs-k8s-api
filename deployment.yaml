@@ -68,13 +68,7 @@ spec:
         - name: MBHostName
           value: "rabbitmq-service"
         - name: MBPort
-          value: "5672"
-        - name: SDKEngineVersion
-          value: "1.157" 
-        - name: SDKApiVersion
-          value: "0.1.11"         
-        - name: EnableCache
-          value: "false"          
+          value: "5672"         
 ---
 apiVersion: v1
 kind: Service
