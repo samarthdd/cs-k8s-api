@@ -44,6 +44,7 @@
             public const string ICAP_REBUILD_PROCESSING_STATUS = "rebuild-processing-status";
             public const string ICAP_GWLOG_PRESIGNED_URL = "gwlog-presigned-url";
             public const string ICAP_LOG_PRESIGNED_URL = "log-presigned-url";
+            public const string ICAP_METADATA_PRESIGNED_URL = "metadata-presigned-url";
         }
 
         public static class EnvironmentVariables

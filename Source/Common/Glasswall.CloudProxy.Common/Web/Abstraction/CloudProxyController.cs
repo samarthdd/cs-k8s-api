@@ -98,12 +98,13 @@ namespace Glasswall.CloudProxy.Common.Web.Abstraction
             }
         }
 
-        protected async Task<(ReportInformation reportInformation, IActionResult Result)> GetReportAndMetadataInformation(string fileId, string cleanPresignedUrl)
+        protected async Task<(ReportInformation reportInformation, IActionResult Result)> GetReportAndMetadataInformation(string fileId, string cleanPresignedUrl, string metaDataPresignedUrl)
         {
             CloudProxyResponseModel cloudProxyResponseModel = new CloudProxyResponseModel();
             string reportFolderPath = Directory.GetDirectories(Constants.TRANSACTION_STORE_PATH, $"{ fileId}", SearchOption.AllDirectories).FirstOrDefault();
             ReportInformation reportInformation = new ReportInformation();
 
+            // Running for minio version...
             if (!string.IsNullOrWhiteSpace(cleanPresignedUrl))
             {
                 (byte[] Data, string Error) = await _httpService.GetFileBytes(cleanPresignedUrl);
@@ -114,9 +115,21 @@ namespace Glasswall.CloudProxy.Common.Web.Abstraction
                 }
 
                 reportInformation.ReportBytes = Data;
-                //TO DO: download metadata file from the presignedUrl for minio-version
+
+                //TO DO: This check has to be removed because metadata presignedURL will always available for minio
+                if (!string.IsNullOrWhiteSpace(metaDataPresignedUrl))
+                {
+                    (Data, Error) = await _httpService.GetFileBytes(metaDataPresignedUrl);
+                    if (!string.IsNullOrEmpty(Error))
+                    {
+                        cloudProxyResponseModel.Errors.Add($"Error while downloading metadata for {fileId} and errror detail is {Error}");
+                        return (reportInformation, NotFound(cloudProxyResponseModel));
+                    }
+
+                    reportInformation.MetadaBytes = Data;
+                }
             }
-            else
+            else  // Running for classic version...
             {
                 if (string.IsNullOrEmpty(reportFolderPath))
                 {
@@ -286,7 +299,7 @@ namespace Glasswall.CloudProxy.Common.Web.Abstraction
 
                 string transactionFolderPath = Directory.GetDirectories(Constants.TRANSACTION_STORE_PATH, $"{ fileIdString}", SearchOption.AllDirectories).FirstOrDefault();
 
-                (ReportInformation reportInformation, IActionResult Result) = await GetReportAndMetadataInformation(fileIdString, descriptor.AdaptationServiceResponse.ReportPresignedUrl);
+                (ReportInformation reportInformation, IActionResult Result) = await GetReportAndMetadataInformation(fileIdString, descriptor.AdaptationServiceResponse.ReportPresignedUrl, descriptor.AdaptationServiceResponse.MetaDataPresignedUrl);
                 if (reportInformation.ReportBytes == null)
                 {
                     return Result;

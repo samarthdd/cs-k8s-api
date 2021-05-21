@@ -83,7 +83,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 switch (descriptor.AdaptationServiceResponse.FileOutcome)
                 {
                     case ReturnOutcome.GW_REBUILT:
-                        (ReportInformation reportInformation, IActionResult Result) = await GetReportAndMetadataInformation(fileId, descriptor.AdaptationServiceResponse.ReportPresignedUrl);
+                        (ReportInformation reportInformation, IActionResult Result) = await GetReportAndMetadataInformation(fileId, descriptor.AdaptationServiceResponse.ReportPresignedUrl, descriptor.AdaptationServiceResponse.MetaDataPresignedUrl);
                         if (reportInformation.ReportBytes == null)
                         {
                             return Result;
@@ -152,7 +152,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 }
 
                 fileIdString = fileId.ToString();
-                (ReportInformation reportInformation, IActionResult Result) = await GetReportAndMetadataInformation(fileIdString, null);
+                (ReportInformation reportInformation, IActionResult Result) = await GetReportAndMetadataInformation(fileIdString, null, null);
                 if (reportInformation.ReportBytes == null)
                 {
                     return Result;

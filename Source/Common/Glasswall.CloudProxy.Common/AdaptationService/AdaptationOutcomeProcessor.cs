@@ -115,7 +115,11 @@ namespace Glasswall.CloudProxy.Common.AdaptationService
 
             if (headers.ContainsKey(Constants.Header.ICAP_REBUILD_PROCESSING_STATUS))
             {
-                adaptationServiceResponse.RebuildProcessingStatus = Encoding.UTF8.GetString((byte[])headers[Constants.Header.ICAP_REBUILD_PROCESSING_STATUS]);
+                string rebuildProcessingStatus = Encoding.UTF8.GetString((byte[])headers[Constants.Header.ICAP_REBUILD_PROCESSING_STATUS]);
+                if (!string.IsNullOrWhiteSpace(rebuildProcessingStatus))
+                {
+                    adaptationServiceResponse.RebuildProcessingStatus = (RebuildProcessingStatus)Enum.Parse(typeof(RebuildProcessingStatus), rebuildProcessingStatus.Trim().Replace(" ", "_"), ignoreCase: true);
+                }
             }
 
             if (headers.ContainsKey(Constants.Header.ICAP_GWLOG_PRESIGNED_URL))
@@ -126,6 +130,11 @@ namespace Glasswall.CloudProxy.Common.AdaptationService
             if (headers.ContainsKey(Constants.Header.ICAP_LOG_PRESIGNED_URL))
             {
                 adaptationServiceResponse.LogPresignedUrl = Encoding.UTF8.GetString((byte[])headers[Constants.Header.ICAP_LOG_PRESIGNED_URL]);
+            }
+
+            if (headers.ContainsKey(Constants.Header.ICAP_METADATA_PRESIGNED_URL))
+            {
+                adaptationServiceResponse.MetaDataPresignedUrl = Encoding.UTF8.GetString((byte[])headers[Constants.Header.ICAP_METADATA_PRESIGNED_URL]);
             }
             return adaptationServiceResponse;
         }

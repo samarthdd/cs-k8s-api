@@ -120,7 +120,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                             }
                         }
 
-                        await GetReportAndMetadataInformation(fileId, descriptor.AdaptationServiceResponse.ReportPresignedUrl);
+                        await GetReportAndMetadataInformation(fileId, descriptor.AdaptationServiceResponse.ReportPresignedUrl, descriptor.AdaptationServiceResponse.MetaDataPresignedUrl);
                         return new FileContentResult(System.IO.File.ReadAllBytes(descriptor.RebuiltStoreFilePath), Constants.OCTET_STREAM_CONTENT_TYPE) { FileDownloadName = file.FileName ?? "Unknown" };
                     case ReturnOutcome.GW_FAILED:
                         if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
@@ -228,7 +228,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 switch (descriptor.AdaptationServiceResponse.FileOutcome)
                 {
                     case ReturnOutcome.GW_REBUILT:
-                        await GetReportAndMetadataInformation(fileId, descriptor.AdaptationServiceResponse.ReportPresignedUrl);
+                        await GetReportAndMetadataInformation(fileId, descriptor.AdaptationServiceResponse.ReportPresignedUrl, descriptor.AdaptationServiceResponse.MetaDataPresignedUrl);
                         return Ok(Convert.ToBase64String(System.IO.File.ReadAllBytes(descriptor.RebuiltStoreFilePath)));
                     case ReturnOutcome.GW_FAILED:
                         if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
@@ -360,7 +360,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                         }
 
                         _zipUtility.CreateZipFile(extractedRebuildZipFilePath, password, extractedRebuildFolderPath);
-                        await GetReportAndMetadataInformation(fileId, descriptor.AdaptationServiceResponse.ReportPresignedUrl);
+                        await GetReportAndMetadataInformation(fileId, descriptor.AdaptationServiceResponse.ReportPresignedUrl, descriptor.AdaptationServiceResponse.MetaDataPresignedUrl);
                         return new FileContentResult(System.IO.File.ReadAllBytes(extractedRebuildZipFilePath), Constants.OCTET_STREAM_CONTENT_TYPE) { FileDownloadName = file.FileName ?? "Unknown" };
                     case ReturnOutcome.GW_FAILED:
                         if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))

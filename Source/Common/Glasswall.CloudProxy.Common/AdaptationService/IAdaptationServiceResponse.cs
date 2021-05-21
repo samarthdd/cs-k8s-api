@@ -12,8 +12,9 @@ namespace Glasswall.CloudProxy.Common.AdaptationService
         public string CleanPresignedUrl { get; set; }
         public string ReportPresignedUrl { get; set; }
         public string GwLogPresignedUrl { get; set; }
+        public string MetaDataPresignedUrl { get; set; }
         public string LogPresignedUrl { get; set; }
         public string SDKEngineVersion { get; set; }
-        public string RebuildProcessingStatus { get; set; }
+        public RebuildProcessingStatus? RebuildProcessingStatus { get; set; }
     }
 }
