@@ -194,7 +194,7 @@ namespace Glasswall.CloudProxy.Common.Web.Abstraction
                 {
                     if (!_fileUtility.TryReadFormFile(formFile, out file))
                     {
-                        cloudProxyResponseModel.Errors.Add("Input file could not be decoded from base64.");
+                        cloudProxyResponseModel.Errors.Add("Input file could not be parsed.");
                         return BadRequest(cloudProxyResponseModel);
                     }
                 }
