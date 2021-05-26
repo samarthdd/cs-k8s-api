@@ -15,8 +15,6 @@
         public const string OCTET_STREAM_CONTENT_TYPE = "application/octet-stream";
         public const string SWAGGER_URL = "/swagger";
         public const string STATIC_FILES_FOLDER_Name = "StaticFiles";
-        public const string SWAGGER_FOLDER_Name = "Swagger";
-        public const string SWAGGER_FILENAME = "swagger.yaml";
 
         public static class Header
         {
