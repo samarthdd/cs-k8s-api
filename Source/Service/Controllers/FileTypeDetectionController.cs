@@ -1,13 +1,13 @@
 ﻿using Glasswall.CloudProxy.Common;
 using Glasswall.CloudProxy.Common.AdaptationService;
 using Glasswall.CloudProxy.Common.Configuration;
+using Glasswall.CloudProxy.Common.HttpService;
 using Glasswall.CloudProxy.Common.Utilities;
 using Glasswall.CloudProxy.Common.Web.Abstraction;
 using Glasswall.CloudProxy.Common.Web.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using OpenTracing;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
@@ -19,23 +19,11 @@ namespace Glasswall.CloudProxy.Api.Controllers
 {
     public class FileTypeDetectionController : CloudProxyController<FileTypeDetectionController>
     {
-        private readonly IAdaptationServiceClient<AdaptationOutcomeProcessor> _adaptationServiceClient;
-        private readonly IFileUtility _fileUtility;
-        private readonly IStoreConfiguration _storeConfiguration;
-        private readonly IProcessingConfiguration _processingConfiguration;
-        private readonly ITracer _tracer;
-        private readonly ICloudSdkConfiguration _cloudSdkConfiguration;
-
         public FileTypeDetectionController(IAdaptationServiceClient<AdaptationOutcomeProcessor> adaptationServiceClient, IStoreConfiguration storeConfiguration,
-            IProcessingConfiguration processingConfiguration, ILogger<FileTypeDetectionController> logger, IFileUtility fileUtility, ITracer tracer,
-            ICloudSdkConfiguration cloudSdkConfiguration) : base(logger)
+            IProcessingConfiguration processingConfiguration, ILogger<FileTypeDetectionController> logger, IFileUtility fileUtility,
+            IZipUtility zipUtility, ICloudSdkConfiguration cloudSdkConfiguration, IHttpService httpService) : base(logger, adaptationServiceClient, fileUtility, cloudSdkConfiguration,
+                                                                                        processingConfiguration, storeConfiguration, zipUtility, httpService)
         {
-            _adaptationServiceClient = adaptationServiceClient ?? throw new ArgumentNullException(nameof(adaptationServiceClient));
-            _fileUtility = fileUtility ?? throw new ArgumentNullException(nameof(fileUtility));
-            _storeConfiguration = storeConfiguration ?? throw new ArgumentNullException(nameof(storeConfiguration));
-            _processingConfiguration = processingConfiguration ?? throw new ArgumentNullException(nameof(processingConfiguration));
-            _tracer = tracer ?? throw new ArgumentNullException(nameof(tracer));
-            _cloudSdkConfiguration = cloudSdkConfiguration ?? throw new ArgumentNullException(nameof(cloudSdkConfiguration));
         }
 
         [HttpPost(Constants.Endpoints.BASE64)]
@@ -47,13 +35,6 @@ namespace Glasswall.CloudProxy.Api.Controllers
             string rebuiltStoreFilePath = string.Empty;
             string fileId = string.Empty;
             CloudProxyResponseModel cloudProxyResponseModel = new CloudProxyResponseModel();
-
-            ISpanBuilder builder = _tracer.BuildSpan("Post::Data");
-            ISpan span = builder.Start();
-
-            // Set some context data
-            span.Log("File Type Detection base64");
-            span.SetTag("Jaeger Testing Client", "POST api/FileTypeDetection/base64 request");
 
             try
             {
@@ -84,7 +65,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 originalStoreFilePath = Path.Combine(_storeConfiguration.OriginalStorePath, fileId);
                 rebuiltStoreFilePath = Path.Combine(_storeConfiguration.RebuiltStorePath, fileId);
 
-                if (ReturnOutcome.GW_REBUILT != descriptor.Outcome)
+                if (ReturnOutcome.GW_REBUILT != descriptor.AdaptationServiceResponse.FileOutcome)
                 {
                     _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: Updating 'Original' store for {fileId}");
                     using (Stream fileStream = new FileStream(originalStoreFilePath, FileMode.Create))
@@ -93,22 +74,22 @@ namespace Glasswall.CloudProxy.Api.Controllers
                     }
 
                     _adaptationServiceClient.Connect();
-                    ReturnOutcome outcome = _adaptationServiceClient.AdaptationRequest(descriptor.UUID, originalStoreFilePath, rebuiltStoreFilePath, processingCancellationToken);
-                    descriptor.Update(outcome, originalStoreFilePath, rebuiltStoreFilePath);
+                    IAdaptationServiceResponse adaptationServiceResponse = _adaptationServiceClient.AdaptationRequest(descriptor.UUID, originalStoreFilePath, rebuiltStoreFilePath, processingCancellationToken);
+                    descriptor.Update(adaptationServiceResponse, originalStoreFilePath, rebuiltStoreFilePath);
 
-                    _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: Returning '{outcome}' Outcome for {fileId}");
+                    _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: Returning '{adaptationServiceResponse.FileOutcome}' Outcome for {fileId}");
                 }
 
-                switch (descriptor.Outcome)
+                switch (descriptor.AdaptationServiceResponse.FileOutcome)
                 {
                     case ReturnOutcome.GW_REBUILT:
-                        (byte[] ReportBytes, string ReportText, IActionResult Result) = await GetReportXmlData(fileId, cloudProxyResponseModel);
-                        if (ReportBytes == null)
+                        (ReportInformation reportInformation, IActionResult Result) = await GetReportAndMetadataInformation(fileId, descriptor.AdaptationServiceResponse.ReportPresignedUrl, descriptor.AdaptationServiceResponse.MetaDataPresignedUrl);
+                        if (reportInformation.ReportBytes == null)
                         {
                             return Result;
                         }
 
-                        GWallInfo result = ReportText.XmlStringToObject<GWallInfo>();
+                        GWallInfo result = reportInformation.ReportXmlText.XmlStringToObject<GWallInfo>();
                         int.TryParse(result.DocumentStatistics.DocumentSummary.TotalSizeInBytes, out int fileSize);
                         return Ok(new
                         {
@@ -120,14 +101,14 @@ namespace Glasswall.CloudProxy.Api.Controllers
                         {
                             cloudProxyResponseModel.Errors.Add(System.IO.File.ReadAllText(rebuiltStoreFilePath));
                         }
-                        cloudProxyResponseModel.Status = descriptor.Outcome;
+                        cloudProxyResponseModel.Status = descriptor.AdaptationServiceResponse.FileOutcome;
                         return BadRequest(cloudProxyResponseModel);
                     case ReturnOutcome.GW_UNPROCESSED:
                         if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
                         {
                             cloudProxyResponseModel.Errors.Add(System.IO.File.ReadAllText(descriptor.RebuiltStoreFilePath));
                         }
-                        cloudProxyResponseModel.Status = descriptor.Outcome;
+                        cloudProxyResponseModel.Status = descriptor.AdaptationServiceResponse.FileOutcome;
                         return BadRequest(cloudProxyResponseModel);
                     case ReturnOutcome.GW_ERROR:
                     default:
@@ -135,7 +116,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                         {
                             cloudProxyResponseModel.Errors.Add(System.IO.File.ReadAllText(descriptor.RebuiltStoreFilePath));
                         }
-                        cloudProxyResponseModel.Status = descriptor.Outcome;
+                        cloudProxyResponseModel.Status = descriptor.AdaptationServiceResponse.FileOutcome;
                         return BadRequest(cloudProxyResponseModel);
                 }
             }
@@ -157,7 +138,6 @@ namespace Glasswall.CloudProxy.Api.Controllers
             {
                 ClearStores(originalStoreFilePath, rebuiltStoreFilePath);
                 AddHeaderToResponse(Constants.Header.FILE_ID, fileId);
-                span.Finish();
             }
         }
     }

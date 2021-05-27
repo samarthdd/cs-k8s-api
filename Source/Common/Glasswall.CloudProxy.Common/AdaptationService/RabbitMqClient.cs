@@ -16,7 +16,7 @@ namespace Glasswall.CloudProxy.Common.AdaptationService
         private IModel _channel;
         private EventingBasicConsumer _consumer;
         private bool _disposedValue;
-        private readonly BlockingCollection<ReturnOutcome> _respQueue = new BlockingCollection<ReturnOutcome>();
+        private readonly BlockingCollection<IAdaptationServiceResponse> _respQueue = new BlockingCollection<IAdaptationServiceResponse>();
         private readonly IResponseProcessor _responseProcessor;
         private readonly IQueueConfiguration _queueConfiguration;
         private readonly ILogger<RabbitMqClient<TResponseProcessor>> _logger;
@@ -76,12 +76,12 @@ namespace Glasswall.CloudProxy.Common.AdaptationService
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, $"Error Processing 'input'");
-                    _respQueue.Add(ReturnOutcome.GW_ERROR);
+                    _respQueue.Add(new AdaptationServiceResponse { FileOutcome = ReturnOutcome.GW_ERROR });
                 }
             };
         }
 
-        public ReturnOutcome AdaptationRequest(Guid fileId, string originalStoreFilePath, string rebuiltStoreFilePath, CancellationToken processingCancellationToken)
+        public IAdaptationServiceResponse AdaptationRequest(Guid fileId, string originalStoreFilePath, string rebuiltStoreFilePath, CancellationToken processingCancellationToken)
         {
             if (_connection == null || _channel == null || _consumer == null)
             {
@@ -97,11 +97,11 @@ namespace Glasswall.CloudProxy.Common.AdaptationService
 
             IDictionary<string, object> headerMap = new Dictionary<string, object>
                     {
-                        { "file-id", fileId.ToString() },
-                        { "request-mode", "respmod" },
-                        { "source-file-location", originalStoreFilePath},
-                        { "rebuilt-file-location", rebuiltStoreFilePath},
-                        { "generate-report", "true"}
+                        { Constants.Header.ICAP_FILE_ID, fileId.ToString() },
+                        { Constants.Header.ICAP_REQUEST_MODE, Constants.Header.ICAP_REQUEST_MODE_VALUE },
+                        { Constants.Header.ICAP_SOURCE_FILE_LOCATION, originalStoreFilePath},
+                        { Constants.Header.ICAP_REBUILT_FILE_LOCATION, rebuiltStoreFilePath},
+                        { Constants.Header.ICAP_GENERATE_REPORT, "true"}
                     };
 
             IBasicProperties messageProperties = _channel.CreateBasicProperties();

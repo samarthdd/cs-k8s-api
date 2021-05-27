@@ -79,10 +79,8 @@ namespace Glasswall.CloudProxy.Common.Utilities
             try
             {
                 XmlSerializer xmlSerializer = new XmlSerializer(typeof(T));
-                using (StringReader stream = new StringReader(xml))
-                {
-                    retValue = (T)xmlSerializer.Deserialize(stream);
-                }
+                using StringReader stream = new StringReader(xml);
+                retValue = (T)xmlSerializer.Deserialize(stream);
             }
             catch (Exception ex)
             {
@@ -93,6 +91,11 @@ namespace Glasswall.CloudProxy.Common.Utilities
 
         public static string XmlStringToJson(this string xml)
         {
+            if (string.IsNullOrWhiteSpace(xml))
+            {
+                return xml;
+            }
+
             try
             {
                 XmlDocument doc = new XmlDocument();
