@@ -8,29 +8,29 @@ namespace Glasswall.CloudProxy.Common.AdaptationService
     public class AdaptionDescriptor
     {
         private Guid uuid; // field
-        private ReturnOutcome outcome;
+        private IAdaptationServiceResponse adaptationServiceResponse;
         private string originalStoreFilePath;
         private string rebuiltStoreFilePath;
         private DateTime accessTime;
         public AdaptionDescriptor()
         {
             uuid = Guid.NewGuid();
-            outcome = ReturnOutcome.GW_UNPROCESSED;
+            adaptationServiceResponse = new AdaptationServiceResponse { FileOutcome = ReturnOutcome.GW_UNPROCESSED };
             accessTime = DateTime.Now;
         }
 
-        public void Update(ReturnOutcome Outcome,
+        public void Update(IAdaptationServiceResponse adaptationServiceResponse,
             string OriginalStoreFilePath,
             string RebuiltStoreFilePath)
         {
             accessTime = DateTime.Now;
-            outcome = Outcome;
+            this.adaptationServiceResponse = adaptationServiceResponse;
             originalStoreFilePath = OriginalStoreFilePath;
             rebuiltStoreFilePath = RebuiltStoreFilePath;
         }
 
         public Guid UUID => uuid;
-        public ReturnOutcome Outcome => outcome;
+        public IAdaptationServiceResponse AdaptationServiceResponse => adaptationServiceResponse;
         public string OriginalStoreFilePath => originalStoreFilePath;
         public string RebuiltStoreFilePath => rebuiltStoreFilePath;
         public DateTime AccessTime { get => accessTime; set => accessTime = value; }
