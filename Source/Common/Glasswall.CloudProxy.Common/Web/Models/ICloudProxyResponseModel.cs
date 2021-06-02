@@ -6,5 +6,6 @@ namespace Glasswall.CloudProxy.Common.Web.Models
     {
         List<string> Errors { get; set; }
         ReturnOutcome? Status { get; set; }
+        RebuildProcessingStatus? RebuildProcessingStatus { get; set; }
     }
 }
