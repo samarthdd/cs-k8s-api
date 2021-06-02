@@ -236,24 +236,27 @@ namespace Glasswall.CloudProxy.Common.Web.Abstraction
                     case ReturnOutcome.GW_FAILED:
                         if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
                         {
-                            cloudProxyResponseModel.Errors.Add(System.IO.File.ReadAllText(descriptor.RebuiltStoreFilePath));
+                            cloudProxyResponseModel.Errors.Add(await System.IO.File.ReadAllTextAsync(descriptor.RebuiltStoreFilePath));
                         }
                         cloudProxyResponseModel.Status = descriptor.AdaptationServiceResponse.FileOutcome;
+                        cloudProxyResponseModel.RebuildProcessingStatus = descriptor.AdaptationServiceResponse.RebuildProcessingStatus;
                         return BadRequest(cloudProxyResponseModel);
                     case ReturnOutcome.GW_UNPROCESSED:
                         if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
                         {
-                            cloudProxyResponseModel.Errors.Add(System.IO.File.ReadAllText(descriptor.RebuiltStoreFilePath));
+                            cloudProxyResponseModel.Errors.Add(await System.IO.File.ReadAllTextAsync(descriptor.RebuiltStoreFilePath));
                         }
                         cloudProxyResponseModel.Status = descriptor.AdaptationServiceResponse.FileOutcome;
+                        cloudProxyResponseModel.RebuildProcessingStatus = descriptor.AdaptationServiceResponse.RebuildProcessingStatus;
                         return BadRequest(cloudProxyResponseModel);
                     case ReturnOutcome.GW_ERROR:
                     default:
                         if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
                         {
-                            cloudProxyResponseModel.Errors.Add(System.IO.File.ReadAllText(descriptor.RebuiltStoreFilePath));
+                            cloudProxyResponseModel.Errors.Add(await System.IO.File.ReadAllTextAsync(descriptor.RebuiltStoreFilePath));
                         }
                         cloudProxyResponseModel.Status = descriptor.AdaptationServiceResponse.FileOutcome;
+                        cloudProxyResponseModel.RebuildProcessingStatus = descriptor.AdaptationServiceResponse.RebuildProcessingStatus;
                         return BadRequest(cloudProxyResponseModel);
                 }
             }
@@ -338,7 +341,7 @@ namespace Glasswall.CloudProxy.Common.Web.Abstraction
 
                 _zipUtility.CreateZipFile(zipFileName, null, fileIdFolderPath);
                 AddHeaderToResponse(Constants.Header.FILE_ID, fileIdString);
-                return new FileContentResult(System.IO.File.ReadAllBytes(zipFileName), Constants.OCTET_STREAM_CONTENT_TYPE) { FileDownloadName = Path.GetFileName(zipFileName) };
+                return new FileContentResult(await System.IO.File.ReadAllBytesAsync(zipFileName), Constants.OCTET_STREAM_CONTENT_TYPE) { FileDownloadName = Path.GetFileName(zipFileName) };
             }
             catch (Exception ex)
             {
