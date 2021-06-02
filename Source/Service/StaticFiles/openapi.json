@@ -159,7 +159,7 @@
           "Rebuild"
         ],
         "summary": "Rebuilds a file using its binary data",
-        "description": "<h3>Description:</h3>This endpoint accepts requests to rebuild a file with Glasswall d-FIRST™ Engine. File is sent in the request body with a 'Content-Type' of 'multipart/form-data'. The Rebuilt file is then returned in the response body with a 'Content-Type' of 'application/octet-stream'.",
+        "description": "<h3>Description:</h3>This endpoint accepts requests to rebuild a file with the Glasswall Engine. File is sent in the request body with a 'Content-Type' of 'multipart/form-data'. The Rebuilt file is then returned in the response body with a 'Content-Type' of 'application/octet-stream'.",
         "parameters": [
           {
             "in": "header",
@@ -202,7 +202,7 @@
         },
         "responses": {
           "200": {
-            "description": "OK - The requested file was processed by the Glasswall d-FIRST™ Engine",
+            "description": "OK - The requested file was processed by the Glasswall Engine",
             "content": {
               "application/octet-stream": {
                 "schema": {
@@ -386,7 +386,7 @@
           "Rebuild"
         ],
         "summary": "Rebuilds a file using the Base64 encoded representation",
-        "description": "This endpoint accepts requests to rebuild a file with Glasswall d-FIRST™ Engine. The request body contains the Base64 representation of the file with a 'Content-Type' of 'application/json'.  A Base64 Representation of the rebuilt file is then returned in the response with a 'Content-Type' of 'text/plain'. <br/><br/> <span><input id=\"base64Input\" type=\"file\"></input>        \n",
+        "description": "This endpoint accepts requests to rebuild a file with the Glasswall Engine. The request body contains the Base64 representation of the file with a 'Content-Type' of 'application/json'.  A Base64 Representation of the rebuilt file is then returned in the response with a 'Content-Type' of 'text/plain'. <br/><br/> <span><input id=\"base64Input\" type=\"file\"></input>        \n",
         "requestBody": {
           "content": {
             "application/json": {
@@ -412,7 +412,7 @@
         },
         "responses": {
           "200": {
-            "description": "OK - The requested Base64 was successfully decoded and processed by the Glasswall d-FIRST™ Engine",
+            "description": "OK - The requested Base64 was successfully decoded and processed by the Glasswall Engine",
             "content": {
               "text/plain": {
                 "schema": {
@@ -591,7 +591,7 @@
           "Analyse"
         ],
         "summary": "Analyse a file using the Base64 encoded representation",
-        "description": "This endpoint accepts requests to rebuild a file with Glasswall d-FIRST™ Engine. The request body contains the Base64 representation of the file with a 'Content-Type' of 'application/json'.  The Report file is then returned in the response body with a 'Content-Type' of 'application/octet-stream'. <br/><br/> <span><input id=\"base64Input\" type=\"file\"></input> \n",
+        "description": "This endpoint accepts requests to rebuild a file with the Glasswall Engine. The request body contains the Base64 representation of the file with a 'Content-Type' of 'application/json'.  The Report file is then returned in the response body with a 'Content-Type' of 'application/octet-stream'. <br/><br/> <span><input id=\"base64Input\" type=\"file\"></input> \n",
         "requestBody": {
           "content": {
             "application/json": {
@@ -617,7 +617,7 @@
         },
         "responses": {
           "200": {
-            "description": "OK - The requested file was processed by the Glasswall d-FIRST™ Engine",
+            "description": "OK - The requested file was processed by the the Glasswall Engine",
             "content": {
               "application/octet-stream": {
                 "schema": {
@@ -856,7 +856,7 @@
         ],
         "responses": {
           "200": {
-            "description": "OK - The request was processed by the Glasswall d-FIRST™ Engine and the xml report file's binary content is returned to the client.",
+            "description": "OK - The request was processed by the Glasswall Engine and the xml report file's binary content is returned to the client.",
             "content": {
               "application/octet-stream": {
                 "schema": {
@@ -1070,7 +1070,7 @@
           "Analyse"
         ],
         "summary": "Returns a zip file with all available data using the Base64 encoded representation",
-        "description": "This endpoint accepts requests to fetch all the available data that is processed by Glasswall d-FIRST™ Engine. The request body contains the Base64 representation of the file with a 'Content-Type' of 'application/json'.  The zip file is then returned in the response body with a 'Content-Type' of 'application/octet-stream'. <br/><br/> <span><input id=\"base64Input\" type=\"file\"></input> \n",
+        "description": "This endpoint accepts requests to fetch all the available data that is processed by the Glasswall Engine. The request body contains the Base64 representation of the file with a 'Content-Type' of 'application/json'.  The zip file is then returned in the response body with a 'Content-Type' of 'application/octet-stream'. <br/><br/> <span><input id=\"base64Input\" type=\"file\"></input> \n",
         "requestBody": {
           "content": {
             "application/json": {
@@ -1096,7 +1096,7 @@
         },
         "responses": {
           "200": {
-            "description": "OK - The request was processed by the Glasswall d-FIRST™ Engine and the zip file's binary content is returned to the client.",
+            "description": "OK - The request was processed by the Glasswall Engine and the zip file's binary content is returned to the client.",
             "content": {
               "application/octet-stream": {
                 "schema": {
@@ -1310,7 +1310,7 @@
           "Analyse"
         ],
         "summary": "Returns a zip file with all available data using its binary data.",
-        "description": "<h3>Description:</h3>This endpoint accepts requests to return all available data corresponding to a input file processed by Glasswall d-FIRST™ Engine. File is sent in the request body with a 'Content-Type' of 'multipart/form-data'. The zip file is then returned in the response body with a 'Content-Type' of 'application/octet-stream'.",
+        "description": "<h3>Description:</h3>This endpoint accepts requests to return all available data corresponding to a input file processed by the Glasswall Engine. File is sent in the request body with a 'Content-Type' of 'multipart/form-data'. The zip file is then returned in the response body with a 'Content-Type' of 'application/octet-stream'.",
         "parameters": [
           {
             "in": "header",
@@ -1353,7 +1353,7 @@
         },
         "responses": {
           "200": {
-            "description": "OK - The request was processed by the Glasswall d-FIRST™ Engine and the zip file's binary content is returned to the client.",
+            "description": "OK - The request was processed by the the Glasswall Engine and the zip file's binary content is returned to the client.",
             "content": {
               "application/octet-stream": {
                 "schema": {
@@ -1567,7 +1567,7 @@
           "FileTypeDetection"
         ],
         "summary": "Detect a file type and other information using the Base64 encoded representation",
-        "description": "This endpoint accepts requests to rebuild a file with Glasswall d-FIRST™ Engine. The request body contains the Base64 representation of the file with a 'Content-Type' of 'application/json'.  File information then returned in the response body with a 'Content-Type' of 'application/json'. <br/><br/> <span><input id=\"base64Input\" type=\"file\"></input> \n",
+        "description": "This endpoint accepts requests to rebuild a file with the Glasswall Engine. The request body contains the Base64 representation of the file with a 'Content-Type' of 'application/json'.  File information then returned in the response body with a 'Content-Type' of 'application/json'. <br/><br/> <span><input id=\"base64Input\" type=\"file\"></input> \n",
         "requestBody": {
           "content": {
             "application/json": {
@@ -1593,11 +1593,11 @@
         },
         "responses": {
           "200": {
-            "description": "OK - The requested file was processed by the Glasswall d-FIRST™ Engine",
+            "description": "OK - The requested file was processed by the the Glasswall Engine",
             "content": {
               "application/json": {
                 "schema": {
-                  "description": "The requested file was processed by the Glasswall d-FIRST™ Engine.",
+                  "description": "The requested file was processed by the Glasswall Engine.",
                   "type": "object",
                   "properties": {
                     "fileTypeName": {
@@ -1807,7 +1807,7 @@
           "Rebuild"
         ],
         "summary": "Rebuilds a zip file using its binary data",
-        "description": "<h3>Description:</h3>This endpoint accepts requests to rebuild a zip file with Glasswall d-FIRST™ Engine. The file is sent in the request body with a 'Content-Type' of 'multipart/form-data'. Rebuilt zip file is then returned in the response body with a 'Content-Type' of 'application/octet-stream'.",
+        "description": "<h3>Description:</h3>This endpoint accepts requests to rebuild a zip file with the Glasswall Engine. The file is sent in the request body with a 'Content-Type' of 'multipart/form-data'. Rebuilt zip file is then returned in the response body with a 'Content-Type' of 'application/octet-stream'.",
         "parameters": [
           {
             "in": "header",
@@ -1850,7 +1850,7 @@
         },
         "responses": {
           "200": {
-            "description": "OK - The requested file was processed by the Glasswall d-FIRST™ Engine",
+            "description": "OK - The requested file was processed by the Glasswall Engine",
             "content": {
               "application/octet-stream": {
                 "schema": {
@@ -1894,7 +1894,7 @@
             }
           },
           "207": {
-            "description": "Multi-Status - The requested file was processed with error report by the Glasswall d-FIRST™ Engine.",
+            "description": "Multi-Status - The requested file was processed with error report by the Glasswall Engine.",
             "content": {
               "application/octet-stream": {
                 "schema": {
@@ -2078,7 +2078,7 @@
           "Rebuild"
         ],
         "summary": "Rebuilds a protected zip file using its binary data and password.",
-        "description": "<h3>Description:</h3>This endpoint accepts requests to rebuild a protected zip file with Glasswall d-FIRST™ Engine. Both protected file and password are sent in the request body with a 'Content-Type' of 'multipart/form-data'. Rebuilt zip file is then returned in the response body with a 'Content-Type' of 'application/octet-stream'.",
+        "description": "<h3>Description:</h3>This endpoint accepts requests to rebuild a protected zip file with the Glasswall Engine. Both protected file and password are sent in the request body with a 'Content-Type' of 'multipart/form-data'. Rebuilt zip file is then returned in the response body with a 'Content-Type' of 'application/octet-stream'.",
         "parameters": [
           {
             "in": "header",
@@ -2126,7 +2126,7 @@
         },
         "responses": {
           "200": {
-            "description": "OK - The requested file was processed by the Glasswall d-FIRST™ Engine",
+            "description": "OK - The requested file was processed by the Glasswall Engine",
             "content": {
               "application/octet-stream": {
                 "schema": {
@@ -2428,7 +2428,7 @@
           "SDK"
         ],
         "summary": "Returns a zip file with all available data using the Base64 encoded representation",
-        "description": "This endpoint accepts requests to fetch all the available data that is processed by Glasswall d-FIRST™ Engine. The request body contains the Base64 representation of the file with a 'Content-Type' of 'application/json'.  The zip file is then returned in the response body with a 'Content-Type' of 'application/octet-stream'. <br/><br/> <span><input id=\"base64Input\" type=\"file\"></input> \n",
+        "description": "This endpoint accepts requests to fetch all the available data that is processed by the Glasswall Engine. The request body contains the Base64 representation of the file with a 'Content-Type' of 'application/json'.  The zip file is then returned in the response body with a 'Content-Type' of 'application/octet-stream'. <br/><br/> <span><input id=\"base64Input\" type=\"file\"></input> \n",
         "requestBody": {
           "content": {
             "application/json": {
@@ -2454,7 +2454,7 @@
         },
         "responses": {
           "200": {
-            "description": "OK - The request was processed by the Glasswall d-FIRST™ Engine and the zip file's binary content is returned to the client.",
+            "description": "OK - The request was processed by the Glasswall Engine and the zip file's binary content is returned to the client.",
             "content": {
               "application/octet-stream": {
                 "schema": {
@@ -2668,7 +2668,7 @@
           "SDK"
         ],
         "summary": "Returns a zip file with all available data using its binary data.",
-        "description": "<h3>Description:</h3>This endpoint accepts requests to return all available data corresponding to a input file processed by Glasswall d-FIRST™ Engine. File is sent in the request body with a 'Content-Type' of 'multipart/form-data'. The zip file is then returned in the response body with a 'Content-Type' of 'application/octet-stream'.",
+        "description": "<h3>Description:</h3>This endpoint accepts requests to return all available data corresponding to a input file processed by the Glasswall Engine. File is sent in the request body with a 'Content-Type' of 'multipart/form-data'. The zip file is then returned in the response body with a 'Content-Type' of 'application/octet-stream'.",
         "parameters": [
           {
             "in": "header",
@@ -2711,7 +2711,7 @@
         },
         "responses": {
           "200": {
-            "description": "OK - The request was processed by the Glasswall d-FIRST™ Engine and the zip file's binary content is returned to the client.",
+            "description": "OK - The request was processed by the Glasswall Engine and the zip file's binary content is returned to the client.",
             "content": {
               "application/octet-stream": {
                 "schema": {
