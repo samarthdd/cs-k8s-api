@@ -1096,7 +1096,7 @@
         },
         "responses": {
           "200": {
-            "description": "OK - The request was processed by the Glasswall the Engine and the zip file's binary content is returned to the client.",
+            "description": "OK - The request was processed by the Glasswall Engine and the zip file's binary content is returned to the client.",
             "content": {
               "application/octet-stream": {
                 "schema": {
