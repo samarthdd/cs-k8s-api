@@ -99,24 +99,27 @@ namespace Glasswall.CloudProxy.Api.Controllers
                     case ReturnOutcome.GW_FAILED:
                         if (System.IO.File.Exists(rebuiltStoreFilePath))
                         {
-                            cloudProxyResponseModel.Errors.Add(System.IO.File.ReadAllText(rebuiltStoreFilePath));
+                            cloudProxyResponseModel.Errors.Add(await System.IO.File.ReadAllTextAsync(rebuiltStoreFilePath));
                         }
                         cloudProxyResponseModel.Status = descriptor.AdaptationServiceResponse.FileOutcome;
+                        cloudProxyResponseModel.RebuildProcessingStatus = descriptor.AdaptationServiceResponse.RebuildProcessingStatus;
                         return BadRequest(cloudProxyResponseModel);
                     case ReturnOutcome.GW_UNPROCESSED:
                         if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
                         {
-                            cloudProxyResponseModel.Errors.Add(System.IO.File.ReadAllText(descriptor.RebuiltStoreFilePath));
+                            cloudProxyResponseModel.Errors.Add(await System.IO.File.ReadAllTextAsync(descriptor.RebuiltStoreFilePath));
                         }
                         cloudProxyResponseModel.Status = descriptor.AdaptationServiceResponse.FileOutcome;
+                        cloudProxyResponseModel.RebuildProcessingStatus = descriptor.AdaptationServiceResponse.RebuildProcessingStatus;
                         return BadRequest(cloudProxyResponseModel);
                     case ReturnOutcome.GW_ERROR:
                     default:
                         if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
                         {
-                            cloudProxyResponseModel.Errors.Add(System.IO.File.ReadAllText(descriptor.RebuiltStoreFilePath));
+                            cloudProxyResponseModel.Errors.Add(await System.IO.File.ReadAllTextAsync(descriptor.RebuiltStoreFilePath));
                         }
                         cloudProxyResponseModel.Status = descriptor.AdaptationServiceResponse.FileOutcome;
+                        cloudProxyResponseModel.RebuildProcessingStatus = descriptor.AdaptationServiceResponse.RebuildProcessingStatus;
                         return BadRequest(cloudProxyResponseModel);
                 }
             }
