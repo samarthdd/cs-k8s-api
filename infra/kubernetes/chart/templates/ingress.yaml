@@ -26,16 +26,23 @@ spec:
     http:
       &httpRule
       paths:
-      - path: {{ .Values.ingress.path }}
+      - path: "/api"
+        backend:
+          serviceName: {{ template "fullname" . }}
+          servicePort: {{ .Values.service.api.externalPort }}
+      - path: "/swagger"
+        backend:
+          serviceName: {{ template "fullname" . }}
+          servicePort: {{ .Values.service.api.externalPort }}
+      - path: "/Swg"
+        backend:
+          serviceName: {{ template "fullname" . }}
+          servicePort: {{ .Values.service.api.externalPort }}
+      - path: "/openapi.json"
         backend:
           serviceName: {{ template "fullname" . }}
           servicePort: {{ .Values.service.api.externalPort }}
   - host: ""
     http:
-      &httpRule
-      paths:
-      - path: {{ .Values.ingress.path }}
-        backend:
-          serviceName: {{ template "fullname" . }}
-          servicePort: {{ .Values.service.api.externalPort }}
+      *httpRule
 {{- end -}}

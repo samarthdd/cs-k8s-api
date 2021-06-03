@@ -35,6 +35,7 @@ spec:
         - secretRef:
             name: {{ .Values.application.api.secretName }}
         {{- end }}
+        env:
         {{- with .Values.application.api.env }}
         {{- range $key, $val := . }}
         {{- if $val }}
@@ -55,6 +56,7 @@ spec:
             scheme: {{ .Values.livenessProbe.scheme }}
           initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
           timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+          periodSeconds: 30
         {{- end }}
         {{- if .Values.readinessProbe }}
         readinessProbe:
@@ -64,6 +66,7 @@ spec:
             scheme: {{ .Values.readinessProbe.scheme }}
           initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
           timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+          periodSeconds: 30
         {{- end }}
         resources:
 {{ toYaml .Values.resources.api | indent 12 }}
@@ -79,3 +82,21 @@ spec:
       {{- end}}
       {{- end}}
       {{- end}}
+        volumeMounts:
+          - mountPath: "/var/source"
+            name: source-vol
+          - mountPath: "/var/target"
+            name: target-vol
+          - mountPath: "/mnt/stores/transactions"
+            name: transaction-query-service-vol
+      volumes:
+      - name: source-vol
+        persistentVolumeClaim:
+          claimName: glasswallsource-pvc
+      - name: target-vol
+        persistentVolumeClaim:
+          claimName: glasswalltarget-pvc
+      - name: transaction-query-service-vol
+        persistentVolumeClaim:
+          claimName: pvc-transaction-query-service
+          

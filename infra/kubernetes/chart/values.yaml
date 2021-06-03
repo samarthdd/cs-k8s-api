@@ -5,12 +5,21 @@ replicaCount: 1
 image:
   api:
     repository: glasswallsolutions/cs-k8s-api
-    tag: latest
+    tag: main-593889a
     pullPolicy: IfNotPresent
 podAnnotations: {}
 application:
   api:
-    env: {}
+    env: 
+      ProcessingTimeoutDuration: "00:10:00"
+      OriginalStorePath: "/var/source"
+      RebuiltStorePath: "/var/target"
+      ExchangeName: "adaptation-exchange"
+      RequestQueueName: "adaptation-request-queue"
+      OutcomeQueueName: "amq.rabbitmq.reply-to"
+      RequestMessageName: "adaptation-request"
+      MBHostName: "rabbitmq-service"
+      MBPort: "5672"
     secrets: {}
 
 service:
@@ -23,7 +32,7 @@ service:
     commonName:
     externalPort: 8080
     internalPort: 80
-    url: "*"
+    url: "glasswall.domain"
 ingress:
   enabled: true
   tls:
@@ -48,10 +57,10 @@ resources:
   api:
     limits:
       cpu: 1
-      memory: 1Gi
+      memory: 2Gi
     requests:
       cpu: 250m
-      memory: 250Mi
+      memory: 500Mi
 
 podDisruptionBudget:
   enabled: false
