@@ -1,0 +1,64 @@
+# Default values for chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+replicaCount: 1
+image:
+  api:
+    repository: glasswallsolutions/cs-k8s-api
+    tag: latest
+    pullPolicy: IfNotPresent
+podAnnotations: {}
+application:
+  api:
+    env: {}
+    secrets: {}
+
+service:
+  api:
+    enabled: true
+    annotations: {}
+    name: rest-api
+    type: ClusterIP
+    additionalHosts: {}
+    commonName:
+    externalPort: 8080
+    internalPort: 80
+    url: "*"
+ingress:
+  enabled: true
+  tls:
+    enabled: false
+    secretName: 
+    crt:
+    key:
+    ca_crt:
+  annotations: {}
+livenessProbe:
+  path: "/api/health"
+  initialDelaySeconds: 30
+  timeoutSeconds: 3
+  scheme: "HTTP"
+readinessProbe:
+  path: "/api/health"
+  initialDelaySeconds: 30
+  timeoutSeconds: 3
+  scheme: "HTTP"
+
+resources:
+  api:
+    limits:
+      cpu: 1
+      memory: 1Gi
+    requests:
+      cpu: 250m
+      memory: 250Mi
+
+podDisruptionBudget:
+  enabled: false
+  # minAvailable: 1
+  maxUnavailable: 1
+scale:
+  api:
+    enabled: false
+    MinReplicaCount: 1
+    MaxReplicaCount: 8
