@@ -6,7 +6,7 @@ replicaCount: 1
 image:
   api:
     repository: glasswallsolutions/cs-k8s-api
-    tag: fix_pipeline-8d2e1bd
+    tag: main-593889a
     pullPolicy: IfNotPresent
 podAnnotations: {}
 application:
