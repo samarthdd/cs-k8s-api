@@ -1,5 +1,9 @@
 {{- if .Values.ingress.enabled -}}
+{{- if eq .Values.k8s_version "1.20" }}
+apiVersion: networking.k8s.io/v1
+{{- else }}
 apiVersion: extensions/v1beta1
+{{- end }}
 kind: Ingress
 metadata:
   name: {{ template "fullname" . }}
@@ -16,33 +20,72 @@ spec:
 {{- if .Values.ingress.tls.enabled }}
   tls:
   - hosts:
-    {{- if .Values.service.api.url }}
-    - {{ template "hostname" .Values.service.api.url }}
+    {{- if .Values.ingress.tls.domain }}
+    - {{ template "hostname" .Values.ingress.tls.domain }}
     {{- end }}
     secretName: {{ .Values.ingress.tls.secretName | default (printf "%s-tls" (include "fullname" .)) }}
 {{- end }}
   rules:
-  - host: {{ template "hostname" .Values.service.api.url }}
-    http:
-      &httpRule
-      paths:
-      - path: "/api"
-        backend:
-          serviceName: {{ template "fullname" . }}
-          servicePort: {{ .Values.service.api.externalPort }}
-      - path: "/swagger"
-        backend:
-          serviceName: {{ template "fullname" . }}
-          servicePort: {{ .Values.service.api.externalPort }}
-      - path: "/Swg"
-        backend:
-          serviceName: {{ template "fullname" . }}
-          servicePort: {{ .Values.service.api.externalPort }}
-      - path: "/openapi.json"
-        backend:
-          serviceName: {{ template "fullname" . }}
-          servicePort: {{ .Values.service.api.externalPort }}
   - host: ""
     http:
+      &httpRule
+      {{- if eq .Values.k8s_version "1.20" }}
+      paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ template "fullname" . }}
+            port: 
+              number: {{ .Values.service.api.externalPort }}
+      - path: /swagger
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ template "fullname" . }}
+            port:
+              number: {{ .Values.service.api.externalPort }}
+      - path: /Swg
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ template "fullname" . }}
+            port:
+              number: {{ .Values.service.api.externalPort }}
+      - path: /openapi.json
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ template "fullname" . }}
+            port:
+              number: {{ .Values.service.api.externalPort }}
+      {{- end }}
+      {{- if eq .Values.k8s_version "1.18" }}
+      paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          serviceName: {{ template "fullname" . }}
+          servicePort: {{ .Values.service.api.externalPort }}
+      - path: /swagger
+        pathType: Prefix
+        backend:
+          serviceName: {{ template "fullname" . }}
+          servicePort: {{ .Values.service.api.externalPort }}
+      - path: /Swg
+        pathType: Prefix
+        backend:
+          serviceName: {{ template "fullname" . }}
+          servicePort: {{ .Values.service.api.externalPort }}
+      - path: /openapi.json
+        pathType: Prefix
+        backend:
+          serviceName: {{ template "fullname" . }}
+          servicePort: {{ .Values.service.api.externalPort }}
+      {{- end }}
+  {{- if .Values.ingress.tls.domain }}
+  - host: {{ template "hostname" .Values.ingress.tls.domain }}
+    http:
       *httpRule
+  {{- end -}}
 {{- end -}}

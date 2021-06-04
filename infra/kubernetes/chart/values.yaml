@@ -1,6 +1,7 @@
 # Default values for chart.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
+k8s_version: "1.20"
 replicaCount: 1
 image:
   api:
@@ -32,11 +33,11 @@ service:
     commonName:
     externalPort: 8080
     internalPort: 80
-    url: "glasswall.domain"
 ingress:
   enabled: true
   tls:
     enabled: false
+    domain:
     secretName: 
     crt:
     key:
