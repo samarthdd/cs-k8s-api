@@ -6,12 +6,12 @@ replicaCount: 1
 image:
   api:
     repository: glasswallsolutions/cs-k8s-api
-    tag: main-593889a
+    tag: fix_pipeline-8d2e1bd
     pullPolicy: IfNotPresent
 podAnnotations: {}
 application:
   api:
-    env: 
+    env:
       ProcessingTimeoutDuration: "00:10:00"
       OriginalStorePath: "/var/source"
       RebuiltStorePath: "/var/target"
@@ -22,7 +22,6 @@ application:
       MBHostName: "rabbitmq-service"
       MBPort: "5672"
     secrets: {}
-
 service:
   api:
     enabled: true
@@ -38,7 +37,7 @@ ingress:
   tls:
     enabled: false
     domain:
-    secretName: 
+    secretName:
     crt:
     key:
     ca_crt:
@@ -53,7 +52,6 @@ readinessProbe:
   initialDelaySeconds: 30
   timeoutSeconds: 3
   scheme: "HTTP"
-
 resources:
   api:
     limits:
@@ -62,7 +60,6 @@ resources:
     requests:
       cpu: 250m
       memory: 500Mi
-
 podDisruptionBudget:
   enabled: false
   # minAvailable: 1
