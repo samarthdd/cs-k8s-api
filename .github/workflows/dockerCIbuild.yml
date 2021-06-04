@@ -47,6 +47,7 @@ jobs:
           git config user.name github-actions
           git checkout -b $IMAGE_TAG origin/${TARGET_BRANCH}
           # update imagestore selected tag value in the values.yaml file
+          snap install yq
           yq write infra/kubernetes/chart/values.yaml image.api.tag $IMAGE_TAG -i
           git add kubernetes/values.yaml
           git commit -m 'update image tag'
