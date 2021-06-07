@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="StaticFiles\openapi.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Jaeger" Version="0.2.2" />
     <PackageReference Include="Amazon.Lambda.AspNetCoreServer" Version="5.3.1" />
     <PackageReference Include="Microsoft.OpenApi.Readers" Version="1.2.3" />
@@ -26,9 +30,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="StaticFiles\openapi.json">
+    <None Include="StaticFiles\openapi.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
