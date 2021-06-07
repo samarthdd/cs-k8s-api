@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Glasswall.CloudProxy.Common.Web.Models
 {
-    public interface ICloudProxyResponseModel
+    public interface ICloudProxyResponseModel : IDisposable
     {
         List<string> Errors { get; set; }
         ReturnOutcome? Status { get; set; }

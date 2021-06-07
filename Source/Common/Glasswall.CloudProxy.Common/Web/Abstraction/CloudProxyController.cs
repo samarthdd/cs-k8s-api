@@ -17,7 +17,7 @@ namespace Glasswall.CloudProxy.Common.Web.Abstraction
 {
     [ApiController]
     [Route("api/[controller]")]
-    public abstract class CloudProxyController<TController> : ControllerBase
+    public abstract class CloudProxyController<TController> : ControllerBase, IDisposable
     {
         protected readonly ILogger<TController> _logger;
         protected readonly IFileUtility _fileUtility;
@@ -29,6 +29,7 @@ namespace Glasswall.CloudProxy.Common.Web.Abstraction
         protected readonly IHttpService _httpService;
 
         private UserAgentInfo _userAgentInfo;
+        private bool _disposedValue;
 
         public CloudProxyController(ILogger<TController> logger, IAdaptationServiceClient<AdaptationOutcomeProcessor> adaptationServiceClient, IFileUtility fileUtility,
             ICloudSdkConfiguration cloudSdkConfiguration, IProcessingConfiguration processingConfiguration, IStoreConfiguration storeConfiguration, IZipUtility zipUtility,
@@ -362,6 +363,32 @@ namespace Glasswall.CloudProxy.Common.Web.Abstraction
                     System.IO.File.Delete(zipFileName);
                 }
             }
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    _fileUtility?.Dispose();
+                    _cloudSdkConfiguration?.Dispose();
+                    _processingConfiguration?.Dispose();
+                    _storeConfiguration?.Dispose();
+                    _adaptationServiceClient?.Dispose();
+                    _zipUtility?.Dispose();
+                    _httpService?.Dispose();
+                }
+
+                _disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

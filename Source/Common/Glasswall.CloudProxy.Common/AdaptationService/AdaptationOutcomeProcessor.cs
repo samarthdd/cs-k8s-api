@@ -15,6 +15,7 @@ namespace Glasswall.CloudProxy.Common.AdaptationService
             { AdaptationOutcome.Replace, ReturnOutcome.GW_REBUILT},
             { AdaptationOutcome.Failed, ReturnOutcome.GW_FAILED }
         };
+        private bool _disposedValue;
 
         public AdaptationOutcomeProcessor(ILogger<AdaptationOutcomeProcessor> logger)
         {
@@ -137,6 +138,25 @@ namespace Glasswall.CloudProxy.Common.AdaptationService
                 adaptationServiceResponse.MetaDataPresignedUrl = Encoding.UTF8.GetString((byte[])headers[Constants.Header.ICAP_METADATA_PRESIGNED_URL]);
             }
             return adaptationServiceResponse;
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                }
+
+                _disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }
