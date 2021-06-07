@@ -6,7 +6,7 @@ on:
     branches:
       - main
     paths-ignore:
-      - "infra/kubernetes/*"
+      - "infra/kubernetes/chart/*"
       - ".github/workflows/*"
 
 env:
