@@ -2,7 +2,7 @@
 
 namespace Glasswall.CloudProxy.Common.AdaptationService
 {
-    public interface IAdaptationServiceResponse
+    public interface IAdaptationServiceResponse : IDisposable
     {
         public Guid FileId { get; set; }
         public ReturnOutcome FileOutcome { get; set; }

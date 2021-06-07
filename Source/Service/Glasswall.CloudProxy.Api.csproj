@@ -5,7 +5,12 @@
     <UserSecretsId>7a9a9cce-51a2-4970-8fab-c89039bd7a1e</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>..\..\..</DockerfileContext>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="StaticFiles\openapi.json" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Jaeger" Version="0.2.2" />
@@ -25,9 +30,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="StaticFiles\openapi.json">
+    <None Include="StaticFiles\openapi.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

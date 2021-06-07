@@ -8,7 +8,7 @@
   "info": {
     "title": "Glasswall File Rebuild Product API",
     "description": "The Rebuild API provides developers the pathway to obtaining safe and secure files.",
-    "version": "0.1.15"
+    "version": "0.1.19"
   },
   "tags": [
     {
@@ -351,6 +351,16 @@
                         "GW_UNPROCESSED",
                         "GW_ERROR"
                       ]
+                    },
+                    "rebuildProcessingStatus": {
+                      "type": "string",
+                      "nullable": true,
+                      "enum": [
+                        null,
+                        "UNPROCESSABLE",
+                        "INTERNALL_ERROR",
+                        "EXPIRED"
+                      ]
                     }
                   }
                 }
@@ -555,6 +565,16 @@
                         "GW_FAILED",
                         "GW_UNPROCESSED",
                         "GW_ERROR"
+                      ]
+                    },
+                    "rebuildProcessingStatus": {
+                      "type": "string",
+                      "nullable": true,
+                      "enum": [
+                        null,
+                        "UNPROCESSABLE",
+                        "INTERNALL_ERROR",
+                        "EXPIRED"
                       ]
                     }
                   }
@@ -796,6 +816,16 @@
                         "GW_UNPROCESSED",
                         "GW_ERROR"
                       ]
+                    },
+                    "rebuildProcessingStatus": {
+                      "type": "string",
+                      "nullable": true,
+                      "enum": [
+                        null,
+                        "UNPROCESSABLE",
+                        "INTERNALL_ERROR",
+                        "EXPIRED"
+                      ]
                     }
                   }
                 }
@@ -1034,6 +1064,16 @@
                         "GW_FAILED",
                         "GW_UNPROCESSED",
                         "GW_ERROR"
+                      ]
+                    },
+                    "rebuildProcessingStatus": {
+                      "type": "string",
+                      "nullable": true,
+                      "enum": [
+                        null,
+                        "UNPROCESSABLE",
+                        "INTERNALL_ERROR",
+                        "EXPIRED"
                       ]
                     }
                   }
@@ -1274,6 +1314,16 @@
                         "GW_FAILED",
                         "GW_UNPROCESSED",
                         "GW_ERROR"
+                      ]
+                    },
+                    "rebuildProcessingStatus": {
+                      "type": "string",
+                      "nullable": true,
+                      "enum": [
+                        null,
+                        "UNPROCESSABLE",
+                        "INTERNALL_ERROR",
+                        "EXPIRED"
                       ]
                     }
                   }
@@ -1531,6 +1581,16 @@
                         "GW_FAILED",
                         "GW_UNPROCESSED",
                         "GW_ERROR"
+                      ]
+                    },
+                    "rebuildProcessingStatus": {
+                      "type": "string",
+                      "nullable": true,
+                      "enum": [
+                        null,
+                        "UNPROCESSABLE",
+                        "INTERNALL_ERROR",
+                        "EXPIRED"
                       ]
                     }
                   }
@@ -2043,6 +2103,16 @@
                         "GW_UNPROCESSED",
                         "GW_ERROR"
                       ]
+                    },
+                    "rebuildProcessingStatus": {
+                      "type": "string",
+                      "nullable": true,
+                      "enum": [
+                        null,
+                        "UNPROCESSABLE",
+                        "INTERNALL_ERROR",
+                        "EXPIRED"
+                      ]
                     }
                   }
                 }
@@ -2274,6 +2344,16 @@
                         "GW_FAILED",
                         "GW_UNPROCESSED",
                         "GW_ERROR"
+                      ]
+                    },
+                    "rebuildProcessingStatus": {
+                      "type": "string",
+                      "nullable": true,
+                      "enum": [
+                        null,
+                        "UNPROCESSABLE",
+                        "INTERNALL_ERROR",
+                        "EXPIRED"
                       ]
                     }
                   }
@@ -2633,6 +2713,16 @@
                         "GW_UNPROCESSED",
                         "GW_ERROR"
                       ]
+                    },
+                    "rebuildProcessingStatus": {
+                      "type": "string",
+                      "nullable": true,
+                      "enum": [
+                        null,
+                        "UNPROCESSABLE",
+                        "INTERNALL_ERROR",
+                        "EXPIRED"
+                      ]
                     }
                   }
                 }
@@ -2890,6 +2980,16 @@
                         "GW_UNPROCESSED",
                         "GW_ERROR"
                       ]
+                    },
+                    "rebuildProcessingStatus": {
+                      "type": "string",
+                      "nullable": true,
+                      "enum": [
+                        null,
+                        "UNPROCESSABLE",
+                        "INTERNALL_ERROR",
+                        "EXPIRED"
+                      ]
                     }
                   }
                 }
@@ -2947,6 +3047,16 @@
               "GW_FAILED",
               "GW_UNPROCESSED",
               "GW_ERROR"
+            ]
+          },
+          "rebuildProcessingStatus": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              null,
+              "UNPROCESSABLE",
+              "INTERNALL_ERROR",
+              "EXPIRED"
             ]
           }
         }

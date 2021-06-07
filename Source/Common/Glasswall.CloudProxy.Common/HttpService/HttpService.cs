@@ -9,6 +9,7 @@ namespace Glasswall.CloudProxy.Common.HttpService
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<HttpService> _logger;
+        private bool _disposedValue;
 
         public HttpService(ILogger<HttpService> logger)
         {
@@ -29,6 +30,26 @@ namespace Glasswall.CloudProxy.Common.HttpService
                 _logger.LogError(ex, $"Error Processing '{nameof(GetFileBytes)}' and error detail is {ex.Message}");
                 return (null, ex.Message);
             }
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    _httpClient?.Dispose();
+                }
+
+                _disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

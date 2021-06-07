@@ -1,6 +1,8 @@
-﻿namespace Glasswall.CloudProxy.Common.Utilities
+﻿using System;
+
+namespace Glasswall.CloudProxy.Common.Utilities
 {
-    public interface IZipUtility
+    public interface IZipUtility : IDisposable
     {
         /// <summary>
         /// Extract zip to the outFolder

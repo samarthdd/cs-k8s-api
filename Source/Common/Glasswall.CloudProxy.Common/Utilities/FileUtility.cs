@@ -8,6 +8,7 @@ namespace Glasswall.CloudProxy.Common.Utilities
     public class FileUtility : IFileUtility
     {
         private readonly ILogger<FileUtility> _logger;
+        private bool _disposedValue;
 
         public FileUtility(ILogger<FileUtility> logger)
         {
@@ -47,6 +48,25 @@ namespace Glasswall.CloudProxy.Common.Utilities
 
             int fileSize = file?.Length ?? 0;
             return fileSize > 0;
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                }
+
+                _disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

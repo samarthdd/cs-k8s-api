@@ -9,6 +9,7 @@ namespace Glasswall.CloudProxy.Common.Utilities
     public class ZipUtility : IZipUtility
     {
         private readonly ILogger<ZipUtility> _logger;
+        private bool _disposedValue;
 
         public ZipUtility(ILogger<ZipUtility> logger)
         {
@@ -147,6 +148,24 @@ namespace Glasswall.CloudProxy.Common.Utilities
             {
                 CompressFolder(folder, zipStream, folderOffset);
             }
+        }
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                }
+
+                _disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }
