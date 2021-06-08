@@ -896,7 +896,7 @@
         },
         "responses": {
           "200": {
-            "description": "OK - The requested file was processed by the Glasswall d-FIRST™ Engine",
+            "description": "OK - The requested file was processed by the Glasswall Engine",
             "content": {
               "application/octet-stream": {
                 "schema": {
