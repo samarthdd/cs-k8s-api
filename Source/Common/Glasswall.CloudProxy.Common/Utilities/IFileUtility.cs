@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
+using System;
 
 namespace Glasswall.CloudProxy.Common.Utilities
 {
-    public interface IFileUtility
+    public interface IFileUtility : IDisposable
     {
         bool TryReadFormFile(IFormFile formFile, out byte[] file);
 

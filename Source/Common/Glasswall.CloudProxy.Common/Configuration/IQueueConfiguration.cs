@@ -1,6 +1,8 @@
-﻿namespace Glasswall.CloudProxy.Common.Configuration
+﻿using System;
+
+namespace Glasswall.CloudProxy.Common.Configuration
 {
-    public interface IQueueConfiguration
+    public interface IQueueConfiguration : IDisposable
     {
         string MBUsername { get; set; }
         string MBPassword { get; set; }

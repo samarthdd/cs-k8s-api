@@ -128,6 +128,8 @@ namespace Glasswall.CloudProxy.Common.AdaptationService
                     _channel?.Dispose();
                     _connection?.Dispose();
                     _respQueue?.Dispose();
+                    _responseProcessor?.Dispose();
+                    _queueConfiguration?.Dispose();
                 }
 
                 _disposedValue = true;

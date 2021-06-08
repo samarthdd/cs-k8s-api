@@ -8,7 +8,7 @@
   "info": {
     "title": "Glasswall File Rebuild Product API",
     "description": "The Rebuild API provides developers the pathway to obtaining safe and secure files.",
-    "version": "0.1.15"
+    "version": "0.1.19"
   },
   "tags": [
     {
@@ -191,10 +191,6 @@
               "encoding": {
                 "file": {
                   "style": "form"
-                },
-                "contentManagementFlagJson": {
-                  "contentType": "application/json",
-                  "style": "form"
                 }
               }
             }
@@ -350,6 +346,16 @@
                         "GW_FAILED",
                         "GW_UNPROCESSED",
                         "GW_ERROR"
+                      ]
+                    },
+                    "rebuildProcessingStatus": {
+                      "type": "string",
+                      "nullable": true,
+                      "enum": [
+                        null,
+                        "UNPROCESSABLE",
+                        "INTERNALL_ERROR",
+                        "EXPIRED"
                       ]
                     }
                   }
@@ -555,6 +561,16 @@
                         "GW_FAILED",
                         "GW_UNPROCESSED",
                         "GW_ERROR"
+                      ]
+                    },
+                    "rebuildProcessingStatus": {
+                      "type": "string",
+                      "nullable": true,
+                      "enum": [
+                        null,
+                        "UNPROCESSABLE",
+                        "INTERNALL_ERROR",
+                        "EXPIRED"
                       ]
                     }
                   }
@@ -796,6 +812,279 @@
                         "GW_UNPROCESSED",
                         "GW_ERROR"
                       ]
+                    },
+                    "rebuildProcessingStatus": {
+                      "type": "string",
+                      "nullable": true,
+                      "enum": [
+                        null,
+                        "UNPROCESSABLE",
+                        "INTERNALL_ERROR",
+                        "EXPIRED"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "Via": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Name of the machine which processed the request."
+              },
+              "X-SDK-Engine-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Version of the GW SDK Engine."
+              },
+              "X-SDK-Api-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Version of the Cloud SDK Api."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/analyse/file": {
+      "post": {
+        "tags": [
+          "Analyse"
+        ],
+        "summary": "Analyse a file using it's binary data.",
+        "description": "<h3>Description:</h3>This endpoint accepts requests to analyse a file with Glasswall Engine. File is sent in the request body with a 'Content-Type' of 'multipart/form-data'. The Report file is then returned in the response body with a 'Content-Type' of 'application/octet-stream'.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Accept",
+            "description": "A value of 'application/octet-stream' will return the zip file's binary content to the client.",
+            "schema": {
+              "type": "string",
+              "default": "application/octet-stream"
+            },
+            "required": false
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "The binary contents of the selected file will be uploaded to the server."
+                  }
+                },
+                "required": [
+                  "file"
+                ]
+              },
+              "encoding": {
+                "file": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK - The requested file was processed by the Glasswall d-FIRST™ Engine",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "description": "The body is a binary stream, containing the report xml file."
+                }
+              }
+            },
+            "headers": {
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "attachment; filename=ExampleFileName.pdf; filename*=UTF-8''ExampleFileName.pdf",
+                "description": "This contains the details of the report xml file binary data to download."
+              },
+              "Via": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Name of the machine which processed the request."
+              },
+              "X-SDK-Engine-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Version of the GW SDK Engine."
+              },
+              "X-SDK-Api-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Version of the Cloud SDK Api."
+              },
+              "X-Adaptation-File-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Adaptation file id."
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request - This is usually when the JSON input is malformed or missing parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/CloudProxyResponseModel"
+                    },
+                    {
+                      "$ref": "#/components/schemas/RequiredResponseModel"
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Via": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Name of the machine which processed the request."
+              },
+              "X-SDK-Engine-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Version of the GW SDK Engine."
+              },
+              "X-SDK-Api-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Version of the Cloud SDK Api."
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found - This is usually when the required return data is missing on server.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloudProxyResponseModel"
+                }
+              }
+            },
+            "headers": {
+              "Via": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Name of the machine which processed the request."
+              },
+              "X-SDK-Engine-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Version of the GW SDK Engine."
+              },
+              "X-SDK-Api-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Version of the Cloud SDK Api."
+              }
+            }
+          },
+          "405": {
+            "description": "Method Not Allowed - This happens when an HTTP method is not allowed by a server for a requested URL.",
+            "headers": {
+              "Via": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Name of the machine which processed the request."
+              },
+              "X-SDK-Engine-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Version of the GW SDK Engine."
+              },
+              "X-SDK-Api-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Version of the Cloud SDK Api."
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type - This happens when the payload format is in an unsupported format. The format problem might be due to the request's indicated Content-Type.",
+            "headers": {
+              "Via": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Name of the machine which processed the request."
+              },
+              "X-SDK-Engine-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Version of the GW SDK Engine."
+              },
+              "X-SDK-Api-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Version of the Cloud SDK Api."
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - This is usually when something wrong on the server.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "errors": {
+                      "type": "array",
+                      "description": "Error related to the request",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "status": {
+                      "type": "string",
+                      "nullable": true,
+                      "enum": [
+                        null,
+                        "GW_FAILED",
+                        "GW_UNPROCESSED",
+                        "GW_ERROR"
+                      ]
+                    },
+                    "rebuildProcessingStatus": {
+                      "type": "string",
+                      "nullable": true,
+                      "enum": [
+                        null,
+                        "UNPROCESSABLE",
+                        "INTERNALL_ERROR",
+                        "EXPIRED"
+                      ]
                     }
                   }
                 }
@@ -1034,6 +1323,16 @@
                         "GW_FAILED",
                         "GW_UNPROCESSED",
                         "GW_ERROR"
+                      ]
+                    },
+                    "rebuildProcessingStatus": {
+                      "type": "string",
+                      "nullable": true,
+                      "enum": [
+                        null,
+                        "UNPROCESSABLE",
+                        "INTERNALL_ERROR",
+                        "EXPIRED"
                       ]
                     }
                   }
@@ -1275,6 +1574,16 @@
                         "GW_UNPROCESSED",
                         "GW_ERROR"
                       ]
+                    },
+                    "rebuildProcessingStatus": {
+                      "type": "string",
+                      "nullable": true,
+                      "enum": [
+                        null,
+                        "UNPROCESSABLE",
+                        "INTERNALL_ERROR",
+                        "EXPIRED"
+                      ]
                     }
                   }
                 }
@@ -1341,10 +1650,6 @@
               },
               "encoding": {
                 "file": {
-                  "style": "form"
-                },
-                "contentManagementFlagJson": {
-                  "contentType": "application/json",
                   "style": "form"
                 }
               }
@@ -1531,6 +1836,16 @@
                         "GW_FAILED",
                         "GW_UNPROCESSED",
                         "GW_ERROR"
+                      ]
+                    },
+                    "rebuildProcessingStatus": {
+                      "type": "string",
+                      "nullable": true,
+                      "enum": [
+                        null,
+                        "UNPROCESSABLE",
+                        "INTERNALL_ERROR",
+                        "EXPIRED"
                       ]
                     }
                   }
@@ -1839,10 +2154,6 @@
               "encoding": {
                 "file": {
                   "style": "form"
-                },
-                "contentManagementFlagJson": {
-                  "contentType": "application/json",
-                  "style": "form"
                 }
               }
             }
@@ -2043,6 +2354,16 @@
                         "GW_UNPROCESSED",
                         "GW_ERROR"
                       ]
+                    },
+                    "rebuildProcessingStatus": {
+                      "type": "string",
+                      "nullable": true,
+                      "enum": [
+                        null,
+                        "UNPROCESSABLE",
+                        "INTERNALL_ERROR",
+                        "EXPIRED"
+                      ]
                     }
                   }
                 }
@@ -2114,10 +2435,6 @@
               },
               "encoding": {
                 "file": {
-                  "style": "form"
-                },
-                "contentManagementFlagJson": {
-                  "contentType": "application/json",
                   "style": "form"
                 }
               }
@@ -2274,6 +2591,16 @@
                         "GW_FAILED",
                         "GW_UNPROCESSED",
                         "GW_ERROR"
+                      ]
+                    },
+                    "rebuildProcessingStatus": {
+                      "type": "string",
+                      "nullable": true,
+                      "enum": [
+                        null,
+                        "UNPROCESSABLE",
+                        "INTERNALL_ERROR",
+                        "EXPIRED"
                       ]
                     }
                   }
@@ -2633,6 +2960,16 @@
                         "GW_UNPROCESSED",
                         "GW_ERROR"
                       ]
+                    },
+                    "rebuildProcessingStatus": {
+                      "type": "string",
+                      "nullable": true,
+                      "enum": [
+                        null,
+                        "UNPROCESSABLE",
+                        "INTERNALL_ERROR",
+                        "EXPIRED"
+                      ]
                     }
                   }
                 }
@@ -2699,10 +3036,6 @@
               },
               "encoding": {
                 "file": {
-                  "style": "form"
-                },
-                "contentManagementFlagJson": {
-                  "contentType": "application/json",
                   "style": "form"
                 }
               }
@@ -2890,6 +3223,16 @@
                         "GW_UNPROCESSED",
                         "GW_ERROR"
                       ]
+                    },
+                    "rebuildProcessingStatus": {
+                      "type": "string",
+                      "nullable": true,
+                      "enum": [
+                        null,
+                        "UNPROCESSABLE",
+                        "INTERNALL_ERROR",
+                        "EXPIRED"
+                      ]
                     }
                   }
                 }
@@ -2947,6 +3290,16 @@
               "GW_FAILED",
               "GW_UNPROCESSED",
               "GW_ERROR"
+            ]
+          },
+          "rebuildProcessingStatus": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              null,
+              "UNPROCESSABLE",
+              "INTERNALL_ERROR",
+              "EXPIRED"
             ]
           }
         }
