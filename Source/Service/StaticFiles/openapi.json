@@ -8,7 +8,7 @@
   "info": {
     "title": "Glasswall File Rebuild Product API",
     "description": "The Rebuild API provides developers the pathway to obtaining safe and secure files.",
-    "version": "0.1.19"
+    "version": "0.1.20"
   },
   "tags": [
     {
@@ -896,7 +896,7 @@
         },
         "responses": {
           "200": {
-            "description": "OK - The requested file was processed by the Glasswall d-FIRST™ Engine",
+            "description": "OK - The requested file was processed by the Glasswall Engine",
             "content": {
               "application/octet-stream": {
                 "schema": {
