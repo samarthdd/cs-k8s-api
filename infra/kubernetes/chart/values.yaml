@@ -69,3 +69,4 @@ scale:
     enabled: false
     MinReplicaCount: 1
     MaxReplicaCount: 8
+
