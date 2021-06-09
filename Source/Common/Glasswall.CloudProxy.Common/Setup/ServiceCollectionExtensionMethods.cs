@@ -30,6 +30,7 @@ namespace Glasswall.CloudProxy.Common.Setup
             serviceCollection.AddTransient(typeof(IAdaptationServiceClient<>), typeof(RabbitMqClient<>));
             serviceCollection.AddTransient<IResponseProcessor, AdaptationOutcomeProcessor>();
             serviceCollection.AddTransient<IHttpService, HttpService.HttpService>();
+            serviceCollection.AddSingleton<IRabbitMqConnectionFactory, RabbitMqConnectionFactory>();
 
             return serviceCollection;
         }
