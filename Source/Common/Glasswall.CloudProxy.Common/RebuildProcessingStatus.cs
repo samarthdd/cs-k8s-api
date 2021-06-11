@@ -5,7 +5,7 @@
         UNPROCESSABLE,
         CLEAN,
         CLEANED,
-        INTERNALL_ERROR,
+        INTERNAL_ERROR,
         EXPIRED
     }
 }
