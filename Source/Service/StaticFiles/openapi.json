@@ -8,7 +8,7 @@
   "info": {
     "title": "Glasswall File Rebuild Product API",
     "description": "The Rebuild API provides developers the pathway to obtaining safe and secure files.",
-    "version": "0.1.21"
+    "version": "0.2.1"
   },
   "tags": [
     {
@@ -354,7 +354,7 @@
                       "enum": [
                         null,
                         "UNPROCESSABLE",
-                        "INTERNALL_ERROR",
+                        "INTERNAL_ERROR",
                         "EXPIRED"
                       ]
                     }
@@ -569,7 +569,7 @@
                       "enum": [
                         null,
                         "UNPROCESSABLE",
-                        "INTERNALL_ERROR",
+                        "INTERNAL_ERROR",
                         "EXPIRED"
                       ]
                     }
@@ -819,7 +819,7 @@
                       "enum": [
                         null,
                         "UNPROCESSABLE",
-                        "INTERNALL_ERROR",
+                        "INTERNAL_ERROR",
                         "EXPIRED"
                       ]
                     }
@@ -1082,7 +1082,7 @@
                       "enum": [
                         null,
                         "UNPROCESSABLE",
-                        "INTERNALL_ERROR",
+                        "INTERNAL_ERROR",
                         "EXPIRED"
                       ]
                     }
@@ -1331,7 +1331,7 @@
                       "enum": [
                         null,
                         "UNPROCESSABLE",
-                        "INTERNALL_ERROR",
+                        "INTERNAL_ERROR",
                         "EXPIRED"
                       ]
                     }
@@ -1581,7 +1581,7 @@
                       "enum": [
                         null,
                         "UNPROCESSABLE",
-                        "INTERNALL_ERROR",
+                        "INTERNAL_ERROR",
                         "EXPIRED"
                       ]
                     }
@@ -1844,7 +1844,7 @@
                       "enum": [
                         null,
                         "UNPROCESSABLE",
-                        "INTERNALL_ERROR",
+                        "INTERNAL_ERROR",
                         "EXPIRED"
                       ]
                     }
@@ -2361,7 +2361,7 @@
                       "enum": [
                         null,
                         "UNPROCESSABLE",
-                        "INTERNALL_ERROR",
+                        "INTERNAL_ERROR",
                         "EXPIRED"
                       ]
                     }
@@ -2599,7 +2599,7 @@
                       "enum": [
                         null,
                         "UNPROCESSABLE",
-                        "INTERNALL_ERROR",
+                        "INTERNAL_ERROR",
                         "EXPIRED"
                       ]
                     }
@@ -2967,7 +2967,7 @@
                       "enum": [
                         null,
                         "UNPROCESSABLE",
-                        "INTERNALL_ERROR",
+                        "INTERNAL_ERROR",
                         "EXPIRED"
                       ]
                     }
@@ -3230,7 +3230,7 @@
                       "enum": [
                         null,
                         "UNPROCESSABLE",
-                        "INTERNALL_ERROR",
+                        "INTERNAL_ERROR",
                         "EXPIRED"
                       ]
                     }
@@ -3298,7 +3298,7 @@
             "enum": [
               null,
               "UNPROCESSABLE",
-              "INTERNALL_ERROR",
+              "INTERNAL_ERROR",
               "EXPIRED"
             ]
           }
