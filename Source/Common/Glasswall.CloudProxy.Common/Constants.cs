@@ -26,7 +26,7 @@
             public const string SDK_ENGINE_VERSION = "X-SDK-Engine-Version";
             public const string SDK_ENGINE_VERSION_VALUE = "1.157";
             public const string SDK_API_VERSION = "X-SDK-Api-Version";
-            public const string SDK_API_VERSION_VALUE = "0.2.1";
+            public const string SDK_API_VERSION_VALUE = "0.2.4";
 
             public const string ICAP_FILE_ID = "file-id";
             public const string ICAP_FILE_OUTCOME = "file-outcome";
@@ -72,6 +72,24 @@
             public const string REBUILD_ZIP_FROM_FILE = "rebuild-zip-from-file";
             public const string VERSION = "version";
             public const string Default = "/";
+        }
+
+        public static class MagicNumbers
+        {
+            public const string DOCX_PPTX_XLSX = "50 4B 03 04 14 00 06 00";
+            public const string ZIP = "50 4B 03 04";
+
+            public const string RAR_V4 = "52 61 72 21 1A 07 00";
+            public const string RAR_V5 = "52 61 72 21 1A 07 01 00";
+
+            public const string _7Z = "37 7A BC AF 27 1C";
+
+            public const string TAR = "75 73 74 61 72";
+            public const string TAR_BZ2 = "42 5A 68";   //BZ2, TAR.BZ2, TBZ2, TB2 bzip2 compressed archive DMG
+            public const string TAR_LZW = "1F 9D";
+            public const string TAR_LZH = "1F A0";
+
+            public const string GZIP = "1F 8B 08";  //GZ, TGZ	 	GZIP archive file VLT VLC Player Skin file
         }
     }
 }

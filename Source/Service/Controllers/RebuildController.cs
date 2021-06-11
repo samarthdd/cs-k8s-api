@@ -73,10 +73,10 @@ namespace Glasswall.CloudProxy.Api.Controllers
                         await file.CopyToAsync(fileStream);
                     }
 
-                    (bool status, string error) = IsValidZip(originalStoreFilePath, null, extractedFolderPath);
-                    if ((zipRequest && !status) || (!zipRequest && status))
+                    FileTypeDetectionResponse fileType = _fileUtility.DetermineFileType(fileBytes);
+                    if ((zipRequest && !_archiveTypes.Contains(fileType.FileType)) || (!zipRequest && _archiveTypes.Contains(fileType.FileType)))
                     {
-                        cloudProxyResponseModel.Errors.Add(zipRequest ? "file should be a valid zip." : "file should not be a zip.");
+                        cloudProxyResponseModel.Errors.Add(zipRequest ? "This endpoint accepts only the zip file." : "This endpoint doesn't accept the zip file.");
                         return BadRequest(cloudProxyResponseModel);
                     }
 
@@ -92,7 +92,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                     case ReturnOutcome.GW_REBUILT:
                         if (zipRequest)
                         {
-                            (bool status, string error) = IsValidZip(descriptor.RebuiltStoreFilePath, null, extractedRebuildFolderPath);
+                            (bool status, string error) = ExtractZipFile(descriptor.RebuiltStoreFilePath, null, extractedRebuildFolderPath);
                             if (!status)
                             {
                                 cloudProxyResponseModel.Errors.Add(error);
@@ -332,10 +332,10 @@ namespace Glasswall.CloudProxy.Api.Controllers
                         await file.CopyToAsync(fileStream);
                     }
 
-                    (bool status, string error) = IsValidZip(protectedZipFilePath, password, extractedFolderPath);
-                    if (!status)
+                    FileTypeDetectionResponse fileType = _fileUtility.DetermineFileType(fileBytes);
+                    if (!_archiveTypes.Contains(fileType.FileType))
                     {
-                        cloudProxyResponseModel.Errors.Add(error);
+                        cloudProxyResponseModel.Errors.Add("This endpoint accepts only zip file.");
                         return BadRequest(cloudProxyResponseModel);
                     }
 
@@ -358,7 +358,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
                 switch (descriptor.AdaptationServiceResponse.FileOutcome)
                 {
                     case ReturnOutcome.GW_REBUILT:
-                        (bool status, string error) = IsValidZip(descriptor.RebuiltStoreFilePath, null, extractedRebuildFolderPath);
+                        (bool status, string error) = ExtractZipFile(descriptor.RebuiltStoreFilePath, null, extractedRebuildFolderPath);
                         if (!status)
                         {
                             cloudProxyResponseModel.Errors.Add(error);
@@ -420,7 +420,7 @@ namespace Glasswall.CloudProxy.Api.Controllers
             }
         }
 
-        private (bool status, string error) IsValidZip(string zipFilePath, string password, string extractedFolderPath)
+        private (bool status, string error) ExtractZipFile(string zipFilePath, string password, string extractedFolderPath)
         {
             try
             {

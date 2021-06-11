@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -27,6 +28,7 @@ namespace Glasswall.CloudProxy.Common.Web.Abstraction
         protected readonly IAdaptationServiceClient<AdaptationOutcomeProcessor> _adaptationServiceClient;
         protected readonly IZipUtility _zipUtility;
         protected readonly IHttpService _httpService;
+        protected readonly List<FileType> _archiveTypes = new List<FileType> { FileType.Zip, FileType.Rar, FileType.Tar, FileType.SevenZip, FileType.Gzip };
 
         private UserAgentInfo _userAgentInfo;
         private bool _disposedValue;
