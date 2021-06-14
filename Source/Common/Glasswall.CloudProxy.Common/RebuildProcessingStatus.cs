@@ -6,6 +6,6 @@
         CLEAN,
         CLEANED,
         INTERNAL_ERROR,
-        EXPIRED
+        SDK_EXPIRED
     }
 }
