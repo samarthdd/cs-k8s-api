@@ -77,6 +77,7 @@
         public static class MagicNumbers
         {
             public const string DOCX_PPTX_XLSX = "50 4B 03 04 14 00 06 00";
+            public const string DOCX_PPTX_XLSX_ = "50 4B 03 04 14 00 00 00";
             public const string ZIP = "50 4B 03 04";
 
             public const string RAR_V4 = "52 61 72 21 1A 07 00";

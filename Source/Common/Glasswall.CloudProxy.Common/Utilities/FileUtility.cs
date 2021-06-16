@@ -67,6 +67,7 @@ namespace Glasswall.CloudProxy.Common.Utilities
                 switch (magicNumber)
                 {
                     case string s when s.StartsWith(Constants.MagicNumbers.DOCX_PPTX_XLSX):
+                    case string r when r.StartsWith(Constants.MagicNumbers.DOCX_PPTX_XLSX_):
                         {
                             fileType = FileType.Docx_Pptx_Xlsx;
                         }
