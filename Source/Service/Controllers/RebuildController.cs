@@ -339,6 +339,13 @@ namespace Glasswall.CloudProxy.Api.Controllers
                         return BadRequest(cloudProxyResponseModel);
                     }
 
+                    (bool status, string error) = ExtractZipFile(protectedZipFilePath, password, extractedFolderPath);
+                    if (!status)
+                    {
+                        cloudProxyResponseModel.Errors.Add(error);
+                        return BadRequest(cloudProxyResponseModel);
+                    }
+
                     _zipUtility.CreateZipFile(zipFilePath, null, extractedFolderPath);
 
                     _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: Updating 'Original' store for {fileId}");
