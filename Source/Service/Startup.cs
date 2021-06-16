@@ -31,6 +31,12 @@ namespace Glasswall.CloudProxy.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddHsts(options =>
+            {
+                options.Preload = true;
+                options.IncludeSubDomains = true;
+                options.MaxAge = TimeSpan.FromDays(30);
+            });
             services.AddCors(o => o.AddPolicy(Constants.CORS_POLICY, builder =>
             {
                 builder.AllowAnyOrigin()
@@ -64,6 +70,11 @@ namespace Glasswall.CloudProxy.Api
             {
                 app.UseDeveloperExceptionPage();
             }
+            else
+            {
+                app.UseHsts();
+            }
+
             app.UseHttpsRedirection();
             app.UseStaticFiles(new StaticFileOptions
             {
