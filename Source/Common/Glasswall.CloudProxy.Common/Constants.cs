@@ -16,6 +16,13 @@
         public const string SWAGGER_URL = "/swagger";
         public const string STATIC_FILES_FOLDER_Name = "StaticFiles";
 
+        public static class Hsts
+        {
+            public const int HSTS_MAX_AGE_IN_DAYS = 30;
+            public const bool HSTS_INCLUDE_SUBDOMAINS = true;
+            public const bool HSTS_PRELOAD = true;
+        }
+
         public static class Header
         {
             public const string FILE_ID = "X-Adaptation-File-Id";
