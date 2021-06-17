@@ -9,7 +9,7 @@ namespace Glasswall.CloudProxy.Common.Setup
 {
     public static class ServiceCollectionExtensionMethods
     {
-        public static (IServiceCollection, ICloudSdkConfiguration) ConfigureServices(this IServiceCollection serviceCollection, IConfiguration configuration)
+        public static IServiceCollection ConfigureServices(this IServiceCollection serviceCollection, IConfiguration configuration)
         {
             IQueueConfiguration queueConfig = RabbitMqDefaultConfigLoader.SetDefaults(new RabbitMqQueueConfiguration());
             configuration.Bind(queueConfig);
@@ -23,16 +23,16 @@ namespace Glasswall.CloudProxy.Common.Setup
             configuration.Bind(processingConfig);
             serviceCollection.AddTransient<IProcessingConfiguration>(x => processingConfig);
 
-            ICloudSdkConfiguration cloudSdkConfiguration = CloudSdkConfigLoader.SetDefaults(new CloudSdkConfiguration());
-            configuration.Bind(cloudSdkConfiguration);
-            serviceCollection.AddTransient<ICloudSdkConfiguration>(x => cloudSdkConfiguration);
+            ICloudSdkConfiguration versionConfiguration = CloudSdkConfigLoader.SetDefaults(new CloudSdkConfiguration());
+            configuration.Bind(versionConfiguration);
+            serviceCollection.AddTransient<ICloudSdkConfiguration>(x => versionConfiguration);
 
             serviceCollection.AddTransient(typeof(IAdaptationServiceClient<>), typeof(RabbitMqClient<>));
             serviceCollection.AddTransient<IResponseProcessor, AdaptationOutcomeProcessor>();
             serviceCollection.AddTransient<IHttpService, HttpService.HttpService>();
             serviceCollection.AddSingleton<IRabbitMqConnectionFactory, RabbitMqConnectionFactory>();
 
-            return (serviceCollection, cloudSdkConfiguration);
+            return serviceCollection;
         }
     }
 }
