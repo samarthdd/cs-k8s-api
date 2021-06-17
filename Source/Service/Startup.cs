@@ -31,13 +31,6 @@ namespace Glasswall.CloudProxy.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            (IServiceCollection serviceCollection, ICloudSdkConfiguration cloudSdkConfiguration) = services.ConfigureServices(Configuration);
-            services.AddHsts(options =>
-            {
-                options.Preload = cloudSdkConfiguration.HstsPreload;
-                options.IncludeSubDomains = cloudSdkConfiguration.HstsIncludeSubDomains;
-                options.MaxAge = TimeSpan.FromDays(cloudSdkConfiguration.HstsMaxAgeInDays);
-            });
             services.AddCors(o => o.AddPolicy(Constants.CORS_POLICY, builder =>
             {
                 builder.AllowAnyOrigin()
@@ -54,6 +47,7 @@ namespace Glasswall.CloudProxy.Api
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 options.JsonSerializerOptions.IgnoreNullValues = true;
             });
+            services.ConfigureServices(Configuration);
             services.AddTransient<IFileUtility, FileUtility>();
             services.AddTransient<IZipUtility, ZipUtility>();
             services.AddControllers();
@@ -70,11 +64,6 @@ namespace Glasswall.CloudProxy.Api
             {
                 app.UseDeveloperExceptionPage();
             }
-            else
-            {
-                app.UseHsts();
-            }
-
             app.UseHttpsRedirection();
             app.UseStaticFiles(new StaticFileOptions
             {
@@ -99,13 +88,13 @@ namespace Glasswall.CloudProxy.Api
                 ILogger logger = loggerFactory.CreateLogger<Startup>();
                 UserAgentInfo userAgentInfo = new UserAgentInfo(context.Request.Headers[Constants.UserAgent.USER_AGENT]);
                 logger.LogInformation($"UserAgent:: [{userAgentInfo?.ClientInfo?.String}]");
-                ICloudSdkConfiguration cloudSdkConfiguration = app.ApplicationServices.GetService<ICloudSdkConfiguration>();
+                ICloudSdkConfiguration versionConfig = app.ApplicationServices.GetService<ICloudSdkConfiguration>();
                 context.Response.Headers[Constants.Header.ACCESS_CONTROL_EXPOSE_HEADERS] = Constants.STAR;
                 context.Response.Headers[Constants.Header.ACCESS_CONTROL_ALLOW_HEADERS] = Constants.STAR;
                 context.Response.Headers[Constants.Header.ACCESS_CONTROL_ALLOW_ORIGIN] = Constants.STAR;
                 context.Response.Headers[Constants.Header.VIA] = Environment.MachineName;
-                context.Response.Headers[Constants.Header.SDK_ENGINE_VERSION] = cloudSdkConfiguration.SDKEngineVersion;
-                context.Response.Headers[Constants.Header.SDK_API_VERSION] = cloudSdkConfiguration.SDKApiVersion;
+                context.Response.Headers[Constants.Header.SDK_ENGINE_VERSION] = versionConfig.SDKEngineVersion;
+                context.Response.Headers[Constants.Header.SDK_API_VERSION] = versionConfig.SDKApiVersion;
                 return next.Invoke();
             });
 
