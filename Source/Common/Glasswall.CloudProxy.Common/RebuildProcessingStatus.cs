@@ -5,7 +5,7 @@
         UNPROCESSABLE,
         CLEAN,
         CLEANED,
-        INTERNALL_ERROR,
-        EXPIRED
+        INTERNAL_ERROR,
+        SDK_EXPIRED
     }
 }
