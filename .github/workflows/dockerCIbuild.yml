@@ -89,7 +89,7 @@ jobs:
           
           else
               BRANCH=develop-${GITHUB_SHA::7}
-              git checkout -b $IMAGE_TAG origin/develop
+              git checkout -b $BRANCH origin/develop
               # update imagestore selected tag value in the values.yaml file of develop and main branch
               yq write infra/kubernetes/chart/values.yaml image.api.tag $IMAGE_TAG -i
               git add infra/kubernetes/chart/values.yaml
@@ -102,7 +102,7 @@ jobs:
               git push origin --delete $BRANCH
               
               BRANCH=main-${GITHUB_SHA::7}
-              git checkout -b $IMAGE_TAG origin/develop
+              git checkout -b $BRANCH origin/main
               # update imagestore selected tag value in the values.yaml file of develop and main branch
               yq write infra/kubernetes/chart/values.yaml image.api.tag $IMAGE_TAG -i
               git add infra/kubernetes/chart/values.yaml
