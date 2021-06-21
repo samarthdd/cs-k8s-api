@@ -8,6 +8,7 @@
 ## Filedrop
 - Filedrop does not support zip files in UI
 
+
 # Management UI
 - Management UI policies are configured per workload cluster.
 - No https access.
