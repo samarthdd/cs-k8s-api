@@ -26,3 +26,4 @@ Infrastructure
 - If the update comes from CK8s, we will provide an updated AMI in Cloud formation configuration which can be used to create a new workload cluster. 
 
 
+new 
