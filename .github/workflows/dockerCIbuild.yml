@@ -38,7 +38,7 @@ jobs:
         id: push_image
         run: |
           sleep 10
-          git fetch --tags --no-recurse-submodules
+          git fetch --tags 
           
           IMAGE_TAG=$(git tag -l --contains ${GITHUB_SHA} | head -n 1)
           
