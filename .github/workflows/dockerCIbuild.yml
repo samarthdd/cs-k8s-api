@@ -10,7 +10,7 @@ on:
       - ".github/workflows/*"
 
 env:
-  DOCKER_REPO_NAME: glasswallsolutions
+  DOCKER_REPO_NAME: samarth7
   GITHUB_SHA: ${{ github.sha }}
   
 
