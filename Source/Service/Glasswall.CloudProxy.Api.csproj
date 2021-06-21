@@ -5,14 +5,18 @@
     <UserSecretsId>7a9a9cce-51a2-4970-8fab-c89039bd7a1e</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>..\..\..</DockerfileContext>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Jaeger" Version="0.2.2"/>
-    <PackageReference Include="Amazon.Lambda.AspNetCoreServer" Version="5.3.1" />
+    <Content Remove="StaticFiles\openapi.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Amazon.Lambda.AspNetCoreServer" Version="6.0.2" />
+    <PackageReference Include="Microsoft.OpenApi.Readers" Version="1.2.3" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.10.9" />
-    <PackageReference Include="OpenTracing" Version="0.12.0"/>
-    <PackageReference Include="OpenTracing.Contrib.NetCore"  Version="0.5.0"/>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.1.4" />
   </ItemGroup>
 
   <ItemGroup>
@@ -21,6 +25,28 @@
 
   <ItemGroup>
     <Folder Include="Properties\" />
+    <Folder Include="StaticFiles\Swg\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="StaticFiles\openapi.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="StaticFiles\api.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="StaticFiles\Swg\func.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="StaticFiles\Swg\toast\toastify.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="StaticFiles\Swg\toast\toastify.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 

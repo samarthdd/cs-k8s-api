@@ -1,65 +1,40 @@
 ﻿using Glasswall.CloudProxy.Common;
 using Glasswall.CloudProxy.Common.AdaptationService;
 using Glasswall.CloudProxy.Common.Configuration;
+using Glasswall.CloudProxy.Common.HttpService;
+using Glasswall.CloudProxy.Common.Utilities;
 using Glasswall.CloudProxy.Common.Web.Abstraction;
-using Glasswall.CloudProxy.Api.Models;
-using Glasswall.CloudProxy.Api.Utilities;
+using Glasswall.CloudProxy.Common.Web.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Linq;
-using Glasswall.CloudProxy.Common.Web.Models;
-using System.Xml.Serialization;
-using OpenTracing;
 
 namespace Glasswall.CloudProxy.Api.Controllers
 {
     public class FileTypeDetectionController : CloudProxyController<FileTypeDetectionController>
     {
-        private readonly IAdaptationServiceClient<AdaptationOutcomeProcessor> _adaptationServiceClient;
-        private readonly IFileUtility _fileUtility;
-        private readonly CancellationTokenSource _processingCancellationTokenSource;
-        private readonly TimeSpan _processingTimeoutDuration;
-        private readonly string OriginalStorePath;
-        private readonly string RebuiltStorePath;
-        private readonly ITracer tracer;
-
         public FileTypeDetectionController(IAdaptationServiceClient<AdaptationOutcomeProcessor> adaptationServiceClient, IStoreConfiguration storeConfiguration,
-            IProcessingConfiguration processingConfiguration, ILogger<FileTypeDetectionController> logger, IFileUtility fileUtility, ITracer tracer) : base(logger)
+            IProcessingConfiguration processingConfiguration, ILogger<FileTypeDetectionController> logger, IFileUtility fileUtility,
+            IZipUtility zipUtility, ICloudSdkConfiguration cloudSdkConfiguration, IHttpService httpService) : base(logger, adaptationServiceClient, fileUtility, cloudSdkConfiguration,
+                                                                                        processingConfiguration, storeConfiguration, zipUtility, httpService)
         {
-            _adaptationServiceClient = adaptationServiceClient ?? throw new ArgumentNullException(nameof(adaptationServiceClient));
-            _fileUtility = fileUtility ?? throw new ArgumentNullException(nameof(fileUtility));
-            if (storeConfiguration == null) throw new ArgumentNullException(nameof(storeConfiguration));
-            if (processingConfiguration == null) throw new ArgumentNullException(nameof(processingConfiguration));
-            _processingTimeoutDuration = processingConfiguration.ProcessingTimeoutDuration;
-            _processingCancellationTokenSource = new CancellationTokenSource(_processingTimeoutDuration);
-
-            OriginalStorePath = storeConfiguration.OriginalStorePath;
-            RebuiltStorePath = storeConfiguration.RebuiltStorePath;
-
-            this.tracer = tracer;
         }
 
-        [HttpPost("base64")]
+        [HttpPost(Constants.Endpoints.BASE64)]
         public async Task<IActionResult> DetermineFileTypeFromBase64([FromBody][Required] Base64Request request)
         {
-            _logger.LogInformation("'{0}' method invoked", nameof(DetermineFileTypeFromBase64));
+            _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: {nameof(DetermineFileTypeFromBase64)} method invoked");
+
             string originalStoreFilePath = string.Empty;
             string rebuiltStoreFilePath = string.Empty;
-            String fileIdString = "";
+            string fileId = string.Empty;
             CloudProxyResponseModel cloudProxyResponseModel = new CloudProxyResponseModel();
-
-            var builder = tracer.BuildSpan("Post::Data");
-            var span = builder.Start();
-
-            // Set some context data
-            span.Log("File Type Detection base64");
-            span.SetTag("Jaeger Testing Client", "POST api/FileTypeDetection/base64 request");
 
             try
             {
@@ -75,99 +50,97 @@ namespace Glasswall.CloudProxy.Api.Controllers
                     return BadRequest(cloudProxyResponseModel);
                 }
 
-                AdaptionDescriptor descriptor = AdaptionCache.Instance.GetDescriptor(file);
+                AdaptionDescriptor descriptor = AdaptionCache.Instance.GetDescriptor(file, _cloudSdkConfiguration);
                 if (null == descriptor)
                 {
                     cloudProxyResponseModel.Errors.Add("Cannot create a cache entry for the file.");
                     return BadRequest(cloudProxyResponseModel);
                 }
 
-                Guid fileId = descriptor.UUID;
-                fileIdString = fileId.ToString();
+                fileId = descriptor.UUID.ToString();
+                CancellationToken processingCancellationToken = new CancellationTokenSource(_processingConfiguration.ProcessingTimeoutDuration).Token;
 
-                CancellationToken processingCancellationToken = _processingCancellationTokenSource.Token;
+                _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: Using store locations '{_storeConfiguration.OriginalStorePath}' and '{_storeConfiguration.RebuiltStorePath}' for {fileId}");
 
-                _logger.LogInformation($"Using store locations '{OriginalStorePath}' and '{RebuiltStorePath}' for {fileId}");
+                originalStoreFilePath = Path.Combine(_storeConfiguration.OriginalStorePath, fileId);
+                rebuiltStoreFilePath = Path.Combine(_storeConfiguration.RebuiltStorePath, fileId);
 
-                originalStoreFilePath = Path.Combine(OriginalStorePath, fileId.ToString());
-                rebuiltStoreFilePath = Path.Combine(RebuiltStorePath, fileId.ToString());
-
-                if (ReturnOutcome.GW_REBUILT != descriptor.Outcome)
+                if (ReturnOutcome.GW_REBUILT != descriptor.AdaptationServiceResponse.FileOutcome)
                 {
-                    _logger.LogInformation($"Updating 'Original' store for {fileId}");
+                    _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: Updating 'Original' store for {fileId}");
                     using (Stream fileStream = new FileStream(originalStoreFilePath, FileMode.Create))
                     {
                         await fileStream.WriteAsync(file, 0, file.Length);
                     }
 
                     _adaptationServiceClient.Connect();
-                    ReturnOutcome outcome = _adaptationServiceClient.AdaptationRequest(fileId, originalStoreFilePath, rebuiltStoreFilePath, processingCancellationToken);
-                    descriptor.Update(outcome, originalStoreFilePath, rebuiltStoreFilePath);
+                    IAdaptationServiceResponse adaptationServiceResponse = _adaptationServiceClient.AdaptationRequest(descriptor.UUID, originalStoreFilePath, rebuiltStoreFilePath, processingCancellationToken);
+                    descriptor.Update(adaptationServiceResponse, originalStoreFilePath, rebuiltStoreFilePath);
 
-                    _logger.LogInformation($"Returning '{outcome}' Outcome for {fileId}");
+                    _logger.LogInformation($"[{UserAgentInfo.ClientTypeString}]:: Returning '{adaptationServiceResponse.FileOutcome}' Outcome for {fileId}");
                 }
 
-                switch (descriptor.Outcome)
+                switch (descriptor.AdaptationServiceResponse.FileOutcome)
                 {
                     case ReturnOutcome.GW_REBUILT:
-                        string reportFolderPath = Directory.GetDirectories(Constants.TRANSACTION_STORE_PATH, $"{ fileId}", SearchOption.AllDirectories).FirstOrDefault();
-                        if (string.IsNullOrEmpty(descriptor.RebuiltStoreFilePath))
+                        (ReportInformation reportInformation, IActionResult Result) = await GetReportAndMetadataInformation(fileId, descriptor.AdaptationServiceResponse.ReportPresignedUrl, descriptor.AdaptationServiceResponse.MetaDataPresignedUrl);
+                        if (reportInformation.ReportBytes == null)
                         {
-                            _logger.LogWarning($"Report folder not exist for file {fileId}");
-                            cloudProxyResponseModel.Errors.Add($"Report folder not exist for file {fileId}");
-                            return NotFound(cloudProxyResponseModel);
+                            return Result;
                         }
 
-                        string reportPath = Path.Combine(reportFolderPath, Constants.REPORT_XML_FILE_NAME);
-                        if (!System.IO.File.Exists(reportPath))
-                        {
-                            _logger.LogWarning($"Report xml not exist for file {fileId}");
-                            cloudProxyResponseModel.Errors.Add($"Report xml not exist for file {fileId}");
-                            return NotFound(cloudProxyResponseModel);
-                        }
-
-                        XmlSerializer serializer = new XmlSerializer(typeof(GWallInfo));
-                        GWallInfo result = null;
-                        using (FileStream fileStream = new FileStream(reportPath, FileMode.Open))
-                        {
-                            result = (GWallInfo)serializer.Deserialize(fileStream);
-                        }
-
+                        GWallInfo result = reportInformation.ReportXmlText.XmlStringToObject<GWallInfo>();
                         int.TryParse(result.DocumentStatistics.DocumentSummary.TotalSizeInBytes, out int fileSize);
-                        AddHeaderToResponse(Constants.Header.FILE_ID, fileIdString);
                         return Ok(new
                         {
                             FileTypeName = result.DocumentStatistics.DocumentSummary.FileType,
                             FileSize = fileSize
                         });
                     case ReturnOutcome.GW_FAILED:
-                    default:
                         if (System.IO.File.Exists(rebuiltStoreFilePath))
                         {
-                            cloudProxyResponseModel.Errors.Add(System.IO.File.ReadAllText(rebuiltStoreFilePath));
+                            cloudProxyResponseModel.Errors.Add(await System.IO.File.ReadAllTextAsync(rebuiltStoreFilePath));
                         }
-                        cloudProxyResponseModel.Status = descriptor.Outcome;
+                        cloudProxyResponseModel.Status = descriptor.AdaptationServiceResponse.FileOutcome;
+                        cloudProxyResponseModel.RebuildProcessingStatus = descriptor.AdaptationServiceResponse.RebuildProcessingStatus;
+                        return BadRequest(cloudProxyResponseModel);
+                    case ReturnOutcome.GW_UNPROCESSED:
+                        if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
+                        {
+                            cloudProxyResponseModel.Errors.Add(await System.IO.File.ReadAllTextAsync(descriptor.RebuiltStoreFilePath));
+                        }
+                        cloudProxyResponseModel.Status = descriptor.AdaptationServiceResponse.FileOutcome;
+                        cloudProxyResponseModel.RebuildProcessingStatus = descriptor.AdaptationServiceResponse.RebuildProcessingStatus;
+                        return BadRequest(cloudProxyResponseModel);
+                    case ReturnOutcome.GW_ERROR:
+                    default:
+                        if (System.IO.File.Exists(descriptor.RebuiltStoreFilePath))
+                        {
+                            cloudProxyResponseModel.Errors.Add(await System.IO.File.ReadAllTextAsync(descriptor.RebuiltStoreFilePath));
+                        }
+                        cloudProxyResponseModel.Status = descriptor.AdaptationServiceResponse.FileOutcome;
+                        cloudProxyResponseModel.RebuildProcessingStatus = descriptor.AdaptationServiceResponse.RebuildProcessingStatus;
                         return BadRequest(cloudProxyResponseModel);
                 }
             }
             catch (OperationCanceledException oce)
             {
-                _logger.LogError(oce, $"Error Processing Timeout 'input' {fileIdString} exceeded {_processingTimeoutDuration.TotalSeconds}s");
-                cloudProxyResponseModel.Errors.Add($"Error Processing Timeout 'input' {fileIdString} exceeded {_processingTimeoutDuration.TotalSeconds}s");
+                _logger.LogError(oce, $"[{UserAgentInfo.ClientTypeString}]:: Error Processing Timeout 'input' {fileId} exceeded {_processingConfiguration.ProcessingTimeoutDuration.TotalSeconds}s");
+                cloudProxyResponseModel.Errors.Add($"Error Processing Timeout 'input' {fileId} exceeded {_processingConfiguration.ProcessingTimeoutDuration.TotalSeconds}s");
                 cloudProxyResponseModel.Status = ReturnOutcome.GW_ERROR;
                 return StatusCode(StatusCodes.Status500InternalServerError, cloudProxyResponseModel);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error Processing 'input' {fileIdString} and error detail is {ex.Message}");
-                cloudProxyResponseModel.Errors.Add($"Error Processing 'input' {fileIdString} and error detail is {ex.Message}");
+                _logger.LogError(ex, $"[{UserAgentInfo.ClientTypeString}]:: Error Processing 'input' {fileId} and error detail is {ex.Message}");
+                cloudProxyResponseModel.Errors.Add($"Error Processing 'input' {fileId} and error detail is {ex.Message}");
                 cloudProxyResponseModel.Status = ReturnOutcome.GW_ERROR;
                 return StatusCode(StatusCodes.Status500InternalServerError, cloudProxyResponseModel);
             }
             finally
             {
                 ClearStores(originalStoreFilePath, rebuiltStoreFilePath);
-                span.Finish();
+                AddHeaderToResponse(Constants.Header.FILE_ID, fileId);
             }
         }
     }
