@@ -74,6 +74,7 @@ jobs:
           
           
           if [ "${{ steps.push_image.outputs.branch }}" != "main" ]; then
+              IMAGE_TAG=$(echo $GITHUB_REF | cut -d'/' -f 3)-${GITHUB_SHA::7}
               git checkout -b $IMAGE_TAG origin/${TARGET_BRANCH}
               # update imagestore selected tag value in the values.yaml file
               yq write infra/kubernetes/chart/values.yaml image.api.tag $IMAGE_TAG -i
@@ -87,6 +88,7 @@ jobs:
               git push origin --delete $IMAGE_TAG
           
           else
+              IMAGE_TAG=$(echo $GITHUB_REF | cut -d'/' -f 3)-${GITHUB_SHA::7}
               git checkout -b $IMAGE_TAG origin/develop
               # update imagestore selected tag value in the values.yaml file of develop and main branch
               yq write infra/kubernetes/chart/values.yaml image.api.tag $IMAGE_TAG -i
