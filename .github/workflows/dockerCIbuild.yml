@@ -11,7 +11,7 @@ on:
       - ".github/workflows/*"
 
 env:
-  DOCKER_REPO_NAME: glasswallsolutions
+  DOCKER_REPO_NAME: samarth7
   GITHUB_SHA: ${{ github.sha }}
   
 
@@ -67,12 +67,13 @@ jobs:
 
       - name: Update image tag in k8-rebuild repo
         run: |
-          if [ "${{ steps.push_image.outputs.branch }}" != "main" ]; then
+          IMAGE_TAG=${{ steps.push_image.outputs.IMAGE_TAG }}
+          TARGET_BRANCH=${{ steps.push_image.outputs.branch }}
+          git config user.email github-actions@github.com
+          git config user.name github-actions
           
-              IMAGE_TAG=${{ steps.push_image.outputs.IMAGE_TAG }}
-              TARGET_BRANCH=${{ steps.push_image.outputs.branch }}
-              git config user.email github-actions@github.com
-              git config user.name github-actions
+          
+          if [ "${{ steps.push_image.outputs.branch }}" != "main" ]; then
               git checkout -b $IMAGE_TAG origin/${TARGET_BRANCH}
               # update imagestore selected tag value in the values.yaml file
               yq write infra/kubernetes/chart/values.yaml image.api.tag $IMAGE_TAG -i
@@ -84,7 +85,28 @@ jobs:
               sleep 5s
               gh pr merge $IMAGE_TAG -s
               git push origin --delete $IMAGE_TAG
-            
+          
+          else
+              git checkout -b $IMAGE_TAG origin/develop
+              # update imagestore selected tag value in the values.yaml file of develop and main branch
+              yq write infra/kubernetes/chart/values.yaml image.api.tag $IMAGE_TAG -i
+              git add infra/kubernetes/chart/values.yaml
+              git commit -m 'update image tag'
+              git push origin $IMAGE_TAG
+              
+              # create a pull request from a new branch to develop , merge the PR and delete the source branch.
+              gh pr create --base develop --title "Update ${{ env.IMAGESTORESELECTOR }} image tag to $IMAGE_TAG" --body ""
+              sleep 5s
+              gh pr merge $IMAGE_TAG -s
+              
+              # create a pull request from a new branch to main branch, merge the PR and delete the source branch.
+              gh pr create --base main --title "Update ${{ env.IMAGESTORESELECTOR }} image tag to $IMAGE_TAG" --body ""
+              sleep 5s
+              gh pr merge $IMAGE_TAG -s
+              
+              
+              git push origin --delete $IMAGE_TAG
+              
           fi
           
         env:
