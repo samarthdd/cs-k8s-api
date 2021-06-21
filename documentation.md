@@ -17,7 +17,7 @@
 - Once the processing is completed C# service gets informed with a RabbitMQ `Adaption outcome` message.  
 - C# service get the rebuilt file from the `Rebuild Store` and passes it to the user.  
 
-## Dataflow Diagram
+## Dataflow Diagram.
 
 ![Dataflow Diagram](images/dataflow-diagram.png)
 
