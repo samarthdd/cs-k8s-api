@@ -21,5 +21,6 @@ jobs:
         uses: k8-proxy/auto-tagging@v0.0.1
         with:
            GITHUBPAT: ${{secrets.GITHUB_TOKEN}}
+
            main_branch_name: "main"
            develop_branch_name: "develop"

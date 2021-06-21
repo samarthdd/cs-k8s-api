@@ -6,7 +6,8 @@
 - We dont support content management flag setting from API
 
 ## Filedrop
-- Filedrop does not support zip files in UI.
+- Filedrop does not support zip files in UI
+
 
 # Management UI
 - Management UI policies are configured per workload cluster.
