@@ -128,4 +128,4 @@
 - How to use file-drop [ Link ](https://github.com/k8-proxy/glasswall-servers-eval/wiki/How-to-use-File-Drop)
 
 
-Note : To Deploy in AWS, an AMI needs to be created with above setup
+Note : To Deploy in AWS, an AMI needs to be created with above setup.
