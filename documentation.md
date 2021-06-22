@@ -129,3 +129,5 @@
 
 
 Note : To Deploy in AWS, an AMI needs to be created with above setup.
+    
+    
