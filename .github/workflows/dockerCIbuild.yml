@@ -102,7 +102,7 @@ jobs:
               gh pr merge $BRANCH -s
               git push origin --delete $BRANCH
               
-              gh pr create --base main --title "Update image tag to $IMAGE_TAG" --body ""
+              gh pr create --base main --head develop --title "Update image tag to $IMAGE_TAG" --body ""
               sleep 5s
               gh pr merge develop -s
               
