@@ -25,5 +25,5 @@ Infrastructure
 - If there is any new updates/improvements come from GW Cloud SDK API, we need to provide some update scripts and documentation. Or we can destroy the workload cluster and create a new one. 
 - If the update comes from CK8s, we will provide an updated AMI in Cloud formation configuration which can be used to create a new workload cluster. 
 
-new  12
+new  123
 
