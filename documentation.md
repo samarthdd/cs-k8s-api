@@ -7,6 +7,7 @@
 - Interacts with Adaptation Service with RabbitMQ
 - Accessible on <Cluster IP>:8080
 
+    
 ## Architecture Diagram
 
 ![architecture](images/c-sharp-pod.png)
